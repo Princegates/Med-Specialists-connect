@@ -20,6 +20,32 @@
     }
   });
 
+  // Day / night mode. Without a saved choice the page follows the device setting.
+  var root = document.documentElement;
+  var themeBtn = document.getElementById('theme-toggle');
+  var themeMeta = document.querySelector('meta[name="theme-color"]');
+  var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+  function isDark() {
+    var t = root.getAttribute('data-theme');
+    return t ? t === 'dark' : !!(mq && mq.matches);
+  }
+  function syncTheme() {
+    var dark = isDark();
+    var label = dark ? 'Switch to day mode' : 'Switch to night mode';
+    themeBtn.setAttribute('aria-label', label);
+    themeBtn.setAttribute('title', label);
+    if (themeMeta) themeMeta.setAttribute('content', dark ? '#0f1117' : '#fe0054');
+  }
+  themeBtn.addEventListener('click', function () {
+    var next = isDark() ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch (e) {}
+    syncTheme();
+  });
+  if (mq && mq.addEventListener) mq.addEventListener('change', syncTheme);
+  syncTheme();
+
   var year = document.getElementById('year');
   if (year) year.textContent = new Date().getFullYear();
 
