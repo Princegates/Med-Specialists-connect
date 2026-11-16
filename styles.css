@@ -270,3 +270,8 @@ blockquote { margin: 0; font-family: var(--font-head); font-weight: 600; font-si
 .card-photo .card-body { padding: 20px 26px 26px; }
 .card-photo .card-body p { margin: 10px 0 0; }
 .cards-follow { margin-top: 20px; }
+
+/* Live site: a photo that has not been added yet is hidden, not shown as a placeholder. */
+.photo.missing { display: none; }
+.split-rev:has(.photo.missing) { grid-template-columns: minmax(0, 52rem); }
+.photo-wide.missing { margin: 0; }
