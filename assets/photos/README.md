@@ -11,10 +11,10 @@ Use photos you own or have a licence for, and compress them (under about 300 KB 
 | `card-specialist.webp`, `card-home-care.webp`, `card-diagnostics.webp` | Patient service cards (the label text is part of the image) |
 | `about-nurse-patient.webp` | Wide banner in the About section |
 
-## Still needed
+| `dialysis-unit.webp` | Dialysis section (generated, shown with an "Illustrative image" caption) |
+| `card-insurance.webp`, `card-concierge.webp` | Patient service cards (generated) |
+| `supplies.webp` | Next to the hospitals heading (generated) |
 
-| File | What it should show |
-|------|---------------------|
-| `dialysis-unit.jpg` | African nurse with an African patient at the dialysis unit (about 1440x1280). Until it exists, the site shows a labelled placeholder. |
+If you have real photos of your team or the ADMed dialysis unit, replace these files (same names) and remove the "Illustrative image" caption in `index.html`.
 
 To add more photos, copy a `<figure class="photo">` block in `index.html`.

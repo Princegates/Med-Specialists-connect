@@ -408,3 +408,10 @@ blockquote { margin: 0; font-family: var(--font-head); font-weight: 600; font-si
 .legal li { margin-bottom: 8px; }
 .legal .updated { color: var(--ink-soft); font-size: .95rem; margin: 10px 0 28px; }
 .legal a { color: var(--accent); }
+
+/* ---------- Generated photos ---------- */
+.photo-43 img { aspect-ratio: 4 / 3; }
+.photo-caption { position: absolute; left: 12px; bottom: 12px; padding: 3px 10px; border-radius: 999px; background: rgba(20, 24, 34, .72); color: #fff; font-size: .8rem; line-height: 1.5; }
+.split-head { margin-bottom: 44px; }
+.split .section-head { margin-bottom: 0; }
+.cards-follow .card-icon { display: flex; flex-direction: column; justify-content: center; }
