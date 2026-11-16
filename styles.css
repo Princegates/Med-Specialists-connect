@@ -190,3 +190,19 @@ blockquote { margin: 0; font-family: var(--font-head); font-weight: 600; font-si
   .referral { padding: 22px 18px; }
   .referral .btn { width: 100%; }
 }
+
+/* WhatsApp */
+:root { --wa: #0f7d45; --wa-dark: #0b5f35; }
+.wa-ico { width: 24px; height: 24px; flex: none; }
+.btn-wa { background: var(--wa); border-color: var(--wa); gap: 10px; margin-top: 12px; width: 100%; }
+.btn-wa:hover { background: var(--wa-dark); border-color: var(--wa-dark); }
+.wa-fab { position: fixed; right: 16px; bottom: 16px; z-index: 60; display: inline-flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 22px 0 18px; border-radius: 999px; background: var(--wa); color: #fff; text-decoration: none; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,.25); transition: background-color .15s; }
+.wa-fab:hover { background: var(--wa-dark); }
+.wa-fab:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.wa-fab .wa-ico { width: 28px; height: 28px; }
+.site-footer { padding-bottom: 88px; }
+.contact-list svg.ico { width: 30px; height: 30px; }
+@media (max-width: 560px) {
+  .wa-fab { width: 56px; padding: 0; justify-content: center; }
+  .wa-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
