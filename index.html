@@ -93,16 +93,17 @@
           <p class="note">For a medical emergency, call your nearest emergency service or go straight to the nearest hospital.</p>
         </div>
         <form class="form" id="request-form" data-subject="Care request" action="mailto:medspecialistsconnect@gmail.com" method="post">
-          <fieldset>
-            <legend>What do you need?</legend>
-            <label class="choice"><input type="radio" name="service" value="Specialist appointment" checked><span>Specialist appointment</span></label>
-            <label class="choice"><input type="radio" name="service" value="Health insurance assistance"><span>Health insurance assistance</span></label>
-            <label class="choice"><input type="radio" name="service" value="Diagnostic tests or scans"><span>Diagnostic tests or scans</span></label>
-            <label class="choice"><input type="radio" name="service" value="Home healthcare"><span>Home healthcare</span></label>
-            <label class="choice"><input type="radio" name="service" value="Ambulance coordination"><span>Ambulance coordination</span></label>
-            <label class="choice"><input type="radio" name="service" value="Dialysis services"><span>Dialysis services</span></label>
-            <label class="choice"><input type="radio" name="service" value="Medical advice on where to go"><span>Advice on where to go</span></label>
-          </fieldset>
+          <label for="r-service">What do you need?</label>
+          <select id="r-service" name="service" required>
+            <option value="" selected disabled>Choose a service</option>
+            <option value="Specialist appointment">Specialist appointment</option>
+            <option value="Health insurance assistance">Health insurance assistance</option>
+            <option value="Diagnostic tests or scans">Diagnostic tests or scans</option>
+            <option value="Home healthcare">Home healthcare</option>
+            <option value="Ambulance coordination">Ambulance coordination</option>
+            <option value="Dialysis services">Dialysis services</option>
+            <option value="Medical advice on where to go">Advice on where to go</option>
+          </select>
           <label for="r-msg">Tell us more</label>
           <textarea id="r-msg" name="message" rows="3" placeholder="For example: the specialist you want to see, or the condition"></textarea>
           <label for="r-name">Your name</label>
