@@ -23,22 +23,29 @@
   var year = document.getElementById('year');
   if (year) year.textContent = new Date().getFullYear();
 
-  // The form has no server behind it, so build a mailto: link with the answers.
-  var form = document.getElementById('contact-form');
-  if (form) {
+  // Photos: if a file has not been added yet, show a labelled slot instead of a broken image.
+  document.querySelectorAll('.photo').forEach(function (fig) {
+    var img = fig.querySelector('img');
+    function missing() { fig.classList.add('missing'); }
+    if (img.complete && img.naturalWidth === 0) missing();
+    img.addEventListener('error', missing);
+  });
+
+  // The forms have no server behind them, so build a mailto: link from the answers.
+  document.querySelectorAll('form[data-subject]').forEach(function (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var f = new FormData(form);
-      var body = [
-        'Name: ' + f.get('name'),
-        'Organisation: ' + (f.get('organisation') || '-'),
-        'Phone: ' + f.get('phone'),
-        '',
-        f.get('message')
-      ].join('\n');
+      var lines = [];
+      if (f.get('service')) lines.push('Service needed: ' + f.get('service'));
+      lines.push('Name: ' + f.get('name'));
+      if (f.get('organisation')) lines.push('Organisation: ' + f.get('organisation'));
+      lines.push('Phone: ' + f.get('phone'));
+      lines.push('', f.get('message') || '');
+      var subject = form.dataset.subject + (f.get('service') ? ': ' + f.get('service') : '') + ' from ' + f.get('name');
       window.location.href = 'mailto:medspecialistsconnect@gmail.com' +
-        '?subject=' + encodeURIComponent('Website enquiry from ' + f.get('name')) +
-        '&body=' + encodeURIComponent(body);
+        '?subject=' + encodeURIComponent(subject) +
+        '&body=' + encodeURIComponent(lines.join('\n'));
     });
-  }
+  });
 })();

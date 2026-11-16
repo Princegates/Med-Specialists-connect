@@ -64,7 +64,6 @@ p { margin: 0 0 1em; }
 .eyebrow { font-family: var(--font-head); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: .85rem; color: var(--pink-ink); margin-bottom: 14px; }
 .lead { font-size: 1.2rem; color: var(--ink-soft); max-width: 36em; margin: 22px 0 32px; }
 .cta-row { display: flex; flex-wrap: wrap; gap: 14px; }
-.hero-mark img { width: min(320px, 100%); margin-inline: auto; }
 
 /* Sections */
 .section { padding: 88px 0; }
@@ -121,8 +120,6 @@ blockquote { margin: 0; font-family: var(--font-head); font-weight: 600; font-si
 @media (max-width: 900px) {
   .hero-grid, .two-col { grid-template-columns: 1fr; gap: 32px; }
   .hero-grid { padding: 56px 0 64px; }
-  .hero-mark { order: -1; }
-  .hero-mark img { width: 150px; margin-inline: 0; }
   .section { padding: 64px 0; }
   .cards { grid-template-columns: repeat(2, 1fr); }
   .steps { grid-template-columns: repeat(2, 1fr); }
@@ -145,4 +142,51 @@ blockquote { margin: 0; font-family: var(--font-head); font-weight: 600; font-si
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   * { transition: none !important; }
+}
+
+/* Photos (African patients and professionals). Missing files show a labelled slot. */
+.photo { margin: 0; border-radius: var(--radius); overflow: hidden; background: var(--pink-tint); border: 1px solid var(--pink-line); position: relative; }
+.photo img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 9 / 8; }
+.photo-hero img { aspect-ratio: 9 / 8; }
+.photo-wide { margin-top: 48px; }
+.photo-wide img { aspect-ratio: 7 / 3; }
+.ph-note { display: none; }
+.photo.missing { display: flex; align-items: center; justify-content: center; aspect-ratio: 9 / 8; border: 2px dashed var(--pink); }
+.photo-wide.missing { aspect-ratio: 7 / 3; }
+.photo.missing img { display: none; }
+.photo.missing .ph-note { display: block; padding: 24px; text-align: center; color: var(--ink-soft); font-size: .95rem; background: url("assets/logo-icon.png") center 18% / 72px no-repeat; padding-top: 110px; }
+.photo.missing code { font-size: .85rem; color: var(--pink-ink); word-break: break-all; }
+
+/* Layout helpers */
+.split { display: grid; grid-template-columns: 1fr 1.25fr; gap: 40px; align-items: center; }
+.split-rev { grid-template-columns: 1.1fr 1fr; }
+.split .prose { margin-top: 20px; }
+.cards-2 { grid-template-columns: repeat(2, 1fr); }
+.cta-center { justify-content: center; margin-top: 40px; }
+.two-up { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 56px; }
+.two-up blockquote { font-size: clamp(1.15rem, 2vw, 1.4rem); }
+.note { font-size: .95rem; color: var(--ink-soft); border-left: 3px solid var(--pink); padding-left: 14px; margin-top: 24px; }
+
+/* Request portal */
+.portal .form { border: 1px solid var(--pink-line); box-shadow: 0 1px 0 var(--pink-line); }
+.form fieldset { border: 0; padding: 0; margin: 0 0 8px; display: grid; gap: 8px; }
+.form legend { font-family: var(--font-head); font-weight: 600; font-size: 1.25rem; padding: 0; margin-bottom: 10px; }
+.choice { display: flex; align-items: center; gap: 12px; margin: 0; padding: 12px 14px; border: 1.5px solid #b9bdc9; border-radius: 10px; cursor: pointer; font-weight: 600; }
+.choice input { width: 20px; height: 20px; accent-color: var(--pink-ink); flex: none; margin: 0; }
+.choice:has(input:checked) { border-color: var(--pink-ink); background: var(--pink-tint); }
+.choice:has(input:focus-visible) { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+/* Doctor referral strip */
+.referral { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; margin-top: 56px; padding: 28px; border: 1px solid var(--pink-line); border-radius: var(--radius); background: var(--pink-tint); }
+.referral p { margin: 6px 0 0; color: var(--ink-soft); max-width: 40rem; }
+
+@media (max-width: 900px) {
+  .split, .split-rev, .two-up { grid-template-columns: 1fr; gap: 32px; }
+  .photo.missing, .photo img { aspect-ratio: 4 / 3; }
+  .photo-wide img, .photo-wide.missing { aspect-ratio: 16 / 9; }
+}
+@media (max-width: 560px) {
+  .cards-2 { grid-template-columns: 1fr; }
+  .referral { padding: 22px 18px; }
+  .referral .btn { width: 100%; }
 }
