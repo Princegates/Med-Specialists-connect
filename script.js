@@ -39,12 +39,60 @@
   }
   themeBtn.addEventListener('click', function () {
     var next = isDark() ? 'light' : 'dark';
+    if (!reduceMotion) {
+      root.classList.add('theme-anim'); themeBtn.classList.add('spin');
+      setTimeout(function () { root.classList.remove('theme-anim'); themeBtn.classList.remove('spin'); }, 550);
+    }
     root.setAttribute('data-theme', next);
     try { localStorage.setItem('theme', next); } catch (e) {}
     syncTheme();
   });
   if (mq && mq.addEventListener) mq.addEventListener('change', syncTheme);
   syncTheme();
+
+  var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  // Header shadow once the page has scrolled
+  var header = document.querySelector('.site-header');
+  var ticking = false;
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      header.classList.toggle('scrolled', window.scrollY > 8);
+      ticking = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // Reveal sections as they scroll into view. Skipped entirely for reduced motion
+  // or old browsers, so content is never left hidden.
+  if (!reduceMotion && 'IntersectionObserver' in window) {
+    var targets = document.querySelectorAll(
+      '.section-head, .cards > li, .steps > li, .referral, .split > *, .two-up > *, .two-col > *, .photo-wide'
+    );
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var el = entry.target;
+        io.unobserve(el);
+        el.classList.add('in');
+        function done() { el.classList.remove('reveal', 'in'); el.style.removeProperty('--d'); }
+        el.addEventListener('transitionend', function te(e) {
+          if (e.propertyName === 'transform') { el.removeEventListener('transitionend', te); done(); }
+        });
+        setTimeout(done, 1800); // fallback so hover effects are never blocked
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+
+    targets.forEach(function (el) {
+      var siblings = el.parentElement ? Array.prototype.indexOf.call(el.parentElement.children, el) : 0;
+      el.style.setProperty('--d', (Math.min(siblings, 5) * 0.08).toFixed(2) + 's');
+      el.classList.add('reveal');
+      io.observe(el);
+    });
+  }
 
   var year = document.getElementById('year');
   if (year) year.textContent = new Date().getFullYear();

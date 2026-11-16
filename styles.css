@@ -287,3 +287,70 @@ blockquote { margin: 0; font-family: var(--font-head); font-weight: 600; font-si
 
 /* Service dropdown */
 .form select { appearance: auto; min-height: 48px; cursor: pointer; }
+
+/* ---------- Motion ----------
+   Only transform and opacity animate. All of it is off for visitors who ask for reduced motion. */
+:root { --ease: cubic-bezier(.2, .7, .2, 1); }
+
+.site-header { transition: box-shadow .25s; }
+.site-header.scrolled { box-shadow: 0 6px 18px -12px rgba(0, 0, 0, .45); }
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes pop { from { opacity: 0; transform: translateY(12px) scale(.97); } to { opacity: 1; transform: none; } }
+  @keyframes ring { 0% { transform: scale(1); opacity: .55; } 70%, 100% { transform: scale(1.4); opacity: 0; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Hero entrance on page load */
+  .hero-grid > div > * { animation: rise .7s var(--ease) both; }
+  .hero-grid > div > :nth-child(2) { animation-delay: .08s; }
+  .hero-grid > div > :nth-child(3) { animation-delay: .16s; }
+  .hero-grid > div > :nth-child(4) { animation-delay: .24s; }
+  .photo-hero { animation: pop .9s var(--ease) .15s both; }
+
+  /* Reveal on scroll (script.js adds .reveal, then .in when visible, then removes both) */
+  .js .reveal { opacity: 0; transform: translateY(22px); }
+  .js .reveal.in { opacity: 1; transform: none; transition: opacity .6s var(--ease) var(--d, 0s), transform .6s var(--ease) var(--d, 0s); }
+
+  /* Buttons */
+  .btn { transition: background-color .15s, border-color .15s, color .15s, transform .2s var(--ease), box-shadow .2s var(--ease); }
+  .btn:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 8px 16px -8px rgba(200, 0, 63, .6); }
+  .btn:active:not([disabled]) { transform: translateY(0); box-shadow: none; }
+  .btn-wa:hover:not([disabled]) { box-shadow: 0 8px 16px -8px rgba(11, 95, 53, .7); }
+
+  /* Cards */
+  .card { transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s; }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 14px 28px -14px rgba(0, 0, 0, .35); border-color: var(--pink); }
+  .card-photo img { transition: transform .7s var(--ease); }
+  .card-photo:hover img { transform: scale(1.05); }
+  .ico { transition: transform .3s var(--ease); }
+  .card:hover .ico { transform: scale(1.12) rotate(-4deg); }
+
+  /* Photos */
+  .photo img { transition: transform .8s var(--ease); }
+  .photo:hover img { transform: scale(1.03); }
+
+  /* Nav underline slides in (desktop) */
+  @media (min-width: 761px) {
+    .nav a:not(.btn) { background: linear-gradient(var(--pink), var(--pink)) 0 100% / 0 2px no-repeat; transition: background-size .25s var(--ease); }
+    .nav a:not(.btn):hover { background-size: 100% 2px; border-color: transparent; }
+  }
+
+  /* Form */
+  .form input, .form textarea, .form select { transition: border-color .15s, box-shadow .15s; }
+  .form-status:not(:empty) { animation: rise .35s var(--ease); }
+
+  /* Theme toggle */
+  .theme-toggle svg { transition: transform .3s var(--ease); }
+  .theme-toggle:hover svg { transform: rotate(18deg); }
+  .theme-toggle.spin svg { animation: spin .5s var(--ease); }
+
+  /* WhatsApp button: a soft ring, three times, then it settles */
+  .wa-fab::after { content: ""; position: absolute; inset: 0; border-radius: inherit; border: 2px solid var(--wa); pointer-events: none; animation: ring 2.4s ease-out 2s 3 both; }
+  .wa-fab { transition: background-color .15s, transform .2s var(--ease); }
+  .wa-fab:hover { transform: translateY(-2px); }
+  .wa-fab:hover::after { animation: none; }
+
+  /* Day/night switch fades colours instead of snapping */
+  .theme-anim, .theme-anim *, .theme-anim *::before, .theme-anim *::after { transition: background-color .35s ease, color .35s ease, border-color .35s ease !important; }
+}
