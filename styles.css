@@ -107,7 +107,7 @@ p { margin: 0 0 1em; }
 
 /* Hero */
 .hero { background: var(--pink-tint); border-bottom: 1px solid var(--pink-line); }
-.hero-grid { display: grid; grid-template-columns: 1.3fr .7fr; gap: 48px; align-items: center; padding: 88px 0 96px; }
+.hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; padding: 88px 0 96px; }
 .eyebrow { font-family: var(--font-head); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: .85rem; color: var(--accent); margin-bottom: 14px; }
 .lead { font-size: 1.2rem; color: var(--ink-soft); max-width: 36em; margin: 22px 0 32px; }
 .cta-row { display: flex; flex-wrap: wrap; gap: 14px; }
@@ -194,7 +194,7 @@ blockquote { margin: 0; font-family: var(--font-head); font-weight: 600; font-si
 /* Photos (African patients and professionals). Missing files show a labelled slot. */
 .photo { margin: 0; border-radius: var(--radius); overflow: hidden; background: var(--pink-tint); border: 1px solid var(--pink-line); position: relative; }
 .photo img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 9 / 8; }
-.photo-hero img { aspect-ratio: 9 / 8; }
+.photo-hero img { aspect-ratio: 4 / 3; object-position: 62% 40%; }
 .photo-wide { margin-top: 48px; }
 .photo-wide img { aspect-ratio: 7 / 3; }
 .ph-note { display: none; }
@@ -262,3 +262,11 @@ blockquote { margin: 0; font-family: var(--font-head); font-weight: 600; font-si
 .ic-sun { display: none; }
 .ic-moon { display: block; }
 @media (max-width: 760px) { .bar-right { gap: 8px; } }
+
+/* Photo cards (patient services) */
+.card-photo { padding: 0; overflow: hidden; }
+/* The source images carry a text label along the bottom; a 2:1 crop from the top hides it. */
+.card-photo img { width: 100%; height: auto; aspect-ratio: 2 / 1; object-fit: cover; object-position: top; }
+.card-photo .card-body { padding: 20px 26px 26px; }
+.card-photo .card-body p { margin: 10px 0 0; }
+.cards-follow { margin-top: 20px; }
