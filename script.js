@@ -60,7 +60,7 @@
   // Forms. When FORM_ACCESS_KEY is set, requests are sent to the team's inbox through
   // Web3Forms (https://web3forms.com, free key tied to your email). While it is empty,
   // the forms fall back to opening the visitor's email app with the message filled in.
-  var FORM_ACCESS_KEY = '';
+  var FORM_ACCESS_KEY = '11912d53-78d8-40a3-8eda-9004e9c63938';
   var TEAM_EMAIL = 'medspecialistsconnect@gmail.com';
   var WHATSAPP_URL = 'https://wa.me/233243560080';
 
