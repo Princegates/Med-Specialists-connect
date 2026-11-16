@@ -70,7 +70,7 @@
   // or old browsers, so content is never left hidden.
   if (!reduceMotion && 'IntersectionObserver' in window) {
     var targets = document.querySelectorAll(
-      '.section-head, .cards > li, .steps > li, .referral, .split > *, .two-up > *, .two-col > *, .photo-wide'
+      '.section-head, .cards > li, .steps > li, .faq > *, .split > *, .two-up > *, .two-col > *, .photo-wide'
     );
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -106,34 +106,50 @@
   });
 
   // Forms. When FORM_ACCESS_KEY is set, requests are sent to the team's inbox through
-  // Web3Forms (https://web3forms.com, free key tied to your email). While it is empty,
+  // Web3Forms (https://web3forms.com, free key tied to your email). With no key,
   // the forms fall back to opening the visitor's email app with the message filled in.
   var FORM_ACCESS_KEY = '11912d53-78d8-40a3-8eda-9004e9c63938';
   var TEAM_EMAIL = 'medspecialistsconnect@gmail.com';
   var WHATSAPP_URL = 'https://wa.me/233243560080';
 
-  function mailtoFallback(form, f) {
-    var lines = [];
-    if (f.get('service')) lines.push('Service needed: ' + f.get('service'));
-    lines.push('Name: ' + f.get('name'));
-    if (f.get('organisation')) lines.push('Organisation: ' + f.get('organisation'));
-    lines.push('Phone: ' + f.get('phone'));
-    lines.push('', f.get('message') || '');
-    var subject = form.dataset.subject + (f.get('service') ? ': ' + f.get('service') : '') + ' from ' + f.get('name');
+  // Reads the labelled fields of a form as [label, value, name] rows, so emails
+  // show readable questions and answers.
+  function collect(form) {
+    var rows = [];
+    Array.prototype.forEach.call(form.elements, function (el) {
+      if (!el.name || el.name === 'botcheck' || el.disabled || el.tagName === 'BUTTON') return;
+      if (el.type === 'checkbox') {
+        if (el.checked && el.name === 'consent') rows.push(['Consent', 'Agreed to the privacy notice', 'consent']);
+        return;
+      }
+      if (el.value === '') return;
+      var label = el.name;
+      if (el.name === 'name') label = 'name';
+      else if (el.id) {
+        var l = form.querySelector('label[for="' + el.id + '"]');
+        if (l) {
+          var copy = l.cloneNode(true), opt = copy.querySelector('.opt');
+          if (opt) opt.remove();
+          label = copy.textContent.replace(/\s+/g, ' ').replace(/\?$/, '').trim();
+        }
+      }
+      rows.push([label, el.value, el.name]);
+    });
+    return rows;
+  }
+
+  function mailtoFallback(subject, rows) {
+    var body = rows.map(function (r) { return r[0] + ': ' + r[1]; }).join('\n');
     window.location.href = 'mailto:' + TEAM_EMAIL +
-      '?subject=' + encodeURIComponent(subject) +
-      '&body=' + encodeURIComponent(lines.join('\n'));
+      '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
   }
 
   document.querySelectorAll('form[data-subject]').forEach(function (form) {
     var status = form.querySelector('.form-status');
     var button = form.querySelector('button[type="submit"]');
     var hint = form.querySelector('.hint');
-    if (FORM_ACCESS_KEY && hint) {
-      hint.textContent = form.id === 'request-form'
-        ? 'Your request goes straight to our team and we will call you back. You can also call us on 0243 560 080.'
-        : 'Your message goes straight to our team and we will get back to you.';
-    }
+    var success = form.dataset.success || 'Thank you. We have your message and will be in touch soon.';
+    if (FORM_ACCESS_KEY && hint && form.dataset.hint) hint.textContent = form.dataset.hint;
 
     function say(text, kind, html) {
       status.className = 'form-status ' + kind;
@@ -142,26 +158,23 @@
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      var f = new FormData(form);
-      if (!FORM_ACCESS_KEY) { mailtoFallback(form, f); return; }
+      var rows = collect(form);
+      function get(n) { var r = rows.filter(function (x) { return x[2] === n; })[0]; return r ? r[1] : ''; }
+      var urgent = /^Urgent/.test(get('urgency'));
+      var topic = get('service') || get('specialty');
+      var subject = (urgent ? '[URGENT] ' : '') + form.dataset.subject + (topic ? ': ' + topic : '') + ' from ' + get('name');
+
+      if (!FORM_ACCESS_KEY) { mailtoFallback(subject, rows); return; }
 
       // Spam trap: real visitors never tick the hidden box.
-      if (f.get('botcheck')) { say('Thank you. We have your request and will call you back soon.', 'ok'); form.reset(); return; }
+      if (new FormData(form).get('botcheck')) { say(success, 'ok'); form.reset(); return; }
 
       var label = button.textContent;
       button.disabled = true; button.textContent = 'Sending…';
       say('', '');
 
-      var payload = {
-        access_key: FORM_ACCESS_KEY,
-        subject: form.dataset.subject + (f.get('service') ? ': ' + f.get('service') : '') + ' from ' + f.get('name'),
-        from_name: 'MEDs Specialists Connect website',
-        name: f.get('name'),
-        phone: f.get('phone'),
-        service: f.get('service') || '',
-        organisation: f.get('organisation') || '',
-        message: f.get('message') || ''
-      };
+      var payload = { access_key: FORM_ACCESS_KEY, subject: subject, from_name: 'MEDs Specialists Connect website' };
+      rows.forEach(function (r) { payload[r[0]] = r[1]; });
 
       fetch('https://api.web3forms.com/submit', {
         method: 'POST',
@@ -169,7 +182,7 @@
         body: JSON.stringify(payload)
       }).then(function (r) { return r.json(); }).then(function (data) {
         if (!data.success) throw new Error(data.message || 'failed');
-        say('Thank you. We have your ' + (form.id === 'request-form' ? 'request' : 'message') + ' and will call you back soon.', 'ok');
+        say(success, 'ok');
         form.reset();
       }).catch(function () {
         say('We could not send that just now, and your details are still here. Please try again, or reach us on ' +

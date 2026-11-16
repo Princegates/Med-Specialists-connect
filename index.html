@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MEDs Specialists Connect | Healthcare Concierge &amp; Medical Services Management</title>
-  <meta name="description" content="Tell us what you need and we connect you to the right specialist, coordinate your care and handle the hassle. We also partner with clinics and hospitals to run specialized medical units. An ease to a quality healthcare.">
+  <title>MEDs Specialists Connect | Healthcare Concierge</title>
+  <meta name="description" content="Tell us what you need. We connect you to the right specialist, arrange the appointment and coordinate your care. We also run specialized medical units.">
   <meta name="theme-color" content="#fe0054">
   <link rel="icon" type="image/png" href="assets/logo-icon.png">
   <link rel="canonical" href="https://www.medspecialistconnect.com/">
@@ -21,10 +21,10 @@
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"MedicalBusiness","name":"MEDs Specialists Connect","url":"https://www.medspecialistconnect.com/","logo":"https://www.medspecialistconnect.com/assets/logo-icon.png","image":"https://www.medspecialistconnect.com/assets/og-image.png","slogan":"An ease to a quality Healthcare","telephone":["+233243560080","+233556924777"],"email":"medspecialistsconnect@gmail.com","address":{"@type":"PostalAddress","streetAddress":"6 Worship Curve, Spintex Road"}}
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="preload" href="assets/fonts/josefin-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/nunito-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/photos/hero-nurse-patient.webp" as="image" fetchpriority="high">
+  <link rel="stylesheet" href="styles.css?v=4">
   <script>
     /* Apply a saved theme before first paint so there is no flash */
     document.documentElement.classList.add('js');
@@ -37,7 +37,7 @@
 
   <header class="site-header">
     <div class="wrap bar">
-      <a class="brand" href="#top" aria-label="MEDs Specialists Connect, home">
+      <a class="brand" href="#top">
         <img src="assets/logo-icon.png" alt="" width="44" height="44">
         <span class="brand-text">
           <span class="brand-name">MEDs Specialists Connect</span>
@@ -47,9 +47,9 @@
       <div class="bar-right">
         <nav id="nav" class="nav" aria-label="Main">
           <a href="#patients">For patients</a>
+          <a href="#refer">For doctors</a>
           <a href="#institutions">For hospitals</a>
           <a href="#dialysis">Dialysis</a>
-          <a href="#how">How it works</a>
           <a href="#about">About</a>
           <a class="btn btn-small" href="#request">Request care</a>
         </nav>
@@ -79,7 +79,7 @@
           </div>
         </div>
         <figure class="photo photo-hero">
-          <img src="assets/photos/hero-nurse-patient.webp" alt="An African nurse in blue scrubs smiling as she explains something on a tablet to an older African woman in a patterned headwrap, with a family member beside her" width="1400" height="788" loading="eager">
+          <img src="assets/photos/hero-nurse-patient.webp" alt="An African nurse in blue scrubs smiling as she explains something on a tablet to an older African woman in a patterned headwrap, with a family member beside her" width="1400" height="788" loading="eager" fetchpriority="high">
         </figure>
       </div>
     </section>
@@ -93,7 +93,7 @@
           <p class="sub">Choose what you need and tell us a little more. Our team will call you back to take it from there. No hospital queues, no running around.</p>
           <p class="note">For a medical emergency, call your nearest emergency service or go straight to the nearest hospital.</p>
         </div>
-        <form class="form" id="request-form" data-subject="Care request" action="mailto:medspecialistsconnect@gmail.com" method="post">
+        <form class="form" id="request-form" data-subject="Care request" data-hint="Your request goes straight to our team and we will call you back. You can also call us on 0243 560 080." data-success="Thank you. We have your request and will call you back soon." action="mailto:medspecialistsconnect@gmail.com" method="post">
           <label for="r-service">What do you need?</label>
           <select id="r-service" name="service" required>
             <option value="" selected disabled>Choose a service</option>
@@ -105,17 +105,55 @@
             <option value="Dialysis services">Dialysis services</option>
             <option value="Medical advice on where to go">Advice on where to go</option>
           </select>
+          <div class="row-2">
+            <div>
+              <label for="r-for">Who is this for?</label>
+              <select id="r-for" name="for_whom">
+                <option>Myself</option>
+                <option>A family member or someone I care for</option>
+              </select>
+            </div>
+            <div>
+              <label for="r-urgency">How urgent is it?</label>
+              <select id="r-urgency" name="urgency">
+                <option>Routine</option>
+                <option>Soon (a few days)</option>
+                <option>Urgent (ASAP)</option>
+              </select>
+            </div>
+          </div>
           <label for="r-msg">Tell us more</label>
           <textarea id="r-msg" name="message" rows="3" placeholder="For example: the specialist you want to see, or the condition"></textarea>
-          <label for="r-name">Your name</label>
-          <input id="r-name" name="name" type="text" autocomplete="name" required>
-          <label for="r-phone">Phone number</label>
-          <input id="r-phone" name="phone" type="tel" autocomplete="tel" required>
+          <div class="row-2">
+            <div>
+              <label for="r-name">Your name</label>
+              <input id="r-name" name="name" type="text" autocomplete="name" required>
+            </div>
+            <div>
+              <label for="r-phone">Phone number</label>
+              <input id="r-phone" name="phone" type="tel" autocomplete="tel" required>
+            </div>
+          </div>
+          <div class="row-2">
+            <div>
+              <label for="r-time">Best time to call</label>
+              <select id="r-time" name="call_time">
+                <option>Any time</option>
+                <option>Morning</option>
+                <option>Afternoon</option>
+                <option>Evening</option>
+              </select>
+            </div>
+            <div>
+              <label for="r-area">Area or city <span class="opt">(optional)</span></label>
+              <input id="r-area" name="area" type="text" autocomplete="address-level2">
+            </div>
+          </div>
           <input class="hp" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <label class="consent"><input type="checkbox" name="consent" required><span>I agree that MEDs Specialists Connect may contact me about this request and use the details I have given, as described in the <a href="privacy.html" target="_blank" rel="noopener">privacy notice<span class="sr"> (opens in a new tab)</span></a>.</span></label>
           <button class="btn" type="submit">Send request</button>
           <p class="form-status" role="status" aria-live="polite"></p>
           <p class="hint">This opens your email app with the request ready to send. You can also call us on 0243 560 080.</p>
-        
           <a class="btn btn-wa" href="https://wa.me/233243560080?text=Hello%20MEDs%20Specialists%20Connect%2C%20I%20would%20like%20some%20help%20with%20healthcare." target="_blank" rel="noopener"><svg class="wa-ico" aria-hidden="true"><use href="#wa"/></svg>Or chat with us on WhatsApp<span class="sr"> (opens in a new tab)</span></a>
         </form>
       </div>
@@ -186,18 +224,53 @@
           <li><span class="num">Step 4</span><h3>We follow through</h3><p>Insurance, diagnostics and logistics are coordinated so your care stays on track.</p></li>
         </ol>
 
-        <div class="referral">
-          <div>
-            <h3>Are you a doctor or specialist?</h3>
-            <p>Refer your patient to us. We will take over the scheduling and coordination and find the right private specialist or service for them.</p>
-          </div>
-          <a class="btn btn-ghost" href="#contact">Refer a patient</a>
+      </div>
+    </section>
+
+    <!-- DOCTOR REFERRALS -->
+    <section class="section tint" id="refer">
+      <div class="wrap two-col">
+        <div>
+          <p class="eyebrow">For doctors and specialists</p>
+          <h2>Refer a patient to us.</h2>
+          <p class="sub">Send us the referral and we take over the scheduling and coordination, and help find an appropriate private specialist or service for your patient.</p>
+          <p class="note">Please do not put patient names, records or other identifying details in this form. We will collect what we need directly from the patient by phone.</p>
         </div>
+        <form class="form" id="referral-form" data-subject="Doctor referral" data-hint="Your referral goes straight to our team and we will contact you." data-success="Thank you. We have your referral and will be in touch soon." action="mailto:medspecialistsconnect@gmail.com" method="post">
+          <h3>Referral details</h3>
+          <div class="row-2">
+            <div>
+              <label for="f-name">Your name</label>
+              <input id="f-name" name="name" type="text" autocomplete="name" required>
+            </div>
+            <div>
+              <label for="f-phone">Your phone number</label>
+              <input id="f-phone" name="phone" type="tel" autocomplete="tel" required>
+            </div>
+          </div>
+          <label for="f-org">Practice or facility <span class="opt">(optional)</span></label>
+          <input id="f-org" name="organisation" type="text" autocomplete="organization">
+          <label for="f-spec">Specialty or service needed</label>
+          <input id="f-spec" name="specialty" type="text" placeholder="For example: cardiology, or dialysis" required>
+          <label for="f-urgency">How urgent is it?</label>
+          <select id="f-urgency" name="urgency">
+            <option>Routine</option>
+            <option>Soon (a few days)</option>
+            <option>Urgent (ASAP)</option>
+          </select>
+          <label for="f-msg">Brief note <span class="opt">(optional)</span></label>
+          <textarea id="f-msg" name="message" rows="3"></textarea>
+          <input class="hp" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <label class="consent"><input type="checkbox" name="consent" required><span>I confirm that the patient knows about this referral and agrees to be contacted, and I agree to the <a href="privacy.html" target="_blank" rel="noopener">privacy notice<span class="sr"> (opens in a new tab)</span></a>.</span></label>
+          <button class="btn" type="submit">Send referral</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
+          <p class="hint">This opens your email app with the referral ready to send.</p>
+        </form>
       </div>
     </section>
 
     <!-- INSTITUTIONS -->
-    <section class="section tint" id="institutions">
+    <section class="section" id="institutions">
       <div class="wrap">
         <div class="section-head">
           <p class="eyebrow">For hospitals, clinics and healthcare institutions</p>
@@ -241,7 +314,7 @@
     </section>
 
     <!-- DIALYSIS CASE STUDY -->
-    <section class="section" id="dialysis">
+    <section class="section tint" id="dialysis">
       <div class="wrap split split-rev">
         <div>
           <p class="eyebrow">Our partnership at ADMed Specialist Clinic</p>
@@ -260,7 +333,7 @@
     </section>
 
     <!-- ABOUT -->
-    <section class="section tint" id="about">
+    <section class="section" id="about">
       <div class="wrap">
         <div class="two-col">
           <div>
@@ -288,6 +361,50 @@
       </div>
     </section>
 
+    <!-- FAQ -->
+    <section class="section tint" id="faq">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Questions</p>
+          <h2>Frequently asked questions.</h2>
+        </div>
+        <div class="faq">
+          <details>
+            <summary>Do I need a referral from a doctor?</summary>
+            <div class="faq-body"><p>No. You can tell us what you need, or which specialist you want to see. If a doctor has already referred you, tell us and we will work from that.</p></div>
+          </details>
+          <details>
+            <summary>What happens after I send a request?</summary>
+            <div class="faq-body"><p>Our team calls you back to understand what you need. We then find an appropriate specialist or service and arrange the next steps, at a clinic or at home where possible.</p></div>
+          </details>
+          <details>
+            <summary>What should I do in an emergency?</summary>
+            <div class="faq-body"><p>Call your nearest emergency service or go straight to the nearest hospital. Please do not use the request form or WhatsApp for emergencies.</p></div>
+          </details>
+          <details>
+            <summary>Who provides my medical care?</summary>
+            <div class="faq-body"><p>The specialists, clinics and other providers we connect you with are responsible for the care they give. MEDs Specialists Connect coordinates your care and manages the operations around it. Read our <a href="disclaimer.html">medical disclaimer</a>.</p></div>
+          </details>
+          <details>
+            <summary>Are you an insurance company?</summary>
+            <div class="faq-body"><p>No. We help with insurance coordination and claims follow-up, but we are not an insurer and cannot promise that a claim will be approved or paid.</p></div>
+          </details>
+          <details>
+            <summary>Is my information kept private?</summary>
+            <div class="faq-body"><p>We use your details only to deal with your request, and we do not sell them. Please read the <a href="privacy.html">privacy notice</a> for the full picture.</p></div>
+          </details>
+          <details>
+            <summary>I am a hospital or clinic. How do we work with you?</summary>
+            <div class="faq-body"><p>We partner with specialist clinics and healthcare facilities to establish, manage and operate specialized medical units. <a href="#contact">Get in touch</a> and tell us what you have in mind.</p></div>
+          </details>
+          <details>
+            <summary>Where are you based?</summary>
+            <div class="faq-body"><p>6 Worship Curve, Spintex Road. <a href="https://www.google.com/maps/search/?api=1&amp;query=6+Worship+Curve+Spintex+Road+Accra+Ghana" target="_blank" rel="noopener">Open in maps<span class="sr"> (opens in a new tab)</span></a>.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
     <!-- CONTACT -->
     <section class="section contact" id="contact">
       <div class="wrap two-col">
@@ -310,12 +427,12 @@
             </li>
             <li>
               <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.500" fill="currentColor"/></svg>
-              <span>6 Worship Curve, Spintex Road</span>
+              <a href="https://www.google.com/maps/search/?api=1&amp;query=6+Worship+Curve+Spintex+Road+Accra+Ghana" target="_blank" rel="noopener">6 Worship Curve, Spintex Road<span class="sr"> (opens map in a new tab)</span></a>
             </li>
           </ul>
         </div>
 
-        <form class="form" id="contact-form" data-subject="Website enquiry" action="mailto:medspecialistsconnect@gmail.com" method="post">
+        <form class="form" id="contact-form" data-subject="Website enquiry" data-hint="Your message goes straight to our team and we will get back to you." data-success="Thank you. We have your message and will get back to you soon." action="mailto:medspecialistsconnect@gmail.com" method="post">
           <h3>Send a message</h3>
           <label for="name">Your name</label>
           <input id="name" name="name" type="text" autocomplete="name" required>
@@ -326,6 +443,7 @@
           <label for="msg">How can we help?</label>
           <textarea id="msg" name="message" rows="4" required></textarea>
           <input class="hp" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <label class="consent"><input type="checkbox" name="consent" required><span>I agree that MEDs Specialists Connect may contact me about this message and use the details I have given, as described in the <a href="privacy.html" target="_blank" rel="noopener">privacy notice<span class="sr"> (opens in a new tab)</span></a>.</span></label>
           <button class="btn" type="submit">Send message</button>
           <p class="form-status" role="status" aria-live="polite"></p>
           <p class="hint">This opens your email app with the message ready to send.</p>
@@ -335,7 +453,7 @@
   </main>
 
   <footer class="site-footer">
-    <div class="wrap foot">
+    <div class="wrap foot-grid">
       <div class="foot-brand">
         <img src="assets/logo-icon.png" alt="" width="40" height="40">
         <div>
@@ -343,15 +461,45 @@
           <span>An ease to a quality Healthcare</span>
         </div>
       </div>
+      <nav class="foot-col" aria-label="Footer">
+        <h2>Explore</h2>
+        <ul>
+          <li><a href="#request">Request care</a></li>
+          <li><a href="#patients">For patients</a></li>
+          <li><a href="#refer">For doctors</a></li>
+          <li><a href="#institutions">For hospitals</a></li>
+          <li><a href="#faq">Questions</a></li>
+        </ul>
+      </nav>
+      <div class="foot-col">
+        <h2>Contact</h2>
+        <ul>
+          <li><a href="tel:+233243560080">0243 560 080</a></li>
+          <li><a href="tel:+233556924777">0556 924 777</a></li>
+          <li><a href="mailto:medspecialistsconnect@gmail.com">medspecialistsconnect@gmail.com</a></li>
+          <li><a href="https://www.google.com/maps/search/?api=1&amp;query=6+Worship+Curve+Spintex+Road+Accra+Ghana" target="_blank" rel="noopener">6 Worship Curve, Spintex Road<span class="sr"> (opens map in a new tab)</span></a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h2>Legal</h2>
+        <ul>
+          <li><a href="privacy.html">Privacy notice</a></li>
+          <li><a href="disclaimer.html">Medical disclaimer and terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="wrap foot-base">
       <p>&copy; <span id="year">2026</span> MEDs Specialists Connect. All rights reserved.</p>
     </div>
   </footer>
 
-  <a class="wa-fab" href="https://wa.me/233243560080?text=Hello%20MEDs%20Specialists%20Connect%2C%20I%20would%20like%20some%20help%20with%20healthcare." target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp (opens in a new tab)">
-    <svg class="wa-ico" aria-hidden="true"><use href="#wa"/></svg>
-    <span class="wa-label">Chat on WhatsApp</span>
-  </a>
+  <aside aria-label="Chat with us">
+    <a class="wa-fab" href="https://wa.me/233243560080?text=Hello%20MEDs%20Specialists%20Connect%2C%20I%20would%20like%20some%20help%20with%20healthcare." target="_blank" rel="noopener">
+      <svg class="wa-ico" aria-hidden="true"><use href="#wa"/></svg>
+      <span class="wa-label">Chat on WhatsApp</span><span class="sr"> (opens in a new tab)</span>
+    </a>
+  </aside>
 
-  <script src="script.js?v=3"></script>
+  <script src="script.js?v=4"></script>
 </body>
 </html>
