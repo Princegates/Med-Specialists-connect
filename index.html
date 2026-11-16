@@ -98,7 +98,9 @@
           <input id="r-name" name="name" type="text" autocomplete="name" required>
           <label for="r-phone">Phone number</label>
           <input id="r-phone" name="phone" type="tel" autocomplete="tel" required>
+          <input class="hp" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
           <button class="btn" type="submit">Send request</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
           <p class="hint">This opens your email app with the request ready to send. You can also call us on 0243 560 080.</p>
         
           <a class="btn btn-wa" href="https://wa.me/233243560080?text=Hello%20MEDs%20Specialists%20Connect%2C%20I%20would%20like%20some%20help%20with%20healthcare." target="_blank" rel="noopener"><svg class="wa-ico" aria-hidden="true"><use href="#wa"/></svg>Or chat with us on WhatsApp<span class="sr"> (opens in a new tab)</span></a>
@@ -310,7 +312,9 @@
           <input id="phone" name="phone" type="tel" autocomplete="tel" required>
           <label for="msg">How can we help?</label>
           <textarea id="msg" name="message" rows="4" required></textarea>
+          <input class="hp" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
           <button class="btn" type="submit">Send message</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
           <p class="hint">This opens your email app with the message ready to send.</p>
         </form>
       </div>
