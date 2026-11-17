@@ -2,10 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>MEDs Specialists Connect | Healthcare Concierge</title>
   <meta name="description" content="Tell us what you need. We connect you to the right specialist, arrange the appointment and coordinate your care. We also run specialized medical units.">
-  <meta name="theme-color" content="#fe0054">
+  <meta name="theme-color" content="#f7f8fb" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f1117" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="MEDs Connect">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="icon" type="image/png" href="assets/logo-icon.png">
   <link rel="canonical" href="https://www.medspecialistconnect.com/">
   <meta property="og:type" content="website">
@@ -24,16 +31,36 @@
   <link rel="preload" href="assets/fonts/josefin-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/nunito-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/photos/hero-nurse-patient.webp" as="image" fetchpriority="high">
-  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="stylesheet" href="site.css?v=8">
   <script>
     /* Apply a saved theme before first paint so there is no flash */
     document.documentElement.classList.add('js');
-    try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    try {
+      var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      var prefs = JSON.parse(localStorage.getItem('prefs') || '{}'), root = document.documentElement;
+      ['size', 'contrast', 'motion', 'font'].forEach(function (k) { if (prefs[k]) root.setAttribute('data-' + k, prefs[k]); });
+    } catch (e) {}
   </script>
 </head>
-<body>
+<body class="site">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="wa" viewBox="0 0 24 24"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></symbol></svg>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-spec" viewBox="0 0 24 24"><path d="M5 3v6a4 4 0 0 0 8 0V3M3 3h4M11 3h4M9 13v1.500a5.500 5.500 0 0 0 11 0V13" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="11" r="2" fill="none" stroke="currentColor" stroke-width="1.800"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V11z" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-lab" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 10a2 2 0 0 0 1.800 3h10.400A2 2 0 0 0 19 19l-5-10V3M7.500 15h9" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-amb" viewBox="0 0 24 24"><path d="M1 6h13v10H1zM14 9h4l3 3v4h-7M7.500 9v5M5 11.500h5" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5.500" cy="18" r="1.800" fill="none" stroke="currentColor" stroke-width="1.800"/><circle cx="17.500" cy="18" r="1.800" fill="none" stroke="currentColor" stroke-width="1.800"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.600 7.100L3 21l1.900-5.400A8 8 0 1 1 21 12zM9.500 9.500a2.500 2.500 0 1 1 3.500 2.300c-.7.400-1 .9-1 1.700M12 16.500h.01" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-text" viewBox="0 0 24 24"><path d="M3 19 8.500 5 14 19M5 14h7M15 19l3-8 3 8M16 17h4" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.900v3a2 2 0 0 1-2.200 2 19.800 19.800 0 0 1-8.600-3.100 19.500 19.500 0 0 1-6-6A19.800 19.800 0 0 1 2.100 4.200 2 2 0 0 1 4.100 2h3a2 2 0 0 1 2 1.700c.1 1 .4 1.900.7 2.800a2 2 0 0 1-.5 2.100L8.100 9.900a16 16 0 0 0 6 6l1.300-1.300a2 2 0 0 1 2.100-.4c.9.300 1.800.6 2.800.7a2 2 0 0 1 1.700 2z" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4V5zM15.500 8.500a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.500 4.500 4.500L19 7.500" fill="none" stroke="currentColor" stroke-width="2.400" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
   <a class="skip" href="#main">Skip to content</a>
+  <div class="strip" role="region" aria-label="Emergency notice"><p><strong>In an emergency, call <a href="tel:112">112</a> now.</strong> We help arrange care. We are not an emergency service.</p></div>
 
   <header class="site-header">
     <div class="wrap bar">
@@ -53,6 +80,7 @@
           <a href="#about">About</a>
           <a class="btn btn-small" href="#request">Request care</a>
         </nav>
+        <button class="theme-toggle opts-btn" type="button" id="opts-btn" aria-haspopup="dialog" aria-controls="opts" aria-label="Display and reading options" title="Display and reading options"><svg aria-hidden="true"><use href="#i-text"/></svg></button>
         <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Switch to night mode" title="Switch to night mode">
           <svg class="ic-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.500A8.500 8.500 0 0 1 9.500 4 8.500 8.500 0 1 0 20 14.500z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
           <svg class="ic-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.900 4.900l2.100 2.100M17 17l2.100 2.100M4.900 19.100L7 17M17 7l2.100-2.100" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -67,102 +95,147 @@
 
   <main id="main">
     <!-- HERO -->
-    <section class="hero" id="top">
+    <section class="hero" id="top" aria-labelledby="hero-title">
       <div class="wrap hero-grid">
-        <div>
-          <p class="eyebrow">Your personal healthcare connection</p>
-          <h1>Healthcare made easier. Care made accessible.</h1>
-          <p class="lead">Tell us what you need. We connect you to the right specialist, arrange the appointment and coordinate your care, so you skip the hospital hassle and focus on getting well.</p>
-          <div class="cta-row">
-            <a class="btn" href="#request">Request healthcare assistance</a>
-            <a class="btn btn-ghost" href="#institutions">Partner with us</a>
+        <div class="hero-copy">
+          <h1 id="hero-title">Healthcare made easier. Care made accessible.</h1>
+          <p class="lead" id="hero-lead">Tell us what you need. We connect you to the right specialist, arrange the appointment and coordinate your care, so you skip the hospital hassle and focus on getting well.</p>
+          <button class="listen" type="button" data-listen="#hero-title, #hero-lead, #pick-title"><svg aria-hidden="true"><use href="#i-sound"/></svg><span>Listen to this</span></button>
+
+          <h2 class="pick-title" id="pick-title">What do you need today?</h2>
+          <ul class="pick" aria-labelledby="pick-title">
+            <li><a href="#request" data-service="Specialist appointment"><svg aria-hidden="true"><use href="#i-spec"/></svg><span>See a specialist</span></a></li>
+            <li><a href="#request" data-service="Home doctor visit"><svg aria-hidden="true"><use href="#i-home"/></svg><span>A doctor or nurse at home</span></a></li>
+            <li><a href="#request" data-service="MRI or CT scan"><svg aria-hidden="true"><use href="#i-scan"/></svg><span>A scan</span></a></li>
+            <li><a href="#request" data-service="Laboratory tests"><svg aria-hidden="true"><use href="#i-lab"/></svg><span>Lab tests</span></a></li>
+            <li><a href="#request" data-service="Ambulance coordination"><svg aria-hidden="true"><use href="#i-amb"/></svg><span>An ambulance</span></a></li>
+            <li><a href="#request" data-service="Medical advice on where to go"><svg aria-hidden="true"><use href="#i-help"/></svg><span>I am not sure</span></a></li>
+          </ul>
+          <p class="pick-more">Something else, such as insurance help or a second opinion? <a href="#request" data-service="">Tell us what you need</a>.</p>
+          <div class="reach">
+            <a class="btn btn-ghost" href="tel:+233243560080"><svg aria-hidden="true"><use href="#i-phone"/></svg>Call 0243 560 080</a>
+            <a class="btn btn-ghost" href="https://wa.me/233243560080?text=Hello%20MEDs%20Specialists%20Connect%2C%20I%20would%20like%20some%20help%20with%20healthcare." target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#wa"/></svg>WhatsApp<span class="sr"> (opens in a new tab)</span></a>
           </div>
-          <p class="hero-services">Specialist consultations &middot; Home healthcare &middot; Diagnostics &middot; Medical coordination</p>
         </div>
-        <figure class="photo photo-hero">
-          <img src="assets/photos/hero-nurse-patient.webp" alt="An African nurse in blue scrubs smiling as she explains something on a tablet to an older African woman in a patterned headwrap, with a family member beside her" width="1400" height="788" loading="eager" fetchpriority="high">
-        </figure>
+        <div class="hero-visual">
+          <figure class="photo photo-hero">
+            <img src="assets/photos/hero-nurse-patient.webp" alt="An African nurse in blue scrubs smiling as she explains something on a tablet to an older African woman in a patterned headwrap, with a family member beside her" width="1400" height="788" fetchpriority="high">
+            <figcaption class="ph-note">Add <code>assets/photos/hero-nurse-patient.webp</code></figcaption>
+          </figure>
+          <ol class="path" aria-label="How we connect you">
+            <li><span class="dot" aria-hidden="true"></span><strong>You</strong><span>tell us what you need</span></li>
+            <li><span class="dot" aria-hidden="true"></span><strong>Your coordinator</strong><span>arranges everything</span></li>
+            <li><span class="dot" aria-hidden="true"></span><strong>The right specialist</strong><span>sees you</span></li>
+          </ol>
+        </div>
       </div>
     </section>
 
     <!-- REQUEST PORTAL -->
-    <section class="section portal" id="request">
+    <section class="section portal" id="request" aria-labelledby="request-title">
       <div class="wrap two-col">
-        <div>
-          <p class="eyebrow">Request care</p>
-          <h2>How can we help you?</h2>
-          <p class="sub">Choose what you need and tell us a little more. Our team will call you back to take it from there. No hospital queues, no running around.</p>
-          <p class="note">For a medical emergency, call your nearest emergency service or go straight to the nearest hospital.</p>
+        <div class="portal-intro">
+          <h2 id="request-title">How can we help you?</h2>
+          <p class="sub">Three short steps. Our team will call you back to take it from there. No hospital queues, no running around.</p>
+          <p class="reassure">You see the price before you pay. You do not need any patient records to start. We call you back, so you never queue.</p>
+          <p class="note">For a medical emergency, call <a href="tel:112">112</a> or go straight to the nearest hospital.</p>
+          <form class="callback" id="callback-form" data-subject="Call-back request" data-success="Thank you. We will call you back soon." action="mailto:medspecialistsconnect@gmail.com" method="post">
+            <h3>Rather just get a call?</h3>
+            <p class="hint">Leave your number and we will phone you. That is all we need.</p>
+            <div class="callback-row">
+              <div><label for="c-name">Your name</label><input id="c-name" name="name" type="text" autocomplete="name" required></div>
+              <div><label for="c-phone">Phone number</label><input id="c-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required></div>
+            </div>
+            <input class="hp" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <label class="consent"><input type="checkbox" name="consent" required><span>I agree that you may call me about this, as described in the <a href="privacy" target="_blank" rel="noopener">privacy notice<span class="sr"> (opens in a new tab)</span></a>.</span></label>
+            <button class="btn btn-ghost" type="submit">Call me back</button>
+            <p class="form-status" role="status" aria-live="polite"></p>
+          </form>
         </div>
-        <form class="form" id="request-form" data-subject="Care request" data-hint="Your request goes straight to our team and we will call you back. You can also call us on 0243 560 080." data-success="Thank you. We have your request and will call you back soon." action="mailto:medspecialistsconnect@gmail.com" method="post">
-          <label for="r-service">What do you need?</label>
-          <select id="r-service" name="service" required>
-            <option value="" selected disabled>Choose a service</option>
-            <option value="Specialist appointment">Specialist appointment</option>
-            <option value="Home doctor visit">Home doctor visit</option>
-            <option value="Home nursing">Home nursing</option>
-            <option value="MRI or CT scan">MRI or CT scan</option>
-            <option value="Laboratory tests">Laboratory tests</option>
-            <option value="Ambulance coordination">Ambulance coordination</option>
-            <option value="Hospital admission assistance">Hospital admission assistance</option>
-            <option value="Insurance claims assistance">Insurance claims assistance</option>
-            <option value="Second medical opinion">Second medical opinion</option>
-            <option value="Dialysis services">Dialysis services</option>
-            <option value="Medical advice on where to go">Advice on where to go</option>
-          </select>
-          <div class="row-2">
-            <div>
-              <label for="r-for">Who is this for?</label>
-              <select id="r-for" name="for_whom">
-                <option>Myself</option>
-                <option>A family member or someone I care for</option>
-              </select>
-            </div>
-            <div>
-              <label for="r-urgency">How urgent is it?</label>
-              <select id="r-urgency" name="urgency">
-                <option>Routine</option>
-                <option>Soon (a few days)</option>
-                <option>Urgent (ASAP)</option>
-                <option>Emergency (right now)</option>
-              </select>
-            </div>
+        <form class="form wizard" id="request-form" data-subject="Care request" data-hint="Your request goes straight to our team and we will call you back. You can also call us on 0243 560 080." data-success="Thank you. We have your request and will call you back soon." action="mailto:medspecialistsconnect@gmail.com" method="post">
+          <div class="wiz-head" hidden>
+            <p class="wiz-count" aria-live="polite"><span id="wiz-n">1</span> of 3: <span id="wiz-name">What you need</span></p>
+            <div class="wiz-bar" role="progressbar" aria-label="Request progress" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1"><span></span></div>
           </div>
-          <p class="safety" id="r-safety" role="alert" hidden><strong>If someone is in danger, call 112 now or go to the nearest hospital.</strong> We are not an emergency service. If you still send this form, our team will call you straight away.</p>
-          <label for="r-msg">Tell us more</label>
-          <textarea id="r-msg" name="message" rows="3" placeholder="For example: the specialist you want to see, or the condition"></textarea>
-          <div class="row-2">
-            <div>
-              <label for="r-name">Your name</label>
-              <input id="r-name" name="name" type="text" autocomplete="name" required>
+
+          <fieldset class="step" data-step="1" data-name="What you need">
+            <legend>What do you need?</legend>
+            <label for="r-service">Service</label>
+            <select id="r-service" name="service" required>
+              <option value="" selected disabled>Choose a service</option>
+              <option value="Specialist appointment">Specialist appointment</option>
+              <option value="Home doctor visit">Home doctor visit</option>
+              <option value="Home nursing">Home nursing</option>
+              <option value="MRI or CT scan">MRI or CT scan</option>
+              <option value="Laboratory tests">Laboratory tests</option>
+              <option value="Ambulance coordination">Ambulance coordination</option>
+              <option value="Hospital admission assistance">Hospital admission assistance</option>
+              <option value="Insurance claims assistance">Insurance claims assistance</option>
+              <option value="Second medical opinion">Second medical opinion</option>
+              <option value="Dialysis services">Dialysis services</option>
+              <option value="Medical advice on where to go">Advice on where to go</option>
+            </select>
+            <label for="r-urgency">How urgent is it?</label>
+            <select id="r-urgency" name="urgency">
+              <option>Routine</option>
+              <option>Soon (a few days)</option>
+              <option>Urgent (ASAP)</option>
+              <option>Emergency (right now)</option>
+            </select>
+            <p class="safety" id="r-safety" role="alert" hidden><strong>If someone is in danger, call 112 now or go to the nearest hospital.</strong> We are not an emergency service. If you still send this form, our team will call you straight away.</p>
+          </fieldset>
+
+          <fieldset class="step" data-step="2" data-name="About the patient">
+            <legend>Tell us a little more</legend>
+            <label for="r-for">Who is this for?</label>
+            <select id="r-for" name="for_whom">
+              <option>Myself</option>
+              <option>A family member or someone I care for</option>
+            </select>
+            <label for="r-msg">Anything we should know? <span class="opt">(optional)</span></label>
+            <textarea id="r-msg" name="message" rows="3" placeholder="For example: the specialist you want to see, or the condition"></textarea>
+            <label for="r-date">Preferred date <span class="opt">(optional)</span></label>
+            <input id="r-date" name="preferred_date" type="date">
+          </fieldset>
+
+          <fieldset class="step" data-step="3" data-name="How to reach you">
+            <legend>How can we reach you?</legend>
+            <div class="row-2">
+              <div>
+                <label for="r-name">Your name</label>
+                <input id="r-name" name="name" type="text" autocomplete="name" required>
+              </div>
+              <div>
+                <label for="r-phone">Phone number</label>
+                <input id="r-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required>
+              </div>
             </div>
-            <div>
-              <label for="r-phone">Phone number</label>
-              <input id="r-phone" name="phone" type="tel" autocomplete="tel" required>
+            <div class="row-2">
+              <div>
+                <label for="r-time">Best time to call</label>
+                <select id="r-time" name="call_time">
+                  <option>Any time</option>
+                  <option>Morning</option>
+                  <option>Afternoon</option>
+                  <option>Evening</option>
+                </select>
+              </div>
+              <div>
+                <label for="r-area">Area or city <span class="opt">(optional)</span></label>
+                <input id="r-area" name="area" type="text" autocomplete="address-level2">
+              </div>
             </div>
+            <label for="r-email">Email for your invoice <span class="opt">(optional)</span></label>
+            <input id="r-email" name="email" type="email" autocomplete="email">
+            <input class="hp" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <label class="consent"><input type="checkbox" name="consent" required><span>I agree that MEDs Specialists Connect may contact me about this request and use the details I have given, as described in the <a href="privacy" target="_blank" rel="noopener">privacy notice<span class="sr"> (opens in a new tab)</span></a>.</span></label>
+          </fieldset>
+
+          <div class="wiz-nav">
+            <button class="btn btn-ghost" type="button" id="wiz-back" hidden>Back</button>
+            <button class="btn" type="button" id="wiz-next" hidden>Next</button>
+            <button class="btn" type="submit" id="wiz-send">Send request</button>
           </div>
-          <div class="row-2">
-            <div>
-              <label for="r-date">Preferred date <span class="opt">(optional)</span></label>
-              <input id="r-date" name="preferred_date" type="date">
-            </div>
-            <div>
-              <label for="r-time">Best time to call</label>
-              <select id="r-time" name="call_time">
-                <option>Any time</option>
-                <option>Morning</option>
-                <option>Afternoon</option>
-                <option>Evening</option>
-              </select>
-            </div>
-          </div>
-          <label for="r-area">Area or city <span class="opt">(optional)</span></label>
-          <input id="r-area" name="area" type="text" autocomplete="address-level2">
-          <label for="r-email">Email for your invoice <span class="opt">(optional)</span></label>
-          <input id="r-email" name="email" type="email" autocomplete="email">
-          <input class="hp" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <label class="consent"><input type="checkbox" name="consent" required><span>I agree that MEDs Specialists Connect may contact me about this request and use the details I have given, as described in the <a href="privacy" target="_blank" rel="noopener">privacy notice<span class="sr"> (opens in a new tab)</span></a>.</span></label>
-          <button class="btn" type="submit">Send request</button>
           <p class="form-status" role="status" aria-live="polite"></p>
           <p class="hint">This opens your email app with the request ready to send. You can also call us on 0243 560 080.</p>
           <a class="btn btn-wa" href="https://wa.me/233243560080?text=Hello%20MEDs%20Specialists%20Connect%2C%20I%20would%20like%20some%20help%20with%20healthcare." target="_blank" rel="noopener"><svg class="wa-ico" aria-hidden="true"><use href="#wa"/></svg>Or chat with us on WhatsApp<span class="sr"> (opens in a new tab)</span></a>
@@ -232,7 +305,8 @@
       <div class="wrap">
         <div class="section-head">
           <p class="eyebrow">How it works</p>
-          <h2>From “I need help” to seen by a specialist.</h2>
+          <h2 id="how-title">From “I need help” to seen by a specialist.</h2>
+          <button class="listen" type="button" data-listen="#how-title, #how .steps"><svg aria-hidden="true"><use href="#i-sound"/></svg><span>Listen to this</span></button>
         </div>
         <ol class="steps">
           <li><span class="num">Step 1</span><h3>Tell us</h3><p>Call us or send a request on this website. Describe what you need or which specialist you want to see.</p></li>
@@ -249,7 +323,7 @@
       <div class="wrap">
         <div class="section-head">
           <p class="eyebrow">Fees and payment</p>
-          <h2>Clear fees, no surprises.</h2>
+          <h2 id="fees-title">Clear fees, no surprises.</h2>
           <p class="sub">You pay only for the services you choose. Our coordination fee is shown separately from what doctors, hospitals and laboratories charge.</p>
         </div>
         <div class="table-wrap">
@@ -619,6 +693,57 @@
     </div>
   </footer>
 
+  <dialog class="opts" id="opts" aria-labelledby="opts-title">
+    <form method="dialog">
+      <h2 id="opts-title">Display and reading options</h2>
+      <p class="hint">Your choices are saved on this device only.</p>
+      <fieldset><legend>Text size</legend>
+        <div class="seg"><label><input type="radio" name="size" value="" checked><span>Normal</span></label><label><input type="radio" name="size" value="large"><span>Large</span></label><label><input type="radio" name="size" value="largest"><span>Largest</span></label></div>
+      </fieldset>
+      <fieldset><legend>Colour</legend>
+        <div class="seg"><label><input type="radio" name="theme" value="light"><span>Day</span></label><label><input type="radio" name="theme" value="dark"><span>Night</span></label></div>
+        <label class="check"><input type="checkbox" name="contrast" value="high"><span>High contrast (stronger colours and outlines)</span></label>
+      </fieldset>
+      <fieldset><legend>Letters</legend>
+        <div class="seg"><label><input type="radio" name="font" value="" checked><span>Standard</span></label><label><input type="radio" name="font" value="easy"><span>Easy to read</span></label></div>
+      </fieldset>
+      <fieldset><legend>Movement</legend>
+        <div class="seg"><label><input type="radio" name="motion" value="" checked><span>Normal</span></label><label><input type="radio" name="motion" value="reduced"><span>Less movement</span></label></div>
+      </fieldset>
+      <div class="opts-actions"><button class="btn btn-ghost btn-small" type="button" id="opts-reset">Reset</button><button class="btn btn-small" type="submit">Done</button></div>
+    </form>
+  </dialog>
+
+  <nav class="actionbar" aria-label="App menu">
+    <a href="#top" data-tab="top"><svg aria-hidden="true"><use href="#i-home"/></svg><span>Home</span></a>
+    <a href="#patients" data-tab="patients"><svg aria-hidden="true"><use href="#i-spec"/></svg><span>Services</span></a>
+    <a class="primary" href="#request" data-tab="request"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Request</span></a>
+    <a href="tel:+233243560080"><svg aria-hidden="true"><use href="#i-phone"/></svg><span>Call</span></a>
+    <button type="button" id="more-btn" aria-haspopup="dialog" aria-controls="more"><svg aria-hidden="true"><use href="#i-menu"/></svg><span>More</span></button>
+  </nav>
+
+  <dialog class="sheet" id="more" aria-labelledby="more-title">
+    <h2 id="more-title">More</h2>
+    <ul class="sheet-links">
+      <li><a href="#refer">For doctors</a></li>
+      <li><a href="#institutions">For hospitals</a></li>
+      <li><a href="#dialysis">Dialysis</a></li>
+      <li><a href="#fees">Fees and payment</a></li>
+      <li><a href="#about">About us</a></li>
+      <li><a href="#faq">Questions</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="sheet-actions">
+      <a class="btn btn-ghost" href="https://wa.me/233243560080?text=Hello%20MEDs%20Specialists%20Connect%2C%20I%20would%20like%20some%20help%20with%20healthcare." target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#wa"/></svg>Chat on WhatsApp<span class="sr"> (opens in a new tab)</span></a>
+      <button class="btn btn-ghost" type="button" id="more-opts"><svg aria-hidden="true"><use href="#i-text"/></svg>Display and reading options</button>
+      <button class="btn" type="button" id="install-btn" hidden><svg aria-hidden="true"><use href="#i-down"/></svg>Install the app</button>
+      <p class="hint" id="install-ios" hidden>To install on an iPhone: tap the Share button, then Add to Home Screen.</p>
+    </div>
+    <button class="btn btn-small sheet-close" type="button" id="more-close">Close</button>
+  </dialog>
+  <p class="offline" id="offline" role="status" hidden>You are offline. You can still call us on <a href="tel:+233243560080">0243 560 080</a>. The request form needs a connection.</p>
+  <div class="progress" id="progress" aria-hidden="true"><span></span></div>
+
   <aside aria-label="Chat with us">
     <a class="wa-fab" href="https://wa.me/233243560080?text=Hello%20MEDs%20Specialists%20Connect%2C%20I%20would%20like%20some%20help%20with%20healthcare." target="_blank" rel="noopener">
       <svg class="wa-ico" aria-hidden="true"><use href="#wa"/></svg>
@@ -626,6 +751,6 @@
     </a>
   </aside>
 
-  <script src="script.js?v=7"></script>
+  <script src="script.js?v=8"></script>
 </body>
 </html>

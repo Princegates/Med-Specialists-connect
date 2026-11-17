@@ -17,7 +17,7 @@ const COOKIE = '__Host-msc_session';
 (async () => {
   const b = await chromium.launch();
   const aerrs = [];
-  const track = (p) => { p.on('pageerror', (e) => aerrs.push(e.message)); p.on('console', (m) => { if (m.type() === 'error' && !/status of (400|401|403|404|429)/.test(m.text())) aerrs.push(m.text()); }); return p; };
+  const track = (p) => { p.on('pageerror', (e) => { if (!/Transition was aborted/.test(e.message)) aerrs.push(e.message); }); p.on('console', (m) => { if (m.type() === 'error' && !/status of (400|401|403|404|429)|ViewTransition|ERR_INTERNET_DISCONNECTED/.test(m.text())) aerrs.push(m.text()); }); return p; };
   const cookieOf = async (ctx) => { const c = (await ctx.cookies()).find((x) => x.name === COOKIE); return c ? COOKIE + '=' + c.value : null; };
   // Signs in through the real login page. Returns the page, already inside the console.
   async function uiLogin(ctx, email, password, secret) {
@@ -87,6 +87,17 @@ const COOKIE = '__Host-msc_session';
   const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
   await ctx.route('https://api.web3forms.com/**', (r) => { web3.push(JSON.parse(r.request().postData())); r.fulfill({ status: 200, contentType: 'application/json', body: '{"success":true}' }); });
   const p = track(await ctx.newPage()); const errs = aerrs;
+  // The request form has three steps. This walks through them like a person would.
+  async function fillRequest(pg, o) {
+    if (o.service) await pg.selectOption('#r-service', o.service);
+    if (o.urgency) await pg.selectOption('#r-urgency', o.urgency);
+    await pg.click('#wiz-next');
+    await pg.click('#wiz-next');
+    await pg.fill('#r-name', o.name); await pg.fill('#r-phone', o.phone);
+    if (o.area) await pg.fill('#r-area', o.area);
+    await pg.check('#request-form input[name=consent]');
+  }
+
   console.log('Public request form: safety notice and tracking');
   await p.goto(B + '/index.html'); await p.waitForTimeout(600);
   ok('the emergency notice is hidden at first', !(await p.isVisible('#r-safety')));
@@ -94,9 +105,7 @@ const COOKIE = '__Host-msc_session';
   ok('choosing Emergency shows the 112 notice at once', (await p.isVisible('#r-safety')) && /112/.test(await p.innerText('#r-safety')));
   await p.selectOption('#r-urgency', 'Routine');
   ok('choosing something else hides it again', !(await p.isVisible('#r-safety')));
-  await p.selectOption('#r-service', 'Specialist appointment');
-  await p.fill('#r-name', 'Efua Boateng'); await p.fill('#r-phone', '0501234567'); await p.fill('#r-area', 'Spintex');
-  await p.check('#request-form input[name=consent]');
+  await fillRequest(p, { service: 'Specialist appointment', name: 'Efua Boateng', phone: '0501234567', area: 'Spintex' });
   await p.click('#request-form button[type=submit]'); await p.waitForSelector('#request-form .form-status a', { timeout: 8000 });
   const status = await p.innerText('#request-form .form-status');
   ok('the success message shows the invoice, the case reference and a tracking link', /MSC-\d{4}-\d{4}/.test(status) && /MSC-[A-Z0-9]{8}/.test(status) && /Follow your request/.test(status), status);
@@ -113,10 +122,96 @@ const COOKIE = '__Host-msc_session';
   await p.click('footer a:has-text("Staff login")'); await p.waitForSelector('#form-login:not([hidden])');
   ok('it lands on the staff sign-in page', /admin\/login/.test(p.url()), p.url());
   await p.goto(B + '/index.html'); await p.waitForTimeout(500);
-  await p.selectOption('#r-service', 'Ambulance coordination'); await p.selectOption('#r-urgency', 'Emergency (right now)');
-  await p.fill('#r-name', 'Yaw Sarpong'); await p.fill('#r-phone', '0209990077'); await p.check('#request-form input[name=consent]');
+  await fillRequest(p, { service: 'Ambulance coordination', urgency: 'Emergency (right now)', name: 'Yaw Sarpong', phone: '0209990077' });
   await p.click('#request-form button[type=submit]'); await p.waitForTimeout(1500);
   ok('an emergency request tells the person to call 112 and is not invoiced', /112/.test(await p.innerText('#request-form .form-status')) && !/invoice/i.test(await p.innerText('#request-form .form-status')), await p.innerText('#request-form .form-status'));
+
+
+  console.log('Public site: steps, big buttons, display options');
+  await p.goto(B + '/index.html'); await p.waitForTimeout(900);
+  ok('the page opens with an emergency notice and quick call buttons', /112/.test(await p.innerText('.strip')) && (await p.locator('.reach a').count()) === 2);
+  await p.click('.pick a[data-service="Laboratory tests"]'); await p.waitForTimeout(700);
+  ok('tapping a big button picks that service in the form', (await p.inputValue('#r-service')) === 'Laboratory tests');
+  ok('and the form shows step 1 of 3', /1 of 3/.test(await p.innerText('.wiz-count')) && (await p.isVisible('#r-urgency')) && !(await p.isVisible('#r-name')));
+  await p.evaluate(() => { const s = document.querySelector('#r-service'); s.selectedIndex = 0; s.dispatchEvent(new Event('change', { bubbles: true })); }); await p.click('#wiz-next');
+  ok('Next without choosing a service explains what is missing', /Please choose one/.test(await p.innerText('#request-form')) && (await p.getAttribute('#r-service', 'aria-invalid')) === 'true');
+  await p.selectOption('#r-service', 'Home nursing'); await p.click('#wiz-next');
+  ok('after a valid step the next step opens, with Back available', /2 of 3/.test(await p.innerText('.wiz-count')) && (await p.isVisible('#wiz-back')));
+  await p.click('#wiz-back');
+  ok('Back returns to step 1 with the choice kept', (await p.inputValue('#r-service')) === 'Home nursing');
+  await p.reload(); await p.waitForTimeout(600);
+  ok('a half-finished form is kept for this visit only (session, not stored for later)', (await p.inputValue('#r-service')) === 'Home nursing' && (await p.evaluate(() => localStorage.getItem('draft-v1'))) === null);
+  await axe(p, 'home page (steps)');
+  await p.screenshot({ path: S + 'ui-site-top.png' });
+
+  await p.click('#opts-btn'); await p.waitForSelector('dialog[open]');
+  await axe(p, 'display options');
+  await p.check('input[name=size][value=largest]'); await p.check('input[name=font][value=easy]'); await p.check('input[name=contrast]'); await p.check('input[name=motion][value=reduced]');
+  ok('display options apply at once', (await p.getAttribute('html', 'data-size')) === 'largest' && (await p.getAttribute('html', 'data-font')) === 'easy' && (await p.getAttribute('html', 'data-contrast')) === 'high' && (await p.getAttribute('html', 'data-motion')) === 'reduced');
+  await p.click('dialog button:has-text("Done")');
+  await p.reload(); await p.waitForTimeout(500);
+  ok('and are remembered on this device', (await p.getAttribute('html', 'data-size')) === 'largest' && (await p.getAttribute('html', 'data-contrast')) === 'high');
+  ok('the biggest text does not break the layout on a laptop', await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), await p.evaluate(() => document.documentElement.scrollWidth));
+  await axe(p, 'home page (largest text, easy font, high contrast)');
+  await p.screenshot({ path: S + 'ui-site-access.png' });
+  await p.click('#opts-btn'); await p.waitForSelector('dialog[open]'); await p.click('#opts-reset'); await p.click('dialog button:has-text("Done")');
+  ok('Reset puts everything back', !(await p.getAttribute('html', 'data-size')) && !(await p.getAttribute('html', 'data-contrast')));
+  await p.click('#theme-toggle'); await p.waitForTimeout(900);
+  await axe(p, 'home page (night)');
+  await p.click('#theme-toggle');
+
+  await p.goto(B + '/index.html'); await p.waitForTimeout(500);
+  await p.fill('#c-name', 'Kojo Appiah'); await p.fill('#c-phone', '0200000000'); await p.check('#callback-form input[name=consent]');
+  const before = web3.length;
+  await p.click('#callback-form button[type=submit]'); await p.waitForTimeout(1200);
+  ok('the call-back form needs only a name, a number and consent, and says thank you', web3.length === before + 1 && /We will call you back/.test(await p.innerText('#callback-form .form-status')), await p.innerText('#callback-form .form-status'));
+
+  for (const page of ['/privacy', '/disclaimer']) {
+    await p.goto(B + page); await p.waitForTimeout(400);
+    await axe(p, 'legal page ' + page);
+  }
+  const mob = await b.newContext({ viewport: { width: 390, height: 844 } }); const mpg = track(await mob.newPage());
+  await mpg.goto(B + '/index.html'); await mpg.waitForTimeout(700);
+  ok('on a phone there is an app-style bottom bar: Home, Services, Request, Call, More', await mpg.isVisible('.actionbar') && (await mpg.locator('.actionbar > *').count()) === 5 && /Home[\s\S]*Services[\s\S]*Request[\s\S]*Call[\s\S]*More/.test(await mpg.innerText('.actionbar')));
+  ok('the old menu button is gone on a phone', !(await mpg.isVisible('.nav-toggle')));
+  await mpg.click('#more-btn'); await mpg.waitForSelector('#more[open]');
+  ok('More opens a sheet with the rest of the pages, WhatsApp and display options', /For doctors/.test(await mpg.innerText('#more')) && /WhatsApp/.test(await mpg.innerText('#more')) && /Display and reading options/.test(await mpg.innerText('#more')));
+  await axe(mpg, 'More sheet');
+  await mpg.screenshot({ path: S + 'ui-site-sheet.png' });
+  await mpg.click('#more a[href="#fees"]'); await mpg.waitForTimeout(2200);
+  ok('choosing a page closes the sheet and goes there', !(await mpg.isVisible('#more')) && (await mpg.evaluate(() => document.querySelector('#fees').getBoundingClientRect().top)) < 400);
+  await mpg.click('#more-btn'); await mpg.click('#more-opts'); await mpg.waitForSelector('#opts[open]');
+  ok('Display options opens from the sheet', await mpg.isVisible('#opts')); await mpg.click('#opts button:has-text("Done")');
+  await mpg.evaluate(() => scrollTo(0, 0)); await mpg.waitForTimeout(500);
+  ok('the Home tab is marked as the current place at the top', (await mpg.getAttribute('.actionbar a[data-tab=top]', 'aria-current')) === 'page');
+  await mpg.evaluate(() => document.querySelector('#how').scrollIntoView()); await mpg.waitForTimeout(500);
+  await mpg.evaluate(() => window.scrollBy(0, 400)); await mpg.waitForTimeout(500);
+  ok('reading down the page tucks the top bar away', await mpg.evaluate(() => document.querySelector('.site-header').classList.contains('tuck')));
+  await mpg.evaluate(() => window.scrollBy(0, -200)); await mpg.waitForTimeout(500);
+  ok('and scrolling back up brings it back', !(await mpg.evaluate(() => document.querySelector('.site-header').classList.contains('tuck'))));
+  await mpg.evaluate(() => document.querySelector('#request').scrollIntoView()); await mpg.waitForTimeout(400);
+  ok('on the phone the Back and Next buttons stay in reach above the bar', await mpg.evaluate(() => { const r = document.querySelector('.wiz-nav').getBoundingClientRect(); return r.bottom <= innerHeight - 56; }));
+  ok('no sideways scrolling on a phone', await mpg.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), await mpg.evaluate(() => document.documentElement.scrollWidth));
+  ok('every big button is at least 44px tall', await mpg.evaluate(() => [...document.querySelectorAll('.pick a, .actionbar a, .btn')].filter((e) => e.offsetParent).every((e) => e.getBoundingClientRect().height >= 44)));
+  await mpg.evaluate(() => scrollTo(0, 0)); await mpg.waitForTimeout(400);
+  await axe(mpg, 'home page on a phone');
+  await mpg.screenshot({ path: S + 'ui-site-mobile.png' });
+  await mpg.screenshot({ path: S + 'ui-site-mobile-full.png', fullPage: true });
+  // installable, and keeps working when the signal drops
+  ok('the page has an app manifest with icons and shortcuts', await mpg.evaluate(async () => { const m = await (await fetch('/manifest.webmanifest')).json(); return m.display === 'standalone' && m.icons.length >= 2 && m.shortcuts.length >= 1 && m.start_url === '/'; }));
+  await mpg.goto(B + '/index.html'); await mpg.waitForTimeout(1200);
+  ok('the service worker is running', await mpg.evaluate(() => navigator.serviceWorker.ready.then((r) => !!r.active)));
+  await mpg.goto(B + '/index.html'); await mpg.waitForTimeout(800);
+  await mob.setOffline(true);
+  await mpg.reload().catch(() => {}); await mpg.waitForTimeout(800);
+  ok('offline, the home page still opens from the phone', /Healthcare made easier/.test(await mpg.innerText('h1')));
+  ok('and says you are offline, with the phone number', await mpg.isVisible('#offline') && /0243 560 080/.test(await mpg.innerText('#offline')));
+  await mpg.goto(B + '/privacy').catch(() => {}); await mpg.waitForTimeout(600);
+  ok('a page that was never opened shows the friendly offline page', /You are offline/.test(await mpg.innerText('h1')) && /0243 560 080/.test(await mpg.innerText('body')), await mpg.innerText('body'));
+  await mob.setOffline(false);
+  const rm = await b.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' }); const rp = await rm.newPage();
+  await rp.goto(B + '/index.html'); await rp.waitForTimeout(400);
+  ok('with "reduce motion" on the device, nothing is animated', await rp.evaluate(() => [...document.querySelectorAll('.hero h1, .pick li, .path li')].every((e) => getComputedStyle(e).animationName === 'none')));
 
   console.log('Staff console as the owner');
   await ap.goto(B + '/admin/'); await ap.waitForSelector('#view h1'); await ap.waitForTimeout(500);

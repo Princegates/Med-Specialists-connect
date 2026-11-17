@@ -10,13 +10,18 @@
   <link rel="canonical" href="https://www.medspecialistconnect.com/disclaimer">
   <link rel="preload" href="assets/fonts/josefin-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/nunito-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="stylesheet" href="site.css?v=8">
   <script>
     document.documentElement.classList.add('js');
-    try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+    try {
+      var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      var prefs = JSON.parse(localStorage.getItem('prefs') || '{}');
+      ['size', 'contrast', 'motion', 'font'].forEach(function (k) { if (prefs[k]) document.documentElement.setAttribute('data-' + k, prefs[k]); });
+    } catch (e) {}
   </script>
 </head>
-<body>
+<body class="site">
   <a class="skip" href="#main">Skip to content</a>
 
   <header class="site-header">
