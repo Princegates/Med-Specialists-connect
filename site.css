@@ -39,7 +39,7 @@
   --amber: #f5c542;       /* emergency notices only */
   --err: #b00020; --ok: #0b6b3a;
   --focus: #1f1a1d;
-  --header: rgba(255, 255, 255, .88);
+  --header: rgba(255, 255, 255, .97);
   --shade: 120, 0, 44;
   --font-head: 'Geist', 'Segoe UI', system-ui, sans-serif;
   --font-body: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
@@ -55,13 +55,13 @@
   :root:not([data-theme="light"]) {
     --bg: #120b0f; --field-bg: #1a1015; --glow: rgba(255, 92, 143, .24); --placeholder: #a8959f; --stone: #1b1016; --surface: #21141b; --ink: #f7eef2; --soft: #c9b7c0; --line: #3b2430; --field: #9a8791;
     --accent: #ff5c8f; --accent-text: #ff7aa5; --btn: #d6004e; --btn-hover: #ef1a66; --on-btn: #fff;
-    --deep: #5a0021; --pink-panel: #8a0033; --deep-2: #0a0508; --err: #ff8a9b; --ok: #6fdc9f; --focus: #ff8fb3; --header: rgba(18, 11, 15, .88); --shade: 0, 0, 0; color-scheme: dark;
+    --deep: #5a0021; --pink-panel: #8a0033; --deep-2: #0a0508; --err: #ff8a9b; --ok: #6fdc9f; --focus: #ff8fb3; --header: rgba(18, 11, 15, .97); --shade: 0, 0, 0; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #120b0f; --field-bg: #1a1015; --glow: rgba(255, 92, 143, .24); --placeholder: #a8959f; --stone: #1b1016; --surface: #21141b; --ink: #f7eef2; --soft: #c9b7c0; --line: #3b2430; --field: #9a8791;
   --accent: #ff5c8f; --accent-text: #ff7aa5; --btn: #d6004e; --btn-hover: #ef1a66; --on-btn: #fff;
-  --deep: #5a0021; --pink-panel: #8a0033; --deep-2: #0a0508; --err: #ff8a9b; --ok: #6fdc9f; --focus: #ff8fb3; --header: rgba(18, 11, 15, .88); --shade: 0, 0, 0; color-scheme: dark;
+  --deep: #5a0021; --pink-panel: #8a0033; --deep-2: #0a0508; --err: #ff8a9b; --ok: #6fdc9f; --focus: #ff8fb3; --header: rgba(18, 11, 15, .97); --shade: 0, 0, 0; color-scheme: dark;
 }
 /* High contrast (Display options): black and white, strong outlines, underlined links */
 :root[data-contrast="high"] { --bg: #fff; --stone: #fff; --surface: #fff; --ink: #000; --soft: #000; --line: #000; --field: #000; --accent: #a1003b; --accent-text: #a1003b; --btn: #000; --btn-hover: #333; --on-btn: #fff; --deep: #000; --pink-panel: #000; --deep-2: #000; --deep-soft: #fff; --deep-line: #fff; --on-dark-accent: #fff; --focus: #ff6b00; --header: #fff; }
