@@ -70,7 +70,7 @@
   // or old browsers, so content is never left hidden.
   if (!reduceMotion && 'IntersectionObserver' in window) {
     var targets = document.querySelectorAll(
-      '.section-head, .cards > li, .steps > li, .faq > *, .split > *, .two-up > *, .two-col > *, .photo-wide'
+      '.section-head, .cards > li, .steps > li, .faq > *, .product-grid > *, .split > *, .two-up > *, .two-col > *, .photo-wide'
     );
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
