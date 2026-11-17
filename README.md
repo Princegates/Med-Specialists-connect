@@ -27,19 +27,19 @@ the whole repository root.
 
 ## The public site's design
 
-"The consulting room": MEDs presented as a private healthcare consultancy. A deep consulting-room green, clinic
-white and stone pages, and brass taken from the name plate on a consulting-room door and the frames on its wall.
-The home page opens on a green panel with a large serif headline and a photograph hung in a thin brass frame; the
-"What do you need today?" card overlaps the panel's lower edge. The same brass frame returns on the founder's
-portrait and the case-study photographs. Everything else is quiet: hairlines, generous space, one accent.
+The home page opens on a full-screen photograph washed in the logo's deep pink, with a bold headline over it, the
+services as white tiles, and a see-through menu that turns solid as you scroll. Below it the site is white with pink
+highlights: buttons, rules, icons, labels, the progress line, a slow strip of services, and a pink contact panel. A
+deep wine footer gives the page a base.
 
-- Headings: **Newsreader** (a serif with true display cuts). Reading text: **Atkinson Hyperlegible Next** (made by
-  the Braille Institute for low-vision readers). Both are self-hosted under the SIL Open Font License.
+- Headings: **Geist**. Reading text: **Atkinson Hyperlegible Next** (made by the Braille Institute for low-vision
+  readers). Both are self-hosted under the SIL Open Font License.
 - Display options (text size, high contrast, easy-to-read letters, less movement) are saved on the visitor's device.
-- Motion is one arrival moment (the headline is unmasked, the photo unveils, the frame draws itself) and transitions
-  that answer what the visitor does (the day/night switch grows out of the button as a circle, the request form's
-  steps slide, questions open smoothly, pages crossfade). All of it is off for "Less movement" and for devices set
-  to reduce motion, and text is never faded in, so it is never caught faint.
+- Motion: the headline rises word by word, the photograph settles and drifts as you scroll, sections rise into
+  place, photographs are uncovered as they arrive, the day/night switch grows out of the button as a circle, form
+  steps slide, questions open smoothly and pages crossfade. All of it is off for "Less movement" and for devices
+  set to reduce motion. Text is moved but never faded in, so it is never caught faint, and images are never hidden
+  from the browser, so they always load.
 
 ## Running it locally
 

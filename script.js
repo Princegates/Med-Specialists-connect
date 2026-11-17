@@ -35,7 +35,7 @@
     var label = dark ? 'Switch to day mode' : 'Switch to night mode';
     themeBtn.setAttribute('aria-label', label);
     themeBtn.setAttribute('title', label);
-    if (themeMeta) themeMeta.setAttribute('content', dark ? '#0a1d19' : '#fbfcfb');
+    if (themeMeta) themeMeta.setAttribute('content', dark ? '#120b0f' : '#78002c');
   }
   function applyTheme(next) {
     root.setAttribute('data-theme', next);
@@ -475,6 +475,84 @@
       li.addEventListener('focusin', function () { showShot(li); });
     });
     if (deskRows[0]) showShot(deskRows[0]);
+  }
+
+  /* ================= Motion: the headline, sections rising, photographs uncovered and drifting =================
+     site.css only moves these while motion is allowed ("Less movement" and the device setting both turn it off),
+     so the classes added here are harmless when it is not. Text is moved, never faded; images are never hidden. */
+
+  // The headline rises word by word. The words stay plain text with spaces, so it reads, copies and is spoken as before.
+  var h1 = document.querySelector('.hero h1');
+  if (h1 && !h1.querySelector('*')) {
+    var words = h1.textContent.trim().split(/\s+/);
+    h1.textContent = '';
+    words.forEach(function (w, i) {
+      var outer = document.createElement('span'), inner = document.createElement('span');
+      outer.className = 'w'; inner.textContent = w; inner.style.setProperty('--i', String(i));
+      outer.appendChild(inner); h1.appendChild(outer);
+      if (i < words.length - 1) h1.appendChild(document.createTextNode(' '));
+    });
+    h1.classList.add('words');
+  }
+
+  // Sections rise into place as they reach you; photographs are uncovered. Each element goes back to normal once
+  // it has arrived, and switching to "Less movement" (or printing) settles everything at once.
+  if ('IntersectionObserver' in window && motionOk()) {
+    var RISE = 'main .section-head, main .two-col > *, main .split > *, main .dir, main .steps > li, main .cards > li, main .table-wrap, main .product-card, main .statement, main .faq, main .founder > *, main .photo-wide, main .cta-row, main .product-note, main .vm-link, main .net-kinds > li, main .net-checks, main .net-empty';
+    var CURTAIN = '.founder-photo, #dialysis .photo, .board-section .photo, .photo-wide';
+    var moving = [], perParent = new Map();
+    document.querySelectorAll(RISE).forEach(function (el) {
+      if (el.closest('.hero') || moving.some(function (m) { return m.contains(el); })) return;
+      moving.push(el);
+      var n = perParent.get(el.parentNode) || 0; perParent.set(el.parentNode, n + 1);
+      el.style.setProperty('--d', (Math.min(n, 4) * 0.09).toFixed(2) + 's');
+      el.classList.add('rise');
+    });
+    document.querySelectorAll(CURTAIN).forEach(function (el) { el.classList.add('curtain'); if (moving.indexOf(el) < 0) moving.push(el); });
+    var settleEl = function (el) { el.classList.remove('rise', 'curtain', 'in'); el.style.removeProperty('--d'); };
+    var arrive = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var el = e.target; arrive.unobserve(el);
+        el.classList.add('in');
+        setTimeout(function () { settleEl(el); }, 2200 + parseFloat(el.style.getPropertyValue('--d') || 0) * 1000);
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    moving.forEach(function (el) { arrive.observe(el); });
+    window.addEventListener('beforeprint', function () { moving.forEach(settleEl); });
+    document.addEventListener('change', function (e) { if (e.target.name === 'motion' && e.target.value === 'reduced') moving.forEach(settleEl); });
+  }
+
+  // Depth: the hero photograph drifts slower than the page, and framed photographs drift a little against it.
+  var heroSec = document.querySelector('.hero'), heroImg = document.querySelector('.hero .photo-hero img');
+  var drifters = [].slice.call(document.querySelectorAll('#dialysis .photo, .board-section .photo, .photo-wide'));
+  drifters.forEach(function (el) { el.classList.add('drift'); });
+  if (heroImg || drifters.length) {
+    var dTick = false;
+    var depth = function () {
+      dTick = false;
+      var ok = motionOk(), vh = window.innerHeight;
+      if (heroImg) heroImg.style.translate = ok && window.scrollY < heroSec.offsetHeight ? '0 ' + (window.scrollY * 0.28).toFixed(1) + 'px' : '';
+      drifters.forEach(function (el) {
+        var r = el.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > vh) return;
+        el.style.setProperty('--shift', ok ? (((r.top + r.height / 2) - vh / 2) * -0.06).toFixed(1) + 'px' : '0px');
+      });
+    };
+    window.addEventListener('scroll', function () { if (!dTick) { dTick = true; requestAnimationFrame(depth); } }, { passive: true });
+    depth();
+  }
+
+  // The dark panels catch a soft light that follows the pointer (desktop only).
+  if (window.matchMedia && matchMedia('(hover: hover)').matches) {
+    document.querySelectorAll('.board-section, .contact').forEach(function (panel) {
+      var lt = false, lx = 0, ly = 0;
+      panel.addEventListener('pointermove', function (e) {
+        var r = panel.getBoundingClientRect(); lx = e.clientX - r.left; ly = e.clientY - r.top;
+        if (lt) return; lt = true;
+        requestAnimationFrame(function () { panel.style.setProperty('--mx', lx + 'px'); panel.style.setProperty('--my', ly + 'px'); lt = false; });
+      });
+    });
   }
 
   // The WhatsApp button steps aside while WhatsApp is already on screen (the hero, the contact panel, the footer).

@@ -8,22 +8,22 @@
   <style>
     /* Self-contained: this page is shown when there is no connection, so it cannot rely on anything else loading.
        The font comes from the app's offline copy if it is there, and falls back to the system font if not. */
-    @font-face { font-family: 'Newsreader'; font-weight: 200 800; font-display: swap; src: url('/assets/fonts/newsreader-latin.woff2') format('woff2'); }
+    @font-face { font-family: 'Geist'; font-weight: 100 900; font-display: swap; src: url('/assets/fonts/geist-latin.woff2') format('woff2'); }
     @font-face { font-family: 'Atkinson Hyperlegible Next'; font-weight: 200 800; font-display: swap; src: url('/assets/fonts/atkinson-next-latin.woff2') format('woff2'); }
-    :root { --bg: #fbfcfb; --ink: #0e3a33; --soft: #45574f; --line: #d6ddd9; --brass: #9a7840; --btn: #0e3a33; --on-btn: #fff; color-scheme: light dark; }
-    @media (prefers-color-scheme: dark) { :root { --bg: #0a1d19; --ink: #e9f0ec; --soft: #aebfb8; --line: #24453d; --brass: #d4b47c; --btn: #d4b47c; --on-btn: #0a1d19; } }
+    :root { --bg: #fff; --ink: #1f1a1d; --soft: #5c5359; --line: #f1d9e2; --brass: #fe0054; --btn: #c8004a; --on-btn: #fff; color-scheme: light dark; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #120b0f; --ink: #f7eef2; --soft: #c9b7c0; --line: #3b2430; --brass: #ff5c8f; --btn: #d6004e; --on-btn: #fff; } }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: 24px; font: 1.125rem/1.6 'Atkinson Hyperlegible Next', system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--bg); color: var(--ink); }
     main { width: min(28rem, 100%); }
-    .mark { display: block; width: 36px; height: 1px; background: var(--brass); margin-bottom: 26px; }
-    h1 { font: 450 2.6rem/1.05 'Newsreader', Georgia, serif; letter-spacing: -.02em; margin: 0 0 16px; }
+    .mark { display: block; width: 40px; height: 3px; background: var(--brass); margin-bottom: 26px; }
+    h1 { font: 650 2.5rem/1.02 'Geist', system-ui, sans-serif; letter-spacing: -.04em; margin: 0 0 16px; }
     p { color: var(--soft); margin: 0 0 22px; }
     a { color: var(--ink); text-underline-offset: 3px; }
     a.btn { display: flex; align-items: center; justify-content: center; min-height: 52px; margin-top: 10px; padding: 0 20px; border-radius: 3px; border: 1.5px solid var(--btn); background: var(--btn); color: var(--on-btn); text-decoration: none; font-weight: 700; }
     a.alt { background: transparent; color: var(--ink); border-color: var(--ink); }
     a:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-    .danger { margin: 26px 0 0; padding: 14px 16px; border-radius: 3px; background: #f5c542; color: #0e3a33; font-weight: 700; }
-    .danger a { color: #0e3a33; }
+    .danger { margin: 26px 0 0; padding: 14px 16px; border-radius: 3px; background: #f5c542; color: #1f1a1d; font-weight: 700; }
+    .danger a { color: #1f1a1d; }
   </style>
 </head>
 <body>
