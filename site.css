@@ -5,7 +5,7 @@
    Concept: a full-screen photograph opens the page, washed in the deep pink of the logo, with a bold headline over it
    and the services as white tiles. Below it the site is white, with pink as the highlight: buttons, rules, icons,
    labels, the progress line, a pink contact panel. A deep wine footer gives the page a base. Motion is a feature:
-   the headline rises word by word, the photograph drifts, sections rise into place, photographs are uncovered as
+   the headline rises word by word, the hero photograph drifts, sections rise into place, photographs are uncovered as
    they arrive, and every control answers the pointer. All of it switches off for "Less movement" and for devices
    that ask for reduced motion, and no text is ever faded in, so it is never faint.
 
@@ -357,7 +357,6 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
 .photo { position: relative; overflow: hidden; border-radius: var(--r); }
 .photo img { width: 100%; height: 100%; object-fit: cover; }
 .photo-43 img { aspect-ratio: 4 / 3; }
-.board-section .photo::after, #dialysis .photo::after, #about .photo-wide::after { content: ''; position: absolute; inset: 14px; border: 1px solid rgba(255, 255, 255, .85); pointer-events: none; }
 
 /* ---------- Products ---------- */
 .product-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 72px; }
@@ -373,13 +372,14 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
 #dialysis .prose { margin-top: 22px; }
 .photo-caption { position: absolute; left: 26px; bottom: 26px; z-index: 1; padding: 4px 10px; border-radius: 2px; background: rgba(120, 0, 44, .88); color: #fff; font-size: .82rem; line-height: 1.4; }
 .photo-wide { margin-top: 64px; }
-.photo-wide img { aspect-ratio: 7 / 3; }
+.photo-wide { max-width: 961px; }
+.photo-wide img { aspect-ratio: 961 / 415; }  /* photographs are shown whole, in their own shape and at no more than their own size */
 
 /* ---------- Founder and vision ---------- */
 .founder { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 88px; align-items: center; }
 .founder-photo { position: relative; overflow: hidden; border-radius: var(--r); }
-.founder-photo img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
-.founder-photo::after { content: ''; position: absolute; inset: 14px; border: 1px solid rgba(255, 255, 255, .85); pointer-events: none; }
+.founder-photo { max-width: 800px; }
+.founder-photo img { width: 100%; aspect-ratio: 800 / 875; object-fit: cover; }
 .founder-text h2 { font-size: clamp(2rem, 3.2vw, 2.8rem); }
 .founder-name { margin: 18px 0 32px; color: var(--soft); }
 .founder-name strong { color: var(--ink); font: 650 1.12rem var(--font-head); letter-spacing: -.01em; }
@@ -520,7 +520,6 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
   .hero-inner { padding: 112px 0 40px; }
   .hero .lead { margin: 20px 0 16px; }
   .photo-hero img { object-position: 64% 30%; }
-  .founder-photo::after, .board-section .photo::after, #dialysis .photo::after, #about .photo-wide::after { inset: 10px; }
   .pick a { min-height: 58px; padding: 0 12px; gap: 10px; font-size: .95rem; }
   .reach .btn { flex: 1 1 auto; }
   .ticker-track { padding: 15px 0; }
@@ -567,7 +566,7 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
 @media (display-mode: standalone) { .site-header { padding-top: env(safe-area-inset-top); } .foot-col li:has(a[href="/admin/"]) { display: none; } }
 
 /* =====================================================================================================
-   Motion. The page arrives (the headline rises word by word, the photograph settles and then drifts as you scroll,
+   Motion. The page arrives (the headline rises word by word, the hero photograph settles and then drifts as you scroll,
    the service tiles follow), sections rise into place as they reach you, photographs are uncovered, the dark panels
    catch a soft light under the pointer, and every control answers what you do. Text is moved and masked but never
    faded, so it is never caught faint, and images are never hidden from the browser, so they always load.
@@ -581,7 +580,7 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
   @keyframes wordUp { from { transform: translateY(105%); } to { transform: none; } }
   @keyframes unmask { from { clip-path: inset(-10% -10% 100% -10%); transform: translateY(20px); } to { clip-path: inset(-10% -10% -25% -10%); transform: none; } }
   @keyframes rise { from { transform: translateY(26px); } to { transform: none; } }
-  @keyframes settle { from { transform: scale(1.14); } to { transform: scale(1.04); } }
+  @keyframes settle { from { transform: scale(1.1); } to { transform: none; } }
   @keyframes drawX { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .7); } 100% { box-shadow: 0 0 0 16px rgba(255, 255, 255, 0); } }
   @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -616,10 +615,6 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
   /* photographs are uncovered by a panel that lifts away (the image itself is never hidden, so it always loads) */
   :root:not([data-motion="reduced"]) .curtain::before { content: ''; position: absolute; inset: 0; z-index: 1; background: var(--stone); transform-origin: top; pointer-events: none; }
     :root:not([data-motion="reduced"]) .curtain.in::before { transform: scaleY(0); transition: transform 1.2s cubic-bezier(.7, 0, .2, 1) var(--d, 0s); }
-  :root:not([data-motion="reduced"]) .curtain img { transform: scale(1.12); }
-  :root:not([data-motion="reduced"]) .curtain.in img { transform: none; transition: transform 1.8s var(--ease) var(--d, 0s); }
-  /* photographs inside frames drift a little against the page (script.js sets --shift) */
-  :root:not([data-motion="reduced"]) .drift img { translate: 0 var(--shift, 0px); scale: 1.12; }
   /* How it works: the line above each step draws once, when you reach it */
   :root:not([data-motion="reduced"]) .steps:not(.in) li::after { transform: scaleX(0); }
   :root:not([data-motion="reduced"]) .steps.in li::after { animation: drawX .9s var(--ease) both; animation-delay: calc(var(--k, 0) * .25s); }

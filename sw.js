@@ -1,7 +1,7 @@
 // Makes the website work like an app: it opens fast, keeps working when the signal drops, and can be installed.
 // It never touches the staff console or any /api call, and pages always come from the network first so people
 // never see an out-of-date price list or form.
-const VERSION = 'v17';
+const VERSION = 'v18';
 const STATIC = 'static-' + VERSION, PAGES = 'pages-' + VERSION;
 const SHELL = ['/offline.html', '/assets/logo-icon.png', '/assets/icon-192.png', '/assets/fonts/geist-latin.woff2', '/assets/fonts/atkinson-next-latin.woff2'];
 

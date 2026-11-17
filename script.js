@@ -477,9 +477,9 @@
     if (deskRows[0]) showShot(deskRows[0]);
   }
 
-  /* ================= Motion: the headline, sections rising, photographs uncovered and drifting =================
+  /* ================= Motion: the headline, sections rising, photographs uncovered =================
      site.css only moves these while motion is allowed ("Less movement" and the device setting both turn it off),
-     so the classes added here are harmless when it is not. Text is moved, never faded; images are never hidden. */
+     so the classes added here are harmless when it is not. Text is moved, never faded; images are never hidden or enlarged. */
 
   // The headline rises word by word. The words stay plain text with spaces, so it reads, copies and is spoken as before.
   var h1 = document.querySelector('.hero h1');
@@ -523,21 +523,13 @@
     document.addEventListener('change', function (e) { if (e.target.name === 'motion' && e.target.value === 'reduced') moving.forEach(settleEl); });
   }
 
-  // Depth: the hero photograph drifts slower than the page, and framed photographs drift a little against it.
+  // Depth: the hero photograph drifts slower than the page as you scroll away from it.
   var heroSec = document.querySelector('.hero'), heroImg = document.querySelector('.hero .photo-hero img');
-  var drifters = [].slice.call(document.querySelectorAll('#dialysis .photo, .board-section .photo, .photo-wide'));
-  drifters.forEach(function (el) { el.classList.add('drift'); });
-  if (heroImg || drifters.length) {
+  if (heroSec && heroImg) {
     var dTick = false;
     var depth = function () {
       dTick = false;
-      var ok = motionOk(), vh = window.innerHeight;
-      if (heroImg) heroImg.style.translate = ok && window.scrollY < heroSec.offsetHeight ? '0 ' + (window.scrollY * 0.28).toFixed(1) + 'px' : '';
-      drifters.forEach(function (el) {
-        var r = el.getBoundingClientRect();
-        if (r.bottom < 0 || r.top > vh) return;
-        el.style.setProperty('--shift', ok ? (((r.top + r.height / 2) - vh / 2) * -0.06).toFixed(1) + 'px' : '0px');
-      });
+      heroImg.style.translate = motionOk() && window.scrollY < heroSec.offsetHeight ? '0 ' + (window.scrollY * 0.28).toFixed(1) + 'px' : '';
     };
     window.addEventListener('scroll', function () { if (!dTick) { dTick = true; requestAnimationFrame(depth); } }, { passive: true });
     depth();
