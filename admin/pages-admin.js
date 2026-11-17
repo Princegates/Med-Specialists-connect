@@ -134,7 +134,7 @@
   // ============ Staff
   C.route('staff', 'Staff', 'staff.edit', function () {
     return C.api('staff').then(function (r) {
-      var roleOptions = Object.keys(r.roles).map(function (k) { return [k, r.roles[k]]; });
+      var roleOptions = Object.keys(r.roles).filter(function (k) { return C.me.role === 'superadmin' || ['superadmin', 'owner'].indexOf(k) < 0; }).map(function (k) { return [k, r.roles[k]]; });
       function tempDialog(name, pw) {
         C.dialog({ title: 'One-time password for ' + name, submit: 'Done', body: el('div', {}, el('p', { class: 'c-note', text: 'Shown only once. They must choose a new password when they sign in.' }), el('p', {}, el('code', { class: 'c-key', text: pw })), el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Copy', on: { click: function () { navigator.clipboard && navigator.clipboard.writeText(pw).then(function () { C.say('Copied.'); }); } } })), onSubmit: function () { return Promise.resolve(); } });
       }

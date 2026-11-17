@@ -118,7 +118,7 @@ export function newRecoveryCodes() {
   return Array.from({ length: 8 }, () => { const b = crypto.getRandomValues(new Uint8Array(10)); return [...b].map((x) => '0123456789abcdefghjkmnpqrstvwxyz'[x % 32]).join('').replace(/(.{5})(.{5})/, '$1-$2'); });
 }
 
-export const PRIVILEGED = ['owner', 'supervisor', 'finance', 'admin'];
+export const PRIVILEGED = ['superadmin', 'owner', 'supervisor', 'finance', 'admin'];
 export async function mfaRequiredFor(env, staff) {
   return PRIVILEGED.includes(staff.role) && (await getSetting(env, 'require_mfa')) !== 'false';
 }

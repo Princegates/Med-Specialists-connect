@@ -7,7 +7,7 @@
     forms.forEach(function (f) { $('form-' + f).hidden = f !== which; });
     err.hidden = true;
     var t = { login: ['Staff sign in', 'Use the email and password your owner gave you.'], mfa: ['Check your authenticator app', 'Open your authenticator app and type the current code.'],
-      recovery: ['Use a recovery code', 'Each recovery code works once.'], setup: ['Set up your platform', 'Create the owner account. This only works the first time.'] }[which];
+      recovery: ['Use a recovery code', 'Each recovery code works once.'], setup: ['Set up your platform', 'Create the super administrator account. This only works the first time.'] }[which];
     $('title').textContent = t[0]; $('sub').textContent = t[1];
     var first = $('form-' + which).querySelector('input'); if (first) first.focus();
   }

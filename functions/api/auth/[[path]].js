@@ -16,7 +16,7 @@ const MAX_TRIES = 5, LOCK_MINUTES = 15;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 async function setupNeeded(env) {
-  const r = await env.DB.prepare("SELECT COUNT(*) AS c FROM staff WHERE role = 'owner' AND active = 1 AND password_hash IS NOT NULL").first();
+  const r = await env.DB.prepare("SELECT COUNT(*) AS c FROM staff WHERE role = 'superadmin' AND active = 1 AND password_hash IS NOT NULL").first();
   return r.c === 0;
 }
 const withCookie = (cookie, data, status = 200) => json(data, status, { 'Set-Cookie': cookie });
@@ -78,12 +78,12 @@ async function setup(env, request, b) {
   const hash = await hashPassword(String(b.password));
   const existing = await env.DB.prepare('SELECT id FROM staff WHERE email = ?').bind(email).first();
   let id = existing && existing.id;
-  if (id) await env.DB.prepare("UPDATE staff SET name = ?, role = 'owner', active = 1, password_hash = ?, must_change = 0, password_changed_at = ? WHERE id = ?").bind(name, hash, nowIso(), id).run();
+  if (id) await env.DB.prepare("UPDATE staff SET name = ?, role = 'superadmin', active = 1, password_hash = ?, must_change = 0, password_changed_at = ? WHERE id = ?").bind(name, hash, nowIso(), id).run();
   else {
     id = crypto.randomUUID();
-    await env.DB.prepare("INSERT INTO staff (id, email, name, role, active, created_at, password_hash, must_change, password_changed_at) VALUES (?, ?, ?, 'owner', 1, ?, ?, 0, ?)").bind(id, email, name, nowIso(), hash, nowIso()).run();
+    await env.DB.prepare("INSERT INTO staff (id, email, name, role, active, created_at, password_hash, must_change, password_changed_at) VALUES (?, ?, ?, 'superadmin', 1, ?, ?, 0, ?)").bind(id, email, name, nowIso(), hash, nowIso()).run();
   }
-  await audit(env, email, 'staff', id, 'created', 'First owner created at set-up');
+  await audit(env, email, 'staff', id, 'created', 'Super administrator created at set-up');
   return enter(env, request, await env.DB.prepare('SELECT * FROM staff WHERE id = ?').bind(id).first());
 }
 

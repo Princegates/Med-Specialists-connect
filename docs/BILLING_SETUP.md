@@ -11,10 +11,10 @@ from the staff console, so deploying this is safe: the website keeps emailing re
 
 The platform has its own sign-in, so Cloudflare Access is **not** needed. If you created an Access application for `/admin*` earlier, delete it (or keep it only if you want a second lock in front, in which case staff sign in twice).
 
-## 2. Create the owner account
-Open `https://www.medspecialistconnect.com/admin/`. On a new platform you will see **Set up your platform**: enter the set-up code, your name, your email and a password (at least 10 characters). You become the owner and are taken straight to setting up an authenticator app (Google Authenticator, Microsoft Authenticator or Authy) and saving eight one-time recovery codes. Once the owner exists, the set-up page can never be used again.
+## 2. Create the super administrator account
+Open `https://www.medspecialistconnect.com/admin/`. On a new platform you will see **Set up your platform**: enter the set-up code, your name, your email and a password (at least 10 characters). You become the **super administrator** and are taken straight to setting up an authenticator app (Google Authenticator, Microsoft Authenticator or Authy) and saving eight one-time recovery codes. Once a super administrator exists, the set-up page can never be used again.
 
-Add everyone else under **Staff**: you are shown a one-time password for each person, which you give them in person or by phone. They choose their own password at first sign-in. Roles: owner, supervisor, coordinator, finance, network manager, compliance, management (read-only), administrator.
+Add everyone else under **Staff**: you are shown a one-time password for each person, which you give them in person or by phone. They choose their own password at first sign-in. The super administrator can do everything and is the only role that can create, change, reset or switch off other super administrators and owners (business directors, who have full access to the business but cannot touch the super administrators). There is always at least one active super administrator, so the platform cannot lock itself out. Other roles: supervisor, coordinator, finance, network manager, compliance, management (read-only), administrator.
 
 Security built in: passwords are salted and slow-hashed; five wrong tries lock an account for 15 minutes; owners, supervisors, finance and administrators must use an authenticator app (Settings → Security); sessions last 12 hours; switching someone off or resetting their password signs them out everywhere; every sign-in, failure and reset is in the audit log. If someone loses their phone they use a recovery code, or the owner resets their authenticator under Staff.
 

@@ -135,6 +135,13 @@ const MIGRATIONS = [
       `CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, staff_id TEXT NOT NULL, created_at TEXT NOT NULL, expires_at TEXT NOT NULL, last_seen TEXT NOT NULL, ip TEXT, agent TEXT)`,
       `CREATE INDEX IF NOT EXISTS idx_sessions_staff ON sessions(staff_id)`
     ]
+  },
+  {
+    id: '0005_superadmin',
+    sql: [
+      // Anyone who set up the platform as the first owner becomes the super administrator.
+      `UPDATE staff SET role = 'superadmin' WHERE role = 'owner' AND password_hash IS NOT NULL AND id = (SELECT id FROM staff WHERE role = 'owner' AND password_hash IS NOT NULL ORDER BY created_at LIMIT 1) AND NOT EXISTS (SELECT 1 FROM staff WHERE role = 'superadmin')`
+    ]
   }
 ];
 

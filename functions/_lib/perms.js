@@ -1,6 +1,8 @@
-// Roles follow the requirements document (section 5). The owner may do everything.
+// Roles follow the requirements document (section 5). The super administrator and the owner may do everything;
+// only a super administrator can create, change, switch off or reset another super administrator or owner.
 // Health details (a client's own words about their condition) are visible only to roles with health.view.
 export const ROLES = {
+  superadmin: 'Super administrator',
   owner: 'Owner / Director',
   supervisor: 'Operations supervisor',
   coordinator: 'Care coordinator',
@@ -12,6 +14,7 @@ export const ROLES = {
 };
 
 const GRANTS = {
+  superadmin: '*',
   owner: '*',
   supervisor: ['dashboard', 'cases.view', 'cases.edit', 'cases.assign', 'cases.close', 'health.view', 'clients.view', 'clients.edit', 'clients.export', 'providers.view', 'billing.view', 'billing.create', 'accounts.view', 'services.view', 'tasks.view', 'tasks.edit', 'audit.view', 'reports.view'],
   coordinator: ['dashboard', 'cases.view', 'cases.edit', 'cases.close', 'health.view', 'clients.view', 'clients.edit', 'providers.view', 'billing.view', 'billing.create', 'services.view', 'tasks.view', 'tasks.edit'],
