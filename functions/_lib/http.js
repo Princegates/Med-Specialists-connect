@@ -13,3 +13,10 @@ export async function readJson(request, maxBytes = 20000) {
 }
 
 export const clean = (v, max) => String(v ?? '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').trim().slice(0, max);
+
+// Runs follow-up work (emails) after the response has been sent, without letting a failure affect the visitor.
+export function later(context, promise) {
+  const p = Promise.resolve(promise).catch(() => {});
+  if (context && typeof context.waitUntil === 'function') context.waitUntil(p);
+  return p;
+}

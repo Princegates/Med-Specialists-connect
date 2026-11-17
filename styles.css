@@ -446,3 +446,6 @@ blockquote { margin: 0; font-family: var(--font-head); font-weight: 600; font-si
 
 /* Make the hidden attribute win over element display styles (for example buttons). */
 [hidden] { display: none !important; }
+
+/* Emergency notice shown on the request form */
+.safety { margin: 12px 0 0; padding: 12px 14px; border-radius: 10px; border: 2px solid var(--err); background: var(--pink-tint); color: var(--ink); }

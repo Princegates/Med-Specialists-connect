@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Follow your request | MEDs Specialists Connect</title>
+  <link rel="icon" type="image/png" href="assets/logo-icon.png">
+  <link rel="preload" href="assets/fonts/josefin-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/nunito-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="invoice.css?v=7">
+  <script>
+    try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  </script>
+</head>
+<body class="invoice-body">
+  <main id="main" class="invoice-page">
+    <p id="state" class="inv-state" role="status">Looking up your request…</p>
+    <article class="invoice" id="track" hidden>
+      <header class="inv-head">
+        <div class="inv-brand">
+          <img src="assets/logo-icon.png" alt="" width="44" height="44">
+          <div><strong>MEDs Specialists Connect</strong><span>An ease to a quality Healthcare</span></div>
+        </div>
+      </header>
+      <h1 id="headline"></h1>
+      <p id="text"></p>
+      <dl class="inv-meta">
+        <div><dt>Case reference</dt><dd id="ref"></dd></div>
+        <div><dt>Service</dt><dd id="service"></dd></div>
+        <div><dt>Received</dt><dd id="received"></dd></div>
+      </dl>
+      <section id="appts" hidden>
+        <h2>Your appointment</h2>
+        <ul id="appt-list"></ul>
+      </section>
+      <section id="inv" hidden>
+        <h2>Your invoice</h2>
+        <p><span id="inv-text"></span> <a id="inv-link" class="btn btn-small" href="#">Open invoice</a></p>
+      </section>
+      <p class="inv-foot">Questions? Call <a href="tel:+233243560080">0243 560 080</a> or message us on <a href="https://wa.me/233243560080">WhatsApp</a> and quote your case reference. If this is an emergency, call 112.</p>
+    </article>
+  </main>
+  <script src="track.js?v=7"></script>
+</body>
+</html>

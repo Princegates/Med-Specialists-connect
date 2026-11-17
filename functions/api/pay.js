@@ -1,12 +1,17 @@
-import { flags, CURRENCY } from '../_lib/catalogue.js';
+import { getFlags, getSetting, getSecret } from '../_lib/settings.js';
+import { ensureSchema } from '../_lib/schema.js';
+import { CURRENCY } from '../_lib/catalogue.js';
 import { json, fail, readJson } from '../_lib/http.js';
 
 // POST /api/pay {id}: starts a Paystack checkout for an issued invoice and returns the checkout address.
 export async function onRequestPost({ request, env }) {
-  const f = flags(env);
+  if (!env.DB) return fail(503, 'The online system is not switched on.');
+  await ensureSchema(env.DB);
+  const f = await getFlags(env);
   if (!f.billingEnabled) return fail(503, 'The online system is not switched on.');
   if (!f.pricesConfirmed) return fail(403, 'Online payment is not open yet.');
-  if (!env.PAYSTACK_SECRET_KEY) return fail(503, 'Online payment is not set up yet.');
+  const secret = await getSecret(env, 'paystack_secret_key');
+  if (!secret) return fail(503, 'Online payment is not set up yet.');
 
   let b;
   try { b = await readJson(request); } catch (e) { return fail(400, 'Invalid request.'); }
@@ -19,12 +24,12 @@ export async function onRequestPost({ request, env }) {
   if (inv.status !== 'issued' || inv.total <= 0) return fail(409, 'This invoice cannot be paid.');
 
   const base = env.PAYSTACK_BASE || 'https://api.paystack.co';
-  const site = (env.SITE_URL || new URL(request.url).origin).replace(/\/$/, '');
+  const site = ((await getSetting(env, 'site_url')) || new URL(request.url).origin).replace(/\/$/, '');
   const reference = `${inv.number}-${Date.now().toString(36)}`;
   try {
     const r = await fetch(`${base}/transaction/initialize`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${env.PAYSTACK_SECRET_KEY}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${secret}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: inv.email || `noreply+${inv.number.toLowerCase()}@medspecialistconnect.com`,
         amount: inv.total,

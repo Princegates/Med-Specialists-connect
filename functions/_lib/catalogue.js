@@ -40,13 +40,6 @@ export const SERVICES = {
   'Medical advice on where to go': { label: 'Advice on where to go', billing: 'none', lines: [] }
 };
 
-export function flags(env) {
-  return {
-    billingEnabled: env.BILLING_ENABLED === 'true' && !!env.DB,
-    pricesConfirmed: env.PRICES_CONFIRMED === 'true'
-  };
-}
-
 export function formatMoney(pesewas) {
   const v = (pesewas / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return SYMBOL + v;

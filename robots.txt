@@ -2,6 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /invoice
+Disallow: /track
 Disallow: /api/
 
 Sitemap: https://www.medspecialistconnect.com/sitemap.xml

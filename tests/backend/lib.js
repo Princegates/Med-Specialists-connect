@@ -14,7 +14,7 @@ function jwt(payload, { kid = 'test-kid', key = keys.privatePem, tamper = false 
   return h + '.' + p + '.' + sig;
 }
 const claims = (o = {}) => ({ aud: ['aud-123'], iss: 'https://test.cloudflareaccess.com', exp: Math.floor(Date.now() / 1000) + 600, email: 'boss@example.com', ...o });
-const adminHdr = (token) => ({ 'Cf-Access-Jwt-Assertion': token || jwt(claims()), Origin: B });
+const adminHdr = (tokenOrEmail) => ({ 'Cf-Access-Jwt-Assertion': tokenOrEmail && tokenOrEmail.includes('.') && !tokenOrEmail.includes('@') ? tokenOrEmail : jwt(claims(tokenOrEmail ? { email: tokenOrEmail } : {})), Origin: B });
 let pass = 0, fails = 0;
 const ok = (name, cond, extra) => { if (cond) { pass++; console.log('  ok   ' + name); } else { fails++; console.log('  FAIL ' + name + (extra !== undefined ? '  -> ' + JSON.stringify(extra) : '')); } };
 const done = () => { console.log(`\n${pass} passed, ${fails} failed`); process.exit(fails ? 1 : 0); };

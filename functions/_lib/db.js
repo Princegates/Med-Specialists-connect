@@ -23,17 +23,23 @@ export async function createInvoice(db, requestId, lines, note) {
   await db.batch([
     db.prepare('INSERT INTO invoices (id, number, request_id, status, currency, total, lines, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
       .bind(id, number, requestId, 'issued', CURRENCY, total, JSON.stringify(lines), note || null, nowIso()),
-    db.prepare("UPDATE requests SET status = 'invoiced' WHERE id = ? AND status IN ('received', 'awaiting_quote')").bind(requestId)
+    db.prepare("UPDATE requests SET status = 'awaiting_payment', next_action = 'Waiting for the client to pay', next_action_due = NULL WHERE id = ? AND status IN ('new', 'under_review', 'awaiting_patient', 'awaiting_provider', 'options_presented')").bind(requestId)
   ]);
   return { id, number, total };
 }
 
-export async function markInvoicePaid(db, invoice, channel, ref) {
+// Marks an invoice paid exactly once (a repeated notification changes nothing) and records the payment in the ledger.
+// `invoice` needs id, status, total, request_id.
+export async function markInvoicePaid(db, invoice, channel, ref, by) {
   if (invoice.status === 'paid') return false;
+  const at = nowIso();
+  const r = await db.prepare("UPDATE invoices SET status = 'paid', paid_at = ?, pay_channel = ?, pay_ref = ? WHERE id = ? AND status = 'issued'")
+    .bind(at, channel || null, ref || null, invoice.id).run();
+  if (!r.meta || r.meta.changes === 0) return false;
   await db.batch([
-    db.prepare("UPDATE invoices SET status = 'paid', paid_at = ?, pay_channel = ?, pay_ref = ? WHERE id = ? AND status = 'issued'")
-      .bind(nowIso(), channel || null, ref || null, invoice.id),
-    db.prepare("UPDATE requests SET status = 'paid' WHERE id = ? AND status IN ('received', 'awaiting_quote', 'invoiced')").bind(invoice.request_id)
+    db.prepare('INSERT INTO payments (id, invoice_id, amount, currency, channel, reference, source, received_at, recorded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(crypto.randomUUID(), invoice.id, invoice.total, CURRENCY, channel || null, ref || null, channel === 'manual' ? 'manual' : 'paystack', at, by || null),
+    db.prepare("UPDATE requests SET status = 'in_progress', next_action = 'Payment received: arrange the service', next_action_due = ? WHERE id = ? AND status = 'awaiting_payment'").bind(at, invoice.request_id)
   ]);
   return true;
 }

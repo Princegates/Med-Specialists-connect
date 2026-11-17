@@ -8,7 +8,7 @@ const body = (req) => new Promise((res) => { let d = ''; req.on('data', (c) => d
 http.createServer(async (req, res) => {
   const send = (code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); };
   if (req.method === 'POST' && req.url === '/transaction/initialize') {
-    if (req.headers.authorization !== 'Bearer sk_test_local_secret') return send(401, { status: false });
+    if (!['Bearer sk_test_local_secret', 'Bearer sk_test_good'].includes(req.headers.authorization)) return send(401, { status: false });
     const b = JSON.parse(await body(req)); inits[b.reference] = b;
     return send(200, { status: true, data: { authorization_url: 'https://checkout.paystack.com/mock-' + b.reference, reference: b.reference } });
   }
@@ -18,8 +18,23 @@ http.createServer(async (req, res) => {
     if (!i) return send(404, { status: false });
     return send(200, { status: true, data: { status: succeeded.has(ref) ? 'success' : 'abandoned', amount: i.amount, currency: i.currency, reference: ref, channel: 'mobile_money', metadata: i.metadata } });
   }
+  if (req.method === 'GET' && req.url === '/balance') return req.headers.authorization === 'Bearer sk_test_good' || req.headers.authorization === 'Bearer sk_test_local_secret' ? send(200, { status: true, data: [] }) : send(401, { status: false });
   if (req.method === 'GET' && req.url === '/mock/inits') return send(200, inits);
   send(404, {});
 }).listen(9001, '127.0.0.1');
 http.createServer((req, res) => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ keys: [jwk] })); }).listen(9002, '127.0.0.1');
+// Mock email services (Resend, Brevo, SendGrid) on port 9003. Records every message; a key containing 'bad' is refused.
+const emails = [];
+http.createServer(async (req, res) => {
+  const send = (code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); };
+  if (req.method === 'GET' && req.url === '/mock/emails') return send(200, emails);
+  if (req.method === 'POST' && req.url === '/mock/reset') { emails.length = 0; return send(200, { ok: true }); }
+  const provider = req.url === '/emails' ? 'resend' : req.url === '/v3/smtp/email' ? 'brevo' : req.url === '/v3/mail/send' ? 'sendgrid' : null;
+  if (!provider) return send(404, {});
+  const key = provider === 'brevo' ? req.headers['api-key'] : (req.headers.authorization || '').replace('Bearer ', '');
+  const b = JSON.parse(await body(req));
+  if (!key || key.includes('bad')) return send(401, { message: 'invalid key' });
+  emails.push({ provider, key, body: b });
+  send(200, { id: 'mock' });
+}).listen(9003, '127.0.0.1');
 console.log('mocks up');

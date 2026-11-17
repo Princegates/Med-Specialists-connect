@@ -4,61 +4,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Requests and invoices | MEDs staff</title>
+  <title>Staff console | MEDs Specialists Connect</title>
   <link rel="icon" type="image/png" href="../assets/logo-icon.png">
-  <link rel="stylesheet" href="../styles.css?v=5">
-  <link rel="stylesheet" href="admin.css?v=5">
+  <link rel="stylesheet" href="../styles.css?v=7">
+  <link rel="stylesheet" href="admin.css?v=7">
   <script>
     try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
   </script>
 </head>
-<body class="admin-body">
-  <header class="adm-bar">
-    <div class="adm-title"><img src="../assets/logo-icon.png" alt="" width="36" height="36"><h1>Requests and invoices</h1></div>
-    <p class="adm-who" id="who"></p>
+<body class="console">
+  <a class="skip" href="#view">Skip to content</a>
+  <header class="c-bar">
+    <button class="c-menu btn btn-ghost btn-small" type="button" id="menu-btn" aria-expanded="false" aria-controls="c-nav">Menu</button>
+    <a class="c-brand" href="#/dashboard"><img src="../assets/logo-icon.png" alt="" width="32" height="32"><span>Staff console</span></a>
+    <p class="c-who" id="who"></p>
   </header>
-  <main id="main" class="adm-main">
-    <p class="adm-flags" id="flags" role="status"></p>
-    <div class="adm-tools">
-      <label for="filter">Show</label>
-      <select id="filter">
-        <option value="">All requests</option>
-        <option value="open">Needs action</option>
-        <option value="received">Received</option>
-        <option value="awaiting_quote">Awaiting quote</option>
-        <option value="invoiced">Invoiced</option>
-        <option value="paid">Paid</option>
-        <option value="scheduled">Scheduled</option>
-        <option value="closed">Closed</option>
-      </select>
-      <button class="btn btn-ghost btn-small" type="button" id="refresh">Refresh</button>
-    </div>
-    <p class="adm-msg" id="msg" role="status"></p>
-    <div class="adm-wrap">
-      <table class="adm-table">
-        <caption class="sr">Care requests, newest first</caption>
-        <thead><tr><th scope="col">Received</th><th scope="col">Service</th><th scope="col">Client</th><th scope="col">Status</th><th scope="col">Invoice</th><th scope="col">Actions</th></tr></thead>
-        <tbody id="rows"></tbody>
-      </table>
-    </div>
-  </main>
-
-  <dialog id="dlg" aria-labelledby="dlg-title">
-    <form method="dialog" id="inv-form">
-      <h2 id="dlg-title">Create invoice</h2>
-      <p id="dlg-for" class="adm-small"></p>
-      <div id="dlg-lines"></div>
-      <button type="button" class="btn btn-ghost btn-small" id="add-line">Add a line</button>
-      <label for="dlg-note">Note on the invoice (optional)</label>
-      <input id="dlg-note" type="text" maxlength="500">
-      <p class="adm-total">Total <strong id="dlg-total">GH₵0.00</strong></p>
-      <p class="inv-error" id="dlg-err" role="alert" hidden></p>
-      <div class="adm-dlg-actions">
-        <button type="button" class="btn btn-ghost" id="dlg-cancel">Cancel</button>
-        <button type="submit" class="btn" id="dlg-ok">Issue invoice</button>
-      </div>
-    </form>
-  </dialog>
-  <script src="admin.js?v=5"></script>
+  <div class="c-body">
+    <nav class="c-nav" id="c-nav" aria-label="Console"></nav>
+    <main id="view" class="c-view" tabindex="-1"><p class="c-note" role="status">Loading…</p></main>
+  </div>
+  <div class="c-toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="core.js?v=7"></script>
+  <script src="pages-work.js?v=7"></script>
+  <script src="pages-admin.js?v=7"></script>
+  <script src="start.js?v=7"></script>
 </body>
 </html>

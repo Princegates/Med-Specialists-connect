@@ -1,5 +1,7 @@
-import { flags } from '../_lib/catalogue.js';
+import { getFlags } from '../_lib/settings.js';
 import { json } from '../_lib/http.js';
 
 // Tells the website whether the billing system is switched on. Nothing secret is returned.
-export const onRequestGet = ({ env }) => json(flags(env));
+export async function onRequestGet({ env }) {
+  try { return json(await getFlags(env)); } catch (e) { return json({ billingEnabled: false, pricesConfirmed: false }); }
+}

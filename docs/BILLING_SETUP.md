@@ -1,94 +1,38 @@
-# Billing system: setup and go-live
+# Setting up the staff console, billing and payments
 
-The billing system stores care requests, issues invoices, takes payment through Paystack and gives staff an
-admin page. It is **switched off** until you set it up, so the live website keeps working exactly as it does now.
-Order matters: do the steps in sequence, test with Paystack test keys first, and only then go live.
+The backend lives in `functions/` and runs on Cloudflare Pages with a D1 database. Nothing is switched on until you do it
+from the staff console, so deploying this is safe: the website keeps emailing requests exactly as before.
 
-## What you need first
+## 1. One-time Cloudflare set-up
+1. **D1 database.** Workers & Pages → D1 → Create database `meds`. Then Pages project → Settings → Bindings → add a D1 binding named `DB` pointing at it (Production).
+2. **Encryption key.** Pages project → Settings → Variables and Secrets → add a **secret** called `SETTINGS_ENC_KEY`: at least 24 random characters. API keys you save in the console are encrypted with it. Keep a copy somewhere safe: if it is lost, saved keys must be entered again.
+3. **Sign-in (Cloudflare Access).** Zero Trust → Access → Applications → Add a self-hosted application for the hostnames `www.medspecialistconnect.com` and `medspecialistconnect.com` with paths `admin*` and `api/admin*`. Add an *Allow* policy listing the staff emails, and turn on one-time PIN or Google sign-in. For staff with sensitive roles, also require multi-factor authentication in the policy.
+4. Copy the application's **Audience (AUD) tag** and your **team domain** (`yourteam.cloudflareaccess.com`). Add them as variables `CF_ACCESS_AUD` and `CF_ACCESS_TEAM_DOMAIN`.
+5. Optional: `ADMIN_EMAILS` (comma separated). If set, only these emails can become the first owner.
+6. Redeploy. The database tables create themselves the first time the console opens.
 
-- The real prices (see "Set the prices" below).
-- A **Paystack** account for Ghana with business verification done, and Ghana cedi (GHS) payments enabled.
-- A Cloudflare account with **Zero Trust** (Access) turned on. The free plan covers up to 50 staff users.
-- Someone to review the privacy notice and terms before launch (suggested wording is at the end).
+## 2. First sign-in
+Open `https://www.medspecialistconnect.com/admin/`. The first allowed person to sign in becomes the **owner**. Add everyone else under **Staff** (and in the Access policy). Roles: owner, supervisor, coordinator, finance, network manager, compliance, management (read-only), administrator.
 
-## 1. Create the database
+## 3. Switch on, from the console
+Go to **Settings** and work down the Dashboard go-live checklist:
+1. **Email**: choose Resend, Brevo or SendGrid, paste the API key, set the sender address (on a domain you verified with that provider), save, press *Send a test email*.
+2. **Payments**: paste your Paystack **test** secret key, save, press *Test the Paystack connection*. In Paystack set the webhook URL shown on that page.
+3. **Services and prices**: replace the placeholder prices with your real fees, then turn on **Prices are confirmed** (Settings → Billing and prices).
+4. **Billing and prices → Online requests, invoices and payment are switched on**.
+5. Make one real test request on the website with the test key; pay with a Paystack test card/number; confirm the invoice shows paid and a receipt email arrives.
+6. When satisfied, replace the test key with your live key and test again.
 
-1. Cloudflare dashboard, **Storage & databases, D1 SQL database, Create**. Name it `meds`.
-2. Open the database, **Console**, paste the whole contents of `migrations/0001_init.sql`, and run it.
+Environment variables (`BILLING_ENABLED`, `PRICES_CONFIRMED`, `SITE_URL`, `PAYSTACK_SECRET_KEY`, `EMAIL_API_KEY`) still work as fallbacks, but anything saved in the console takes priority.
 
-## 2. Connect the database to the website
+## What the system does
+- Website request → client record, patient record, consent record, case with a random reference (`MSC-XXXXXXXX`) and private tracking link (`/track`).
+- Emergency flag → case goes to *Safety escalation*, due immediately, never invoiced, team emailed with an `[EMERGENCY FLAG]` subject.
+- Fixed-fee services are invoiced at once (once prices are confirmed); quote services are invoiced by staff after agreeing a price. Payment is verified with Paystack (never trusted from the browser) and is idempotent.
+- Cases follow the statuses in the requirements document. Every open case needs a next action and date; closing needs a reason and outcome; reopening needs a reason.
+- Providers must be verified (credential checked, in date) before they can be proposed or booked. Expired credentials block booking automatically.
+- Appointments are only "confirmed" when the provider has confirmed; a change of time keeps the old booking as history.
+- The audit log is hash-chained; the Audit page can check it is intact.
 
-1. **Workers & Pages**, your project, **Settings, Bindings** (called "Functions" on some accounts), **Add, D1 database**.
-2. Variable name: `DB`. Choose the `meds` database. Add it for both Production and Preview.
-
-## 3. Add the settings
-
-**Settings, Variables and secrets.** Add these (mark the key as a *Secret*):
-
-| Name | Value | Notes |
-| --- | --- | --- |
-| `BILLING_ENABLED` | `true` | Turns the system on. Leave it unset until steps 1 to 5 are done |
-| `PRICES_CONFIRMED` | `false` for now | Set to `true` only when the real prices are in place (step 7) |
-| `SITE_URL` | `https://www.medspecialistconnect.com` | Where Paystack sends people back to |
-| `PAYSTACK_SECRET_KEY` | Your Paystack **test** secret key (`sk_test_...`) | Secret. Swap for the live key at go-live |
-| `CF_ACCESS_TEAM_DOMAIN` | For example `yourteam.cloudflareaccess.com` | From Zero Trust, Settings |
-| `CF_ACCESS_AUD` | The "Application Audience (AUD) tag" | From step 4 |
-| `ADMIN_EMAILS` | Comma-separated staff emails allowed in | Optional extra safety check |
-
-Changes to settings apply to the **next deployment**: after editing, go to Deployments and retry the latest one.
-
-## 4. Protect the staff pages with Cloudflare Access
-
-1. **Zero Trust, Access, Applications, Add an application, Self-hosted**.
-2. Add two destinations on `www.medspecialistconnect.com`: path `admin*` and path `api/admin*`.
-3. Policy: **Allow**, include the email addresses of your staff. Require one-time PIN or your login provider.
-4. Save, then copy the **Application Audience (AUD) tag** into `CF_ACCESS_AUD` (step 3).
-
-Never skip this step: without it nobody can use the admin page, and the code refuses every admin request that
-does not carry a valid Access sign-in.
-
-## 5. Connect Paystack
-
-1. Paystack dashboard, **Settings, API Keys & Webhooks**.
-2. Set the **Test webhook URL** to `https://www.medspecialistconnect.com/api/paystack-webhook`.
-3. Use test cards and test Mobile Money numbers from Paystack's documentation while testing.
-
-## 6. Test (with the test key, prices not confirmed)
-
-- Send a request on the website. It should appear in `/admin`. No invoice is created automatically yet.
-- In `/admin`, create an invoice for it. Open the invoice link: it shows a "Test invoice" banner and cannot be paid.
-- Send a request for a variable-price service: it appears as "Awaiting quote".
-
-## 7. Set the prices and go live
-
-1. Edit `functions/_lib/catalogue.js`. Amounts are in **pesewas** (GH₵100.00 is `10000`). Replace every placeholder.
-   Changing a price only affects invoices created afterwards.
-2. Set `PRICES_CONFIRMED` to `true` and retry the deployment.
-3. Test again with Paystack test cards: a fixed-fee request should create an invoice at once, and paying it should
-   mark it paid (watch `/admin`).
-4. Swap in the live `PAYSTACK_SECRET_KEY` and set the **Live webhook URL** in Paystack. Make one small real payment
-   and check it reconciles.
-5. Update the privacy notice and terms (below), have them reviewed, and publish.
-
-## How it behaves
-
-- **Fixed-fee services** (specialist appointment, insurance claims, hospital admission): invoiced automatically
-  once prices are confirmed.
-- **Variable-price services**: land as "Awaiting quote". Staff build the invoice in `/admin` with the provider
-  charge and the coordination fee as separate lines.
-- **Payment** is confirmed only from Paystack's signed notification (or a direct check with Paystack when the
-  patient returns). The amount and currency must match. Screenshots are never proof.
-- **Manual payments** (cash, bank transfer): staff use "Mark paid" and record a reference.
-- **Issued invoices cannot be edited.** To change one, void it and issue a new one. Numbers are never reused.
-- **Invoices show the service name only**, never health details. Each invoice link is a long random address.
-
-## Suggested additions to the privacy notice (have a lawyer review)
-
-- *Payments.* "If you pay online, your payment is handled by Paystack, our payment provider. We receive the
-  amount, the method used and a payment reference, and we do not see your card details or Mobile Money PIN."
-- *Invoices and records.* "We keep a record of your request, the invoice and the payment so we can provide the
-  service, answer questions and meet our accounting obligations."
-- *Email.* "If you give an email address, we use it to send your invoice and receipt."
-- *Service providers.* Add the hosting database to the list of services that help run the site.
-
-Also update the fees paragraph of the terms if the way you charge changes.
+## Not built yet (later phases of the requirements document)
+Patient sign-in with OTP and document upload, provider portal, SMS/WhatsApp automated reminders, complaints and satisfaction surveys, refunds workflow, dialysis and supplies procurement, multi-branch. Legal review of the privacy notice, terms and disclaimer is needed before payments go live.

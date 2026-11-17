@@ -1,79 +1,98 @@
-import { SERVICES, flags } from '../../_lib/catalogue.js';
-import { createInvoice, markInvoicePaid } from '../../_lib/db.js';
-import { requireAdmin } from '../../_lib/access.js';
-import { json, fail, readJson, clean } from '../../_lib/http.js';
+import { ensureSchema } from '../../_lib/schema.js';
+import { resolveStaff } from '../../_lib/admin/auth.js';
+import { getFlags } from '../../_lib/settings.js';
+import { can } from '../../_lib/perms.js';
+import { json, fail, readJson } from '../../_lib/http.js';
+import * as cases from '../../_lib/admin/cases.js';
+import * as clients from '../../_lib/admin/clients.js';
+import * as providers from '../../_lib/admin/providers.js';
+import * as billing from '../../_lib/admin/billing.js';
+import * as accounts from '../../_lib/admin/accounts.js';
+import * as services from '../../_lib/admin/services.js';
+import * as settings from '../../_lib/admin/settings.js';
+import * as staffApi from '../../_lib/admin/staff.js';
+import * as dash from '../../_lib/admin/dashboard.js';
+import * as audit from '../../_lib/admin/audit.js';
+import * as tasks from '../../_lib/admin/tasks.js';
+import { TASK_TYPES } from '../../_lib/admin/tasks.js';
+import { CASE_STATUSES, APPT_STATUSES } from '../../_lib/admin/cases.js';
+import { PROVIDER_TYPES, PROVIDER_STATUSES, CREDENTIAL_TYPES, SERVICE_MODES } from '../../_lib/admin/providers.js';
 
-const REQUEST_STATUSES = ['received', 'awaiting_quote', 'invoiced', 'paid', 'scheduled', 'closed'];
+// Every route under /api/admin: GET reads, POST changes. Sign-in comes from Cloudflare Access; what each person
+// may do comes from their role in the Staff list.
+const ROUTES = [
+  ['GET', /^me$/, (x) => json({ ok: true, me: staffApi.meInfo(x.staff) })],
+  ['GET', /^meta$/, async (x) => json({ ok: true, flags: await getFlags(x.env), caseStatuses: CASE_STATUSES, providerTypes: PROVIDER_TYPES, providerStatuses: PROVIDER_STATUSES, credentialTypes: CREDENTIAL_TYPES, taskTypes: TASK_TYPES, serviceModes: SERVICE_MODES, apptStatuses: APPT_STATUSES, outcomes: ['service_delivered','information_given','referred_elsewhere','client_declined','unable_to_help','duplicate','no_response','other'], services: (await services.list(x).then((r) => r.json())).services || [] })],
+  ['GET', /^dashboard$/, dash.dashboard],
+  ['GET', /^cases$/, cases.list],
+  ['POST', /^cases$/, cases.create],
+  ['GET', /^cases\/([\w-]+)$/, (x, m) => cases.detail(x, m[1])],
+  ['POST', /^cases\/([\w-]+)\/update$/, (x, m) => cases.update(x, m[1])],
+  ['POST', /^cases\/([\w-]+)\/note$/, (x, m) => cases.addNote(x, m[1])],
+  ['POST', /^cases\/([\w-]+)\/contact$/, (x, m) => cases.logCommunication(x, m[1])],
+  ['POST', /^cases\/([\w-]+)\/propose$/, (x, m) => cases.propose(x, m[1])],
+  ['POST', /^assignments\/([\w-]+)$/, (x, m) => cases.respond(x, m[1])],
+  ['GET', /^tasks$/, tasks.list],
+  ['POST', /^tasks$/, tasks.create],
+  ['POST', /^tasks\/([\w-]+)\/done$/, (x, m) => tasks.complete(x, m[1])],
+  ['POST', /^providers\/([\w-]+)\/credentials$/, (x, m) => providers.addCredential(x, m[1])],
+  ['POST', /^credentials\/([\w-]+)$/, (x, m) => providers.reviewCredential(x, m[1])],
+  ['GET', /^audit\/verify$/, audit.verify],
+  ['POST', /^cases\/([\w-]+)\/appointments$/, (x, m) => cases.addAppointment(x, m[1])],
+  ['POST', /^cases\/([\w-]+)\/invoice$/, (x, m) => cases.issueInvoice(x, m[1])],
+  ['POST', /^appointments\/([\w-]+)$/, (x, m) => cases.updateAppointment(x, m[1])],
+  ['GET', /^clients$/, clients.list],
+  ['POST', /^clients$/, clients.create],
+  ['GET', /^clients\/([\w-]+)$/, (x, m) => clients.detail(x, m[1])],
+  ['POST', /^clients\/([\w-]+)\/update$/, (x, m) => clients.update(x, m[1])],
+  ['POST', /^clients\/([\w-]+)\/note$/, (x, m) => clients.addNote(x, m[1])],
+  ['GET', /^clients\/([\w-]+)\/export$/, (x, m) => clients.exportData(x, m[1])],
+  ['POST', /^clients\/([\w-]+)\/anonymise$/, (x, m) => clients.anonymise(x, m[1])],
+  ['GET', /^providers$/, providers.list],
+  ['POST', /^providers$/, providers.create],
+  ['GET', /^providers\/([\w-]+)$/, (x, m) => providers.detail(x, m[1])],
+  ['POST', /^providers\/([\w-]+)\/update$/, (x, m) => providers.update(x, m[1])],
+  ['GET', /^invoices$/, billing.listInvoices],
+  ['GET', /^invoices\/([\w-]+)$/, (x, m) => billing.invoiceDetail(x, m[1])],
+  ['POST', /^invoices\/([\w-]+)\/status$/, (x, m) => billing.setStatus(x, m[1])],
+  ['POST', /^invoices\/([\w-]+)\/resend$/, (x, m) => billing.resend(x, m[1])],
+  ['GET', /^payments$/, billing.listPayments],
+  ['GET', /^accounts\/summary$/, accounts.summary],
+  ['GET', /^accounts\/export$/, accounts.exportCsv],
+  ['GET', /^services$/, services.list],
+  ['POST', /^services$/, services.create],
+  ['POST', /^services\/(.+)\/update$/, (x, m) => services.update(x, decodeURIComponent(m[1]))],
+  ['GET', /^settings$/, settings.get],
+  ['POST', /^settings$/, settings.save],
+  ['POST', /^settings\/test-email$/, settings.testEmail],
+  ['POST', /^settings\/test-payments$/, settings.testPayments],
+  ['GET', /^staff$/, staffApi.listFull],
+  ['GET', /^staff-lite$/, staffApi.listLite],
+  ['POST', /^staff$/, staffApi.create],
+  ['POST', /^staff\/([\w-]+)\/update$/, (x, m) => staffApi.update(x, m[1])],
+  ['GET', /^audit$/, audit.list]
+];
 
-// Everything under /api/admin needs a Cloudflare Access sign-in. Changes also need a same-origin request.
-export async function onRequest({ request, env, params }) {
+export async function onRequest(context) {
+  const { request, env, params } = context;
   if (!env.DB) return fail(503, 'The database is not set up yet.');
-  const admin = await requireAdmin(request, env);
-  if (!admin) return fail(401, 'Sign-in required.');
-  const method = request.method;
-  if (method !== 'GET' && request.headers.get('Origin') !== new URL(request.url).origin) return fail(403, 'Cross-site request refused.');
-  const path = (params.path || []).join('/');
-
-  if (method === 'GET' && path === 'catalogue') {
-    return json({ ok: true, flags: flags(env), admin: admin.email, services: Object.entries(SERVICES).map(([value, s]) => ({ value, label: s.label, billing: s.billing, lines: s.lines })) });
-  }
-
-  if (method === 'GET' && path === 'requests') {
-    const { results } = await env.DB.prepare(
-      'SELECT r.id, r.created_at, r.service, r.for_whom, r.urgency, r.message, r.name, r.phone, r.email, r.preferred_date, r.call_time, r.area, r.status, r.notes, ' +
-      'i.id AS invoice_id, i.number AS invoice_number, i.status AS invoice_status, i.total AS invoice_total ' +
-      "FROM requests r LEFT JOIN invoices i ON i.request_id = r.id AND i.status != 'void' ORDER BY r.created_at DESC LIMIT 200"
-    ).all();
-    return json({ ok: true, requests: results });
-  }
-
-  if (method === 'POST') {
-    let b;
-    try { b = await readJson(request); } catch (e) { return fail(400, 'Invalid request.'); }
-
-    if (path === 'invoice') {
-      const requestId = clean(b.requestId, 40);
-      const req = await env.DB.prepare('SELECT id FROM requests WHERE id = ?').bind(requestId).first();
-      if (!req) return fail(404, 'Request not found.');
-      const raw = Array.isArray(b.lines) ? b.lines.slice(0, 20) : [];
-      const lines = [];
-      for (const l of raw) {
-        const description = clean(l.description, 120);
-        const amount = Math.round(Number(l.amountGhs) * 100);
-        if (!description || !Number.isFinite(amount) || amount <= 0 || amount > 100000000) return fail(400, 'Each line needs a description and an amount above zero.');
-        lines.push({ description, amount });
-      }
-      if (!lines.length) return fail(400, 'Add at least one line.');
-      const made = await createInvoice(env.DB, requestId, lines, clean(b.note, 500));
-      if (made.conflict) return fail(409, 'This request already has an invoice. Void it first to issue a new one.');
-      return json({ ok: true, invoice: { id: made.id, number: made.number, total: made.total, url: `/invoice?id=${made.id}` } });
+  try {
+    await ensureSchema(env.DB);
+    const who = await resolveStaff(request, env);
+    if (!who.staff) return fail(who.status, who.error);
+    const url = new URL(request.url), method = request.method;
+    if (method !== 'GET' && request.headers.get('Origin') !== url.origin) return fail(403, 'Cross-site request refused.');
+    const path = (params.path || []).map(decodeURIComponent).join('/');
+    let body = {};
+    if (method === 'POST') { try { body = await readJson(request, 60000); } catch (e) { return fail(400, 'Invalid request.'); } }
+    const x = { context, request, env, url, staff: who.staff, body };
+    for (const [m, re, fn] of ROUTES) {
+      const hit = m === method && re.exec(path);
+      if (hit) return await fn(x, hit);
     }
-
-    if (path === 'invoice-status') {
-      const inv = await env.DB.prepare('SELECT id, status, request_id FROM invoices WHERE id = ?').bind(clean(b.invoiceId, 40)).first();
-      if (!inv) return fail(404, 'Invoice not found.');
-      if (b.status === 'paid') {
-        if (inv.status !== 'issued') return fail(409, 'Only an issued invoice can be marked paid.');
-        await markInvoicePaid(env.DB, inv, 'manual', clean(b.reference, 80) || `manual:${admin.email}`);
-        return json({ ok: true });
-      }
-      if (b.status === 'void') {
-        if (inv.status !== 'issued') return fail(409, 'Only an unpaid invoice can be voided.');
-        await env.DB.batch([
-          env.DB.prepare("UPDATE invoices SET status = 'void', note = COALESCE(note || ' | ', '') || ? WHERE id = ?").bind('Voided by ' + admin.email, inv.id),
-          env.DB.prepare("UPDATE requests SET status = 'received' WHERE id = ? AND status = 'invoiced'").bind(inv.request_id)
-        ]);
-        return json({ ok: true });
-      }
-      return fail(400, 'Unknown status.');
-    }
-
-    if (path === 'request-status') {
-      if (!REQUEST_STATUSES.includes(b.status)) return fail(400, 'Unknown status.');
-      await env.DB.prepare('UPDATE requests SET status = ?, notes = COALESCE(?, notes) WHERE id = ?')
-        .bind(b.status, b.notes === undefined ? null : clean(b.notes, 1000), clean(b.requestId, 40)).run();
-      return json({ ok: true });
-    }
+    return fail(404, 'Not found.');
+  } catch (e) {
+    console.error('admin api error', e && e.message);
+    return fail(500, 'Something went wrong. Please try again.');
   }
-  return fail(404, 'Not found.');
 }

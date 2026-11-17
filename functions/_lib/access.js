@@ -1,6 +1,6 @@
 // Verifies the sign-in token Cloudflare Access adds to every request it lets through to /admin and /api/admin.
 // Needs CF_ACCESS_TEAM_DOMAIN (e.g. yourname.cloudflareaccess.com) and CF_ACCESS_AUD (the application's AUD tag).
-// Optional ADMIN_EMAILS (comma separated) limits access further.
+// Who counts as staff is decided by the Staff list in the admin console, not here.
 const dec = new TextDecoder();
 const b64u = (s) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(s.length / 4) * 4, '=')), (c) => c.charCodeAt(0));
 
@@ -34,8 +34,7 @@ export async function requireAdmin(request, env) {
     if (!payload.exp || payload.exp * 1000 < Date.now()) return null;
     if (payload.iss !== (env.ACCESS_ISSUER || `https://${team}`)) return null;
     const email = String(payload.email || '').toLowerCase();
-    const allow = String(env.ADMIN_EMAILS || '').toLowerCase().split(',').map((x) => x.trim()).filter(Boolean);
-    if (allow.length && !allow.includes(email)) return null;
+    if (!email) return null;
     return { email };
   } catch (e) {
     return null;

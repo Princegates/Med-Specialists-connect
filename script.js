@@ -153,6 +153,10 @@
   var billing = { on: false };
   fetch('/api/config').then(function (r) { return r.ok ? r.json() : {}; }).then(function (c) { billing.on = !!c.billingEnabled; }).catch(function () {});
 
+  // Safety notice: shown as soon as someone says it is an emergency, before they send anything.
+  var urgSel = document.getElementById('r-urgency'), safety = document.getElementById('r-safety');
+  if (urgSel && safety) urgSel.addEventListener('change', function () { safety.hidden = !/^Emergency/.test(urgSel.value); });
+
   function money(pesewas) { return 'GH\u20B5' + (pesewas / 100).toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
   // Stores the care request. A refusal with a message (for example a bad phone number) is shown to the person;
@@ -212,7 +216,7 @@
       var apiStep = (form.id === 'request-form' && billing.on) ? postApi(form) : Promise.resolve({ skipped: true });
       apiStep.then(function (res) {
         if (res.invoice) { payload['Invoice number'] = res.invoice.number; payload['Invoice link'] = location.origin + res.invoice.url; }
-        if (res.requestId) { payload['Case reference'] = res.requestId.slice(0, 8); payload['Billing status'] = res.status; }
+        if (res.requestId) { payload['Case reference'] = res.ref || res.requestId.slice(0, 8); payload['Billing status'] = res.status; }
         return fetch('https://api.web3forms.com/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -225,11 +229,16 @@
           throw e;
         });
       }).then(function (res) {
-        if (res.invoice) {
+        var trackNote = res.track ? ' Your case reference is ' + res.ref + '. <a href="' + res.track + '">Follow your request here</a>.' : '';
+        if (res.emergency) {
+          say('<strong>If someone is in danger, call 112 now.</strong> We have flagged your request as urgent and will call you straight away.' + trackNote, 'err', true);
+        } else if (res.invoice) {
           say('Thank you. Your invoice ' + res.invoice.number + ' (' + money(res.invoice.total) + ') is ready. ' +
-            '<a href="' + res.invoice.url + '">View and pay your invoice</a>.', 'ok', true);
+            '<a href="' + res.invoice.url + '">View and pay your invoice</a>.' + trackNote, 'ok', true);
         } else if (res.billing === 'quote') {
-          say('Thank you. We have your request. We will confirm the cost and send you an estimate before you pay.', 'ok');
+          say('Thank you. We have your request. We will confirm the cost and send you an estimate before you pay.' + trackNote, 'ok', true);
+        } else if (res.track) {
+          say(success + trackNote, 'ok', true);
         } else {
           say(success, 'ok');
         }

@@ -1,6 +1,10 @@
-import { flags, CURRENCY } from '../_lib/catalogue.js';
+import { getFlags, getSecret } from '../_lib/settings.js';
+import { ensureSchema } from '../_lib/schema.js';
+import { CURRENCY } from '../_lib/catalogue.js';
 import { markInvoicePaid } from '../_lib/db.js';
-import { json, fail } from '../_lib/http.js';
+import { emailReceipt } from '../_lib/email.js';
+import { audit } from '../_lib/audit.js';
+import { json, fail, later } from '../_lib/http.js';
 
 const enc = new TextEncoder();
 async function hmacSha512Hex(secret, body) {
@@ -17,12 +21,15 @@ function safeEqual(a, b) {
 
 // POST /api/paystack-webhook: the source of truth for payments. Only a correctly signed message is believed,
 // and the amount and currency must match the invoice before it is marked paid.
-export async function onRequestPost({ request, env }) {
-  if (!flags(env).billingEnabled || !env.PAYSTACK_SECRET_KEY) return fail(503, 'Not enabled.');
+export async function onRequestPost(context) {
+  const { request, env } = context;
+  if (!env.DB) return fail(503, 'Not enabled.');
+  await ensureSchema(env.DB);
+  const secret = await getSecret(env, 'paystack_secret_key');
+  if (!(await getFlags(env)).billingEnabled || !secret) return fail(503, 'Not enabled.');
   const body = await request.text();
   const given = request.headers.get('x-paystack-signature') || '';
-  const expected = await hmacSha512Hex(env.PAYSTACK_SECRET_KEY, body);
-  if (!safeEqual(given.toLowerCase(), expected)) return fail(401, 'Bad signature.');
+  if (!safeEqual(given.toLowerCase(), await hmacSha512Hex(secret, body))) return fail(401, 'Bad signature.');
 
   let event;
   try { event = JSON.parse(body); } catch (e) { return fail(400, 'Invalid body.'); }
@@ -32,7 +39,10 @@ export async function onRequestPost({ request, env }) {
     if (invoiceId) {
       const inv = await env.DB.prepare('SELECT id, status, total, request_id FROM invoices WHERE id = ?').bind(String(invoiceId)).first();
       if (inv && inv.status === 'issued' && t.amount === inv.total && t.currency === CURRENCY) {
-        await markInvoicePaid(env.DB, inv, t.channel, t.reference);
+        if (await markInvoicePaid(env.DB, inv, t.channel, t.reference)) {
+          await audit(env, 'paystack', 'invoice', inv.id, 'paid', `${t.channel || 'online'} ${t.reference}`);
+          later(context, emailReceipt(env, inv.id));
+        }
       }
     }
   }
