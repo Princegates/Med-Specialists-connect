@@ -40,11 +40,6 @@ html[data-contrast="high"] body.site :focus-visible { outline: 4px solid #ff6b00
 body.site :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 body.site a { text-underline-offset: 3px; }
 
-/* ---------- Emergency strip ---------- */
-.strip { background: var(--ink); color: var(--bg); font-size: .92rem; }
-.strip p { margin: 0; padding: 8px 16px; text-align: center; line-height: 1.4; }
-.strip a { color: inherit; font-weight: 700; }
-
 /* ---------- Header ---------- */
 body.site .site-header { backdrop-filter: saturate(1.4) blur(8px); }
 body.site .nav a:not(.btn)[aria-current="true"] { border-color: var(--pink); }
@@ -172,7 +167,6 @@ body.site .card-photo img { border-radius: 0; }
   body.site .form { padding: 24px 18px; }
   .path { left: 10px; right: 10px; padding: 14px 12px; }
   .path li { font-size: .78rem; }
-  .strip p { font-size: .85rem; }
 }
 @media (max-width: 420px) { .path li span:not(.dot) { display: none; } .path li strong { font-size: .85rem; } .hero-visual { padding-bottom: 70px; } }
 
@@ -242,7 +236,6 @@ body.site .eyebrow.on-dark { color: #ff9fbd; }
 /* ---------- Like an app on a phone ---------- */
 body.site { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
 body.site a, body.site button, body.site summary, body.site label, body.site select { touch-action: manipulation; }
-.strip { padding-top: env(safe-area-inset-top); }
 .offline { position: fixed; left: 12px; right: 12px; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 90; margin: 0; padding: 12px 16px; border-radius: 12px; background: var(--ink); color: var(--bg); font-weight: 600; }
 .offline a { color: inherit; }
 .offline[hidden] { display: none; }
@@ -281,7 +274,6 @@ body.site a, body.site button, body.site summary, body.site label, body.site sel
   .site-footer { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 }
 @media (display-mode: standalone) {
-  .strip { display: none; }
   body.site .site-header { padding-top: env(safe-area-inset-top); }
   .foot-col:last-child li:has(a[href="/admin/"]) { display: none; }
 }
@@ -292,3 +284,47 @@ body.site a, body.site button, body.site summary, body.site label, body.site sel
   html:not([data-motion="reduced"]) .actionbar a, html:not([data-motion="reduced"]) .actionbar button { transition: transform .15s var(--ease), background-color .2s, color .2s; }
 }
 html[data-motion="reduced"] .site-header { transition: none !important; }
+
+/* ---------- About menu in the top bar ---------- */
+.nav-group { position: relative; }
+.nav-drop { display: inline-flex; align-items: center; gap: 4px; padding: 6px 0; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--ink); font: 600 .98rem var(--font-body); cursor: pointer; }
+.nav-drop:hover, .nav-drop[aria-expanded="true"] { border-color: var(--pink); }
+.nav-drop svg { width: 16px; height: 16px; transition: transform .2s; }
+.nav-drop[aria-expanded="true"] svg { transform: rotate(180deg); }
+.nav-menu { position: absolute; top: calc(100% + 10px); left: -14px; min-width: 240px; margin: 0; padding: 8px; list-style: none; background: var(--surface); border: 1.5px solid var(--pink-line); border-radius: 14px; z-index: 60; }
+.nav-menu[hidden] { display: none; }
+.nav-menu a { display: block; padding: 10px 14px; border-radius: 10px; color: var(--ink); text-decoration: none; font-weight: 600; border-bottom: 0 !important; }
+.nav-menu a:hover, .nav-menu a:focus-visible { background: var(--pink-tint); }
+body.site .nav .btn .long { display: none; }
+@media (min-width: 1400px) { body.site .nav .btn .long { display: inline; } body.site .nav .btn .short { display: none; } }
+body.site .nav { gap: 22px; }
+body.site .nav a, body.site .nav .nav-drop { white-space: nowrap; }
+@media (max-width: 1320px) and (min-width: 761px) { body.site .nav { gap: 16px; } .brand-tag { display: none; } }
+@media (max-width: 1000px) and (min-width: 761px) { body.site .brand-text { display: none; } .nav a:not(.btn), .nav-drop { font-size: .92rem; } }
+
+/* ---------- Founder, vision, specialist finder, network page ---------- */
+.founder { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 56px; align-items: center; }
+.founder-photo { margin: 0; }
+.founder-photo img { width: 100%; height: auto; aspect-ratio: 8 / 8.75; object-fit: cover; border-radius: 16px 16px 16px 160px; }
+.founder-name { margin: 14px 0 22px; color: var(--ink-soft); }
+.founder-name strong { color: var(--ink); font-size: 1.15rem; }
+.founder blockquote { border-left: 4px solid var(--pink); padding-left: 22px; font-family: var(--font-body); font-weight: 400; font-size: 1.12rem; line-height: 1.7; }
+.founder blockquote p { margin: 0 0 1em; }
+.founder blockquote p:last-child { margin-bottom: 0; }
+.vm { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; }
+.vm blockquote { font-size: 1.15rem; line-height: 1.5; margin-top: 10px; }
+.vm h3 { color: var(--care); }
+.vm-link { margin: 40px 0 0; }
+.finder { gap: 4px; }
+.finder .btn { margin-top: 16px; width: 100%; }
+.net-hero { background: var(--pink-tint); padding-bottom: 56px; }
+.net-kinds, .net-checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+.net-kinds { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.net-kinds li { padding: 18px 20px; background: var(--surface); border: 1.5px solid var(--pink-line); border-radius: 14px; }
+.net-kinds p { margin: 6px 0 0; color: var(--ink-soft); }
+.net-checks li { padding-left: 34px; position: relative; }
+.net-checks li::before { content: ''; position: absolute; left: 0; top: .35em; width: 20px; height: 20px; border-radius: 50%; background: var(--care); }
+.net-checks li::after { content: ''; position: absolute; left: 6px; top: .6em; width: 8px; height: 4px; border-left: 2.5px solid #fff; border-bottom: 2.5px solid #fff; transform: rotate(-45deg); }
+.net-empty { padding: 22px; border: 2px dashed var(--pink-line); border-radius: 14px; color: var(--ink-soft); font-weight: 600; }
+@media (max-width: 960px) { .founder { grid-template-columns: minmax(0, 1fr); gap: 32px; } .founder-photo { max-width: 420px; } .vm { grid-template-columns: minmax(0, 1fr); gap: 28px; } .net-kinds { grid-template-columns: minmax(0, 1fr); } }
+[aria-invalid="true"] { border-color: var(--err) !important; outline: 2px solid var(--err); }

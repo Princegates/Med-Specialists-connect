@@ -35,12 +35,20 @@
       </a>
       <div class="bar-right">
         <nav id="nav" class="nav" aria-label="Main">
-          <a href="/#patients">For patients</a>
-          <a href="/#refer">For doctors</a>
-          <a href="/#institutions">For hospitals</a>
-          <a href="/#dialysis">Dialysis</a>
-          <a href="/#about">About</a>
-          <a class="btn btn-small" href="/#request">Request care</a>
+          <a href="/#top">Home</a>
+          <div class="nav-group">
+            <button type="button" class="nav-drop" aria-expanded="false" aria-controls="about-menu">About us<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <ul id="about-menu" class="nav-menu" hidden>
+              <li><a href="/#about">Our company</a></li>
+              <li><a href="/#founder">Founder&rsquo;s message</a></li>
+              <li><a href="/#vision">Our vision and mission</a></li>
+              <li><a href="/network">Our healthcare network</a></li>
+            </ul>
+          </div>
+          <a href="/#patients">Our services</a>
+          <a href="/#find">Find a specialist</a>
+          <a href="/#contact">Contact us</a>
+          <a class="btn btn-small" href="/#request"><span class="long">Request healthcare assistance</span><span class="short">Request care</span></a>
         </nav>
         <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Switch to night mode" title="Switch to night mode">
           <svg class="ic-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.500A8.500 8.500 0 0 1 9.500 4 8.500 8.500 0 1 0 20 14.500z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>

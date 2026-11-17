@@ -60,7 +60,6 @@
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.500 4.500 4.500L19 7.500" fill="none" stroke="currentColor" stroke-width="2.400" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   </svg>
   <a class="skip" href="#main">Skip to content</a>
-  <div class="strip" role="region" aria-label="Emergency notice"><p><strong>In an emergency, call <a href="tel:112">112</a> now.</strong> We help arrange care. We are not an emergency service.</p></div>
 
   <header class="site-header">
     <div class="wrap bar">
@@ -73,12 +72,20 @@
       </a>
       <div class="bar-right">
         <nav id="nav" class="nav" aria-label="Main">
-          <a href="#patients">For patients</a>
-          <a href="#refer">For doctors</a>
-          <a href="#institutions">For hospitals</a>
-          <a href="#dialysis">Dialysis</a>
-          <a href="#about">About</a>
-          <a class="btn btn-small" href="#request">Request care</a>
+          <a href="#top">Home</a>
+          <div class="nav-group">
+            <button type="button" class="nav-drop" aria-expanded="false" aria-controls="about-menu">About us<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <ul id="about-menu" class="nav-menu" hidden>
+              <li><a href="#about">Our company</a></li>
+              <li><a href="#founder">Founder&rsquo;s message</a></li>
+              <li><a href="#vision">Our vision and mission</a></li>
+              <li><a href="/network">Our healthcare network</a></li>
+            </ul>
+          </div>
+          <a href="#patients">Our services</a>
+          <a href="#find">Find a specialist</a>
+          <a href="#contact">Contact us</a>
+          <a class="btn btn-small" href="#request"><span class="long">Request healthcare assistance</span><span class="short">Request care</span></a>
         </nav>
         <button class="theme-toggle opts-btn" type="button" id="opts-btn" aria-haspopup="dialog" aria-controls="opts" aria-label="Display and reading options" title="Display and reading options"><svg aria-hidden="true"><use href="#i-text"/></svg></button>
         <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Switch to night mode" title="Switch to night mode">
@@ -297,6 +304,40 @@
             </div>
           </li>
         </ul>
+      </div>
+    </section>
+
+    <!-- FIND A SPECIALIST -->
+    <section class="section" id="find" aria-labelledby="find-title">
+      <div class="wrap two-col">
+        <div>
+          <h2 id="find-title">Find a specialist</h2>
+          <p class="sub">Tell us the kind of specialist you need and where you are. We match you with an appropriate private specialist, confirm the cost with you and arrange the visit.</p>
+          <p class="note">We only suggest specialists whose registration we have checked and whose credentials are up to date.</p>
+        </div>
+        <form class="form finder" id="find-form" novalidate>
+          <label for="find-spec">Which specialist?</label>
+          <select id="find-spec">
+            <option value="">Choose a specialty</option>
+            <option>General physician</option>
+            <option>Cardiologist (heart)</option>
+            <option>Paediatrician (children)</option>
+            <option>Obstetrician and gynaecologist</option>
+            <option>Orthopaedic surgeon (bones and joints)</option>
+            <option>Ear, nose and throat (ENT)</option>
+            <option>Dermatologist (skin)</option>
+            <option>Neurologist (brain and nerves)</option>
+            <option>Urologist</option>
+            <option>Eye specialist</option>
+            <option>Dentist</option>
+            <option>Nephrologist (kidneys)</option>
+            <option>Not sure, please advise me</option>
+          </select>
+          <label for="find-area">Your area or city <span class="opt">(optional)</span></label>
+          <input id="find-area" type="text" autocomplete="address-level2" placeholder="For example: Spintex, Accra">
+          <button class="btn" type="submit">Find me a specialist</button>
+          <p class="hint">This starts your request. Nothing is sent until you choose Send request.</p>
+        </form>
       </div>
     </section>
 
@@ -532,19 +573,51 @@
             <p>We provide end-to-end operational support, including the deployment and management of medical equipment, administrative services, insurance coordination, logistics, and day-to-day clinical unit operations.</p>
           </div>
         </div>
-        <div class="two-up">
-          <div class="statement">
-            <p class="eyebrow">Our mission</p>
-            <blockquote>To provide patients with a seamless, turnkey medical experience through efficient operations, integrated care, and a strong commitment to quality healthcare.</blockquote>
-          </div>
-          <div class="statement">
-            <p class="eyebrow">Our commitment</p>
-            <blockquote>To bridge the gap between medical expertise, healthcare infrastructure, technology, and efficient service management, helping healthcare institutions expand their specialized service offerings while delivering accessible, coordinated, and high-quality patient care.</blockquote>
-          </div>
-        </div>
         <figure class="photo photo-wide">
           <img src="assets/photos/about-nurse-patient.webp" alt="A smiling African nurse in magenta scrubs with a stethoscope and an older African woman in a colourful headwrap and glasses, smiling at each other" width="961" height="415" loading="lazy">
         </figure>
+      </div>
+    </section>
+
+    <!-- FOUNDER -->
+    <section class="section tint" id="founder" aria-labelledby="founder-title">
+      <div class="wrap founder">
+        <figure class="founder-photo">
+          <img src="assets/photos/founder.webp" alt="Portrait of Daniel Asamoah Appiah, founder of MEDs Specialist Connect, in a grey blazer and white open-collar shirt, in a bright office with plants behind him" width="800" height="875" loading="lazy">
+        </figure>
+        <div class="founder-text">
+          <h2 id="founder-title">A message from our founder</h2>
+          <p class="founder-name"><strong>Daniel Asamoah Appiah</strong><br>Founder &amp; Managing Director, MEDs Specialist Connect</p>
+          <blockquote>
+            <p>&ldquo;I believe accessing quality healthcare should not be a complicated experience. Every patient deserves the opportunity to connect with the right medical professionals and receive the assistance they need without unnecessary difficulty.</p>
+            <p>MEDs Specialist Connect was established with a simple vision: to bridge the gap between patients, medical specialists and healthcare service providers through personalised healthcare coordination and reliable medical support.</p>
+            <p>Our commitment is to make healthcare access easier, more convenient and more patient-centred.&rdquo;</p>
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISION AND MISSION -->
+    <section class="section" id="vision" aria-labelledby="vision-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="vision-title">Our vision and mission</h2>
+        </div>
+        <div class="vm">
+          <div class="statement">
+            <h3>Our vision</h3>
+            <blockquote>To bridge the gap between patients, medical specialists and healthcare service providers through personalised healthcare coordination and reliable medical support.</blockquote>
+          </div>
+          <div class="statement">
+            <h3>Our mission</h3>
+            <blockquote>To provide patients with a seamless, turnkey medical experience through efficient operations, integrated care, and a strong commitment to quality healthcare.</blockquote>
+          </div>
+          <div class="statement">
+            <h3>Our commitment</h3>
+            <blockquote>To bridge the gap between medical expertise, healthcare infrastructure, technology, and efficient service management, helping healthcare institutions expand their specialized service offerings while delivering accessible, coordinated, and high-quality patient care.</blockquote>
+          </div>
+        </div>
+        <p class="vm-link"><a class="btn btn-ghost" href="/network">See our healthcare network</a></p>
       </div>
     </section>
 
@@ -659,13 +732,17 @@
       <nav class="foot-col" aria-label="Footer">
         <h2>Explore</h2>
         <ul>
-          <li><a href="#request">Request care</a></li>
-          <li><a href="#fees">Fees and payment</a></li>
-          <li><a href="#patients">For patients</a></li>
+          <li><a href="#about">Our company</a></li>
+          <li><a href="#founder">Founder&rsquo;s message</a></li>
+          <li><a href="#vision">Our vision and mission</a></li>
+          <li><a href="/network">Our healthcare network</a></li>
+          <li><a href="#patients">Our services</a></li>
+          <li><a href="#find">Find a specialist</a></li>
+          <li><a href="#request">Request healthcare assistance</a></li>
           <li><a href="#refer">For doctors</a></li>
           <li><a href="#institutions">For hospitals</a></li>
-          <li><a href="#products">Medical products</a></li>
           <li><a href="#faq">Questions</a></li>
+          <li><a href="#contact">Contact us</a></li>
         </ul>
       </nav>
       <div class="foot-col">
@@ -725,13 +802,17 @@
   <dialog class="sheet" id="more" aria-labelledby="more-title">
     <h2 id="more-title">More</h2>
     <ul class="sheet-links">
+      <li><a href="#find">Find a specialist</a></li>
+      <li><a href="#about">Our company</a></li>
+      <li><a href="#founder">Founder&rsquo;s message</a></li>
+      <li><a href="#vision">Our vision and mission</a></li>
+      <li><a href="/network">Our healthcare network</a></li>
       <li><a href="#refer">For doctors</a></li>
       <li><a href="#institutions">For hospitals</a></li>
       <li><a href="#dialysis">Dialysis</a></li>
       <li><a href="#fees">Fees and payment</a></li>
-      <li><a href="#about">About us</a></li>
       <li><a href="#faq">Questions</a></li>
-      <li><a href="#contact">Contact</a></li>
+      <li><a href="#contact">Contact us</a></li>
     </ul>
     <div class="sheet-actions">
       <a class="btn btn-ghost" href="https://wa.me/233243560080?text=Hello%20MEDs%20Specialists%20Connect%2C%20I%20would%20like%20some%20help%20with%20healthcare." target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#wa"/></svg>Chat on WhatsApp<span class="sr"> (opens in a new tab)</span></a>

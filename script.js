@@ -408,4 +408,34 @@
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
     window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
   }
+
+  /* ================= About menu and Find a specialist ================= */
+  document.querySelectorAll('.nav-group').forEach(function (g) {
+    var btn = g.querySelector('.nav-drop'), menu = g.querySelector('.nav-menu');
+    function set(open) { btn.setAttribute('aria-expanded', String(open)); menu.hidden = !open; }
+    btn.addEventListener('click', function () { set(menu.hidden); });
+    g.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { set(false); btn.focus(); } });
+    g.addEventListener('focusout', function (e) { if (!g.contains(e.relatedTarget)) set(false); });
+    document.addEventListener('click', function (e) { if (!g.contains(e.target)) set(false); });
+    menu.addEventListener('click', function (e) { if (e.target.closest('a')) set(false); });
+  });
+
+  var finder = document.getElementById('find-form');
+  if (finder) {
+    finder.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var spec = document.getElementById('find-spec'), area = document.getElementById('find-area'), rf = document.getElementById('request-form');
+      if (!spec.value) { spec.focus(); spec.setAttribute('aria-invalid', 'true'); return; }
+      spec.removeAttribute('aria-invalid');
+      if (rf) {
+        rf.elements.service.value = spec.value.indexOf('Not sure') === 0 ? 'Medical advice on where to go' : 'Specialist appointment';
+        rf.elements.message.value = 'Looking for: ' + spec.value + (area.value.trim() ? '. Area: ' + area.value.trim() : '') + '.';
+        if (area.value.trim()) rf.elements.area.value = area.value.trim();
+        if (rf.wizard) rf.wizard.go(0);
+        document.getElementById('request').scrollIntoView({ behavior: motionOk() ? 'smooth' : 'auto' });
+        setTimeout(function () { rf.elements.urgency.focus({ preventScroll: true }); }, 500);
+      }
+    });
+    finder.addEventListener('change', function (e) { if (e.target.id === 'find-spec') e.target.removeAttribute('aria-invalid'); });
+  }
 })();
