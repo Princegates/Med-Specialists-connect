@@ -51,7 +51,7 @@ const COOKIE = '__Host-msc_session';
   await ap.fill('input[autocomplete="one-time-code"]', totp(secret)); await ap.click('button:has-text("Turn on")'); await ap.waitForSelector('.c-codes');
   ok('turning it on shows 8 recovery codes once', (await ap.locator('.c-codes li').count()) === 8);
   await ap.screenshot({ path: S + 'ui-console-recovery.png' });
-  await ap.click('button:has-text("I have saved them")'); await ap.waitForSelector('.c-tiles', { timeout: 8000 });
+  await ap.click('button:has-text("I have saved them")'); await ap.waitForSelector('.c-kpis', { timeout: 8000 });
   ok('after that the whole console opens', (await ap.locator('#c-nav a').count()) >= 10);
   sessions[OWNER] = await cookieOf(oc);
   ok('the session cookie is HttpOnly (the page cannot read it)', !(await ap.evaluate(() => document.cookie)).includes('msc_session'));
@@ -66,7 +66,7 @@ const COOKIE = '__Host-msc_session';
   ok('the right password asks for the app code', /authenticator/i.test(await ap.innerText('#title')));
   await ap.fill('#code', '000000'); await ap.click('#form-mfa button[type=submit]'); await ap.waitForSelector('#error:not([hidden])');
   ok('a wrong code is refused', /Wrong/.test(await ap.innerText('#error')));
-  await ap.fill('#code', totp(secret)); await ap.click('#form-mfa button[type=submit]'); await ap.waitForSelector('.c-tiles', { timeout: 8000 });
+  await ap.fill('#code', totp(secret)); await ap.click('#form-mfa button[type=submit]'); await ap.waitForSelector('.c-kpis', { timeout: 8000 });
   ok('the right code opens the console', /Dashboard/.test(await ap.title()));
   sessions[OWNER] = await cookieOf(oc);
 
@@ -117,12 +117,17 @@ const COOKIE = '__Host-msc_session';
   console.log('Staff console as the owner');
   await ap.goto(B + '/admin/'); await ap.waitForSelector('#view h1'); await ap.waitForTimeout(500);
   const nav = (await ap.locator('#c-nav a').allInnerTexts()).join('|');
-  ok('the owner sees every section', ['Dashboard', 'Cases', 'Tasks', 'Clients', 'Doctors and providers', 'Invoices', 'Accounts', 'Services and prices', 'Settings', 'Staff', 'Audit log'].every((t) => nav.includes(t)), nav);
-  ok('the dashboard shows the safety flag count and a go-live checklist', /Safety flags/.test(await ap.innerText('#view')) && /Go-live checklist/.test(await ap.innerText('#view')));
+  ok('the owner sees every section', ['Dashboard', 'Cases', 'Tasks', 'Calendar', 'Clients', 'Doctors and providers', 'Invoices', 'Accounts', 'Reports', 'Services and prices', 'Settings', 'Staff', 'Audit log'].every((t) => nav.includes(t)), nav);
+  ok('the dashboard greets the person and shows what needs attention and a go-live checklist', /Good (morning|afternoon|evening), The/.test(await ap.innerText('#view')) && /possible emergenc/.test(await ap.innerText('#view')) && /Go-live checklist/.test(await ap.innerText('#view')), (await ap.innerText('#view')).slice(0, 300));
   await axe(ap, 'dashboard');
   await ap.screenshot({ path: S + 'ui-console-dashboard.png' });
 
   await ap.goto(B + '/admin/#/cases'); await ap.waitForSelector('.c-table tbody tr');
+  await ap.click('.c-seg button:has-text("Board")'); await ap.waitForSelector('.c-board');
+  ok('the case board groups cases into columns and the emergency card is marked', (await ap.locator('.c-kcol').count()) === 4 && /Emergency/.test(await ap.innerText('.c-kcol >> nth=0')));
+  await axe(ap, 'case board');
+  await ap.screenshot({ path: S + 'ui-console-board.png' });
+  await ap.click('.c-seg button:has-text("List")'); await ap.waitForSelector('.c-table tbody tr');
   ok('the case list leads with the emergency case', /Emergency/.test(await ap.locator('.c-table tbody tr').first().innerText()), await ap.locator('.c-table tbody tr').first().innerText());
   await axe(ap, 'case list');
   await ap.locator('.c-table tbody tr').first().locator('a').first().click(); await ap.waitForSelector('.c-alert');
@@ -158,6 +163,20 @@ const COOKIE = '__Host-msc_session';
   ok('the provider page lists credentials with their check result', /Verified/.test(await ap.innerText('.c-view')));
   await axe(ap, 'provider page');
 
+  await ap.goto(B + '/admin/#/calendar'); await ap.waitForSelector('.c-cal');
+  ok('the calendar shows the month with a Today button and a list below', (await ap.locator('.c-cal-d').count()) >= 28 && (await ap.isVisible('button:has-text("Today")')));
+  await axe(ap, 'calendar');
+  await ap.screenshot({ path: S + 'ui-console-calendar.png' });
+  await ap.goto(B + '/admin/#/reports'); await ap.waitForSelector('.c-kpis');
+  ok('reports show key figures, charts and money received', /Requests received/.test(await ap.innerText('.c-view')) && /Money received by month/.test(await ap.innerText('.c-view')) && (await ap.locator('.c-cols-chart').count()) >= 2);
+  await axe(ap, 'reports');
+  await ap.screenshot({ path: S + 'ui-console-reports.png', fullPage: true });
+  await ap.fill('#gsearch', 'Boateng'); await ap.waitForSelector('#gresults:not([hidden]) a');
+  ok('the search box finds cases and clients by name', /Boateng/.test(await ap.innerText('#gresults')) && /cases/i.test(await ap.innerText('#gresults')));
+  await ap.keyboard.press('Escape');
+  await ap.click('#theme-btn'); ok('the theme button switches to night mode', (await ap.getAttribute('html', 'data-theme')) === 'dark');
+  await axe(ap, 'dashboard in night mode');
+  await ap.click('#theme-btn');
   await ap.goto(B + '/admin/#/tasks'); await ap.waitForSelector('.c-view h1');
   await axe(ap, 'tasks page');
   await ap.goto(B + '/admin/#/services'); await ap.waitForSelector('.c-table tbody tr');
@@ -195,7 +214,7 @@ const COOKIE = '__Host-msc_session';
   ok('on a phone the menu is behind a button', !(await mp.isVisible('#c-nav')) && (await mp.isVisible('#menu-btn')));
   await mp.click('#menu-btn'); ok('the menu button opens it', await mp.isVisible('#c-nav'));
   await mp.keyboard.press('Escape'); await mp.click('#menu-btn');
-  for (const route of ['dashboard', 'cases', 'providers', 'settings']) {
+  for (const route of ['dashboard', 'cases', 'calendar', 'reports', 'providers', 'settings']) {
     await mp.goto(B + '/admin/#/' + route); await mp.waitForTimeout(700);
     ok(`no sideways scrolling on a phone: ${route}`, await mp.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), await mp.evaluate(() => document.documentElement.scrollWidth));
   }

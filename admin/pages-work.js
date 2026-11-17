@@ -12,36 +12,39 @@
   function download(name, text, type) { var a = el('a', { href: URL.createObjectURL(new Blob([text], { type: type })), download: name }); document.body.append(a); a.click(); a.remove(); }
 
   // ============ Dashboard
+  function hashQuery() { var q = {}; (location.hash.split('?')[1] || '').split('&').forEach(function (p) { if (!p) return; var kv = p.split('='); q[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || '1'); }); return q; }
   C.route('dashboard', 'Dashboard', null, function () {
-    return C.api('dashboard').then(function (d) {
-      var v = el('div', {}, C.h('Dashboard', 1));
+    return Promise.all([C.api('dashboard'), C.can('reports.view') ? C.api('reports').catch(function () { return null; }) : Promise.resolve(null)]).then(function (res) {
+      var d = res[0], rep = res[1], hr = new Date().getHours();
+      var hello = (hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening') + ', ' + String(C.me.name).split(' ')[0];
+      var v = el('div', {}, C.pageHead(hello, new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+        C.can('cases.edit') ? el('button', { class: 'btn btn-small', type: 'button', text: 'Log a request', on: { click: logRequestDialog } }) : null));
+
+      if (d.cases) {
+        var needs = [];
+        if (d.cases.safety) needs.push(['alert', d.cases.safety + (d.cases.safety === 1 ? ' possible emergency' : ' possible emergencies') + ' flagged', '#/cases?status=safety_escalation', 'warn']);
+        if (d.cases.overdueActions) needs.push(['clock', d.cases.overdueActions + ' next ' + (d.cases.overdueActions === 1 ? 'action is' : 'actions are') + ' overdue', '#/cases?overdue=1', 'warn']);
+        if (d.cases.unassigned) needs.push(['users', d.cases.unassigned + ' open ' + (d.cases.unassigned === 1 ? 'case has' : 'cases have') + ' no owner', '#/cases?assigned=none', '']);
+        if (d.money && d.money.overdueCount) needs.push(['money', d.money.overdueCount + ' overdue ' + (d.money.overdueCount === 1 ? 'invoice' : 'invoices'), '#/invoices', '']);
+        v.append(needs.length ? el('ul', { class: 'c-attn', 'aria-label': 'Needs attention' }, needs.map(function (n) { return el('li', { class: n[3] }, el('a', { href: n[2] }, C.icon(n[0]), el('span', { text: n[1] }), C.icon('chevr', 16))); })) : el('p', { class: 'c-allclear' }, C.icon('tasks'), ' Nothing urgent right now.'));
+        v.append(el('div', { class: 'c-kpis' }, C.kpi('Open cases', d.cases.open, 'cases'), C.kpi('Waiting for payment', d.cases.awaitingPayment, 'card'), C.kpi('Assigned to me', d.cases.mine, 'user'), C.kpi('My open tasks', d.cases.myTasks, 'tasks'), C.kpi('New today', d.cases.today, 'plus')));
+      }
+      if (d.money) v.append(el('div', { class: 'c-kpis' }, C.kpi('Collected this month', C.money(d.money.collectedThisMonth), 'money', 'good'), C.kpi('Waiting to be paid', C.money(d.money.outstanding), 'invoice'), C.kpi('Overdue invoices', d.money.overdueCount, 'alert', d.money.overdueCount ? 'warn' : '')));
+
+      var left = [], right = [];
+      if (d.cases) left.push(C.card('Coming up', C.table(['When', 'Provider', 'Status', ''], (d.upcoming || []).map(function (u) { return [C.dateTime(u.scheduled_at), u.provider_name || '', statusTag(u.status), C.link('Open case', '#/cases/' + u.request_id)]; }), 'No upcoming appointments.'), C.link('Open calendar', '#/calendar')));
+      if (rep && rep.revenueByMonth) right.push(C.card('Money received', C.columns(rep.revenueByMonth, { format: function (x) { return x ? 'GH₵' + Math.round(x / 100).toLocaleString('en-GH') : '0'; } }), C.link('All reports', '#/reports')));
+      else if (rep) right.push(C.card('Requests per month', C.columns(rep.casesByMonth), C.link('All reports', '#/reports')));
+      if (d.expiringCredentials && d.expiringCredentials.length) left.push(C.card('Credentials expiring within 60 days', C.table(['Doctor or provider', 'Expires', ''], d.expiringCredentials.map(function (p) { return [p.name, C.date(p.credential_expiry), C.link('Open', '#/providers/' + p.id)]; }))));
       if (d.setup) {
         var s = d.setup, items = [
-          ['Encryption key saved in Cloudflare', s.encryptionKey, 'settings'],
-          ['Email connected and tested', s.emailReady && s.emailVerified, 'settings'],
-          ['Paystack key saved and tested', s.paymentsKey && s.paymentsVerified, 'settings'],
-          ['Prices confirmed', s.pricesConfirmed, 'services'],
-          ['Online requests, invoices and payment switched on', s.billingEnabled, 'settings']
-        ];
-        v.append(C.section('Go-live checklist', el('ul', { class: 'c-check-list' }, items.map(function (i) {
-          return el('li', {}, C.tag(i[1] ? 'Done' : 'To do', i[1] ? 'good' : 'warn'), ' ', C.link(i[0], '#/' + i[2]));
-        })), d.emailFailures ? el('p', { class: 'c-error', text: d.emailFailures + ' email(s) failed to send in the last 7 days. See Settings, Email.' }) : null));
+          ['Encryption key saved in Cloudflare', s.encryptionKey, 'settings'], ['Email connected and tested', s.emailReady && s.emailVerified, 'settings'], ['Paystack key saved and tested', s.paymentsKey && s.paymentsVerified, 'settings'],
+          ['Prices confirmed', s.pricesConfirmed, 'services'], ['Online requests, invoices and payment switched on', s.billingEnabled, 'settings']
+        ], todo = items.filter(function (i) { return !i[1]; }).length;
+        right.push(C.card(todo ? 'Go-live checklist' : 'Go-live checklist: all done', el('div', {}, el('ul', { class: 'c-check-list' }, items.map(function (i) { return el('li', {}, C.tag(i[1] ? 'Done' : 'To do', i[1] ? 'good' : 'warn'), ' ', C.link(i[0], '#/' + i[2])); })),
+          d.emailFailures ? el('p', { class: 'c-error', text: d.emailFailures + ' email(s) failed to send in the last 7 days. See Settings, Email.' }) : null)));
       }
-      if (d.cases) {
-        v.append(C.section('Cases', el('div', { class: 'c-tiles' },
-          C.tile('Safety flags', d.cases.safety, d.cases.safety ? 'warn' : ''), C.tile('Actions overdue', d.cases.overdueActions, d.cases.overdueActions ? 'warn' : ''), C.tile('Open', d.cases.open),
-          C.tile('Not assigned', d.cases.unassigned, d.cases.unassigned ? 'warn' : ''), C.tile('Urgent', d.cases.urgent, d.cases.urgent ? 'warn' : ''), C.tile('Waiting for payment', d.cases.awaitingPayment), C.tile('Mine', d.cases.mine), C.tile('My open tasks', d.cases.myTasks), C.tile('New today', d.cases.today)),
-          el('p', {}, C.link('See my tasks', '#/tasks'), ' · ', C.link('See overdue cases', '#/cases?overdue'))));
-        v.append(C.section('Upcoming appointments', C.table(['When', 'Doctor or provider', 'Status', ''], (d.upcoming || []).map(function (u) {
-          return [C.dateTime(u.scheduled_at), u.provider_name || '', statusTag(u.status), C.link('Open case', '#/cases/' + u.request_id)];
-        }), 'No upcoming appointments.')));
-      }
-      if (d.money) {
-        v.append(C.section('Money', el('div', { class: 'c-tiles' }, C.tile('Collected this month', C.money(d.money.collectedThisMonth), 'good'), C.tile('Waiting to be paid', C.money(d.money.outstanding)), C.tile('Overdue invoices', d.money.overdueCount, d.money.overdueCount ? 'warn' : ''))));
-      }
-      if (d.expiringCredentials && d.expiringCredentials.length) {
-        v.append(C.section('Credentials expiring within 60 days', C.table(['Doctor or provider', 'Expires', ''], d.expiringCredentials.map(function (p) { return [p.name, C.date(p.credential_expiry), C.link('Open', '#/providers/' + p.id)]; }))));
-      }
+      if (left.length || right.length) v.append(el('div', { class: 'c-grid2' }, el('div', { class: 'c-stack' }, left), el('div', { class: 'c-stack' }, right)));
       return v;
     });
   }, true);
@@ -65,11 +68,29 @@
       } });
   }
 
+  var BOARD = [['New and in review', ['new', 'safety_escalation', 'under_review', 'reopened']], ['Waiting on someone', ['awaiting_patient', 'awaiting_provider', 'options_presented']], ['Payment', ['awaiting_payment']], ['In delivery', ['confirmed', 'in_progress', 'follow_up_due']]];
+  function caseCard(c) {
+    return el('a', { class: 'c-kcard' + (c.priority === 'emergency' ? ' urgent' : ''), href: '#/cases/' + c.id },
+      el('strong', { text: c.service_label || c.service }), el('span', { class: 'c-sub', text: c.name + (c.ref ? ' · ' + c.ref : '') }),
+      el('span', { class: 'c-ktags' }, statusTag(c.status), c.priority === 'emergency' ? C.tag('Emergency', 'warn') : /^Urgent/.test(c.urgency || '') || c.priority === 'high' ? C.tag('Urgent', 'warn') : null, c.invoice_id ? C.tag(c.invoice_status === 'paid' ? 'Paid' : 'Payment due', c.invoice_status === 'paid' ? 'good' : '') : null),
+      c.next_action ? el('span', { class: 'c-knext' + (overdue(c) ? ' c-late' : ''), text: (overdue(c) ? 'Overdue: ' : 'Next: ') + c.next_action }) : null,
+      el('span', { class: 'c-kfoot' }, c.assigned_name ? C.avatar(c.assigned_name) : el('span', { class: 'c-sub', text: 'Not assigned' }), c.assigned_name ? el('span', { class: 'c-sub', text: c.assigned_name }) : null));
+  }
+
   C.route('cases', 'Cases', 'cases.view', function () {
-    var q = { status: 'open', assigned: '', urgent: '', q: '', overdue: /overdue/.test(location.hash) ? '1' : '' }, body = el('div');
+    var hq = hashQuery(), view = 'list';
+    try { view = localStorage.getItem('cases-view') === 'board' ? 'board' : 'list'; } catch (e) {}
+    var q = { status: hq.status || 'open', assigned: hq.assigned || '', urgent: '', q: '', overdue: hq.overdue ? '1' : '' }, body = el('div');
     function load() {
-      body.replaceChildren(el('p', { class: 'c-note', text: 'Loading…' }));
-      return C.api('cases?' + C.qs(Object.assign({ limit: 150 }, q))).then(function (r) {
+      body.replaceChildren(el('p', { class: 'c-note', role: 'status', text: 'Loading…' }));
+      return C.api('cases?' + C.qs(Object.assign({ limit: 200 }, q))).then(function (r) {
+        if (view === 'board' && (q.status === 'open' || q.status === '')) {
+          body.replaceChildren(el('div', { class: 'c-board' }, BOARD.map(function (col) {
+            var list = r.cases.filter(function (c) { return col[1].indexOf(c.status) > -1; });
+            return el('section', { class: 'c-kcol', 'aria-label': col[0] }, el('h2', {}, col[0], el('span', { class: 'c-count', text: String(list.length) })), list.length ? list.map(caseCard) : el('p', { class: 'c-note', text: 'Nothing here.' }));
+          })));
+          return;
+        }
         body.replaceChildren(C.table(['Received', 'Case', 'Client', 'Status', 'Next action', 'Assigned to', 'Invoice'], r.cases.map(function (c) {
           var row = [C.dateTime(c.created_at), el('div', {}, C.link(c.service_label || c.service, '#/cases/' + c.id), el('div', { class: 'c-sub', text: c.ref || '' })), el('div', {}, c.name, el('div', { class: 'c-sub', text: [c.phone, c.area].filter(Boolean).join(' · ') })),
             el('div', {}, statusTag(c.status), c.priority === 'emergency' ? C.tag('Emergency', 'warn') : /^Urgent/.test(c.urgency || '') || c.priority === 'high' ? C.tag('Urgent', 'warn') : null),
@@ -79,13 +100,15 @@
         }), 'No cases match.'));
       }).catch(C.fail);
     }
-    var status = C.select([['open', 'Open cases'], ['', 'All cases']].concat(CASE_STATUSES.map(function (s) { return [s, C.label(s)]; })), 'open', { on: { change: function () { q.status = this.value; load(); } } });
-    var assigned = C.select([['', 'Anyone'], ['me', 'Assigned to me'], ['none', 'Not assigned']], '', { on: { change: function () { q.assigned = this.value; load(); } } });
+    var status = C.select([['open', 'Open cases'], ['', 'All cases']].concat(CASE_STATUSES.map(function (s) { return [s, C.label(s)]; })), q.status, { on: { change: function () { q.status = this.value; load(); } } });
+    var assigned = C.select([['', 'Anyone'], ['me', 'Assigned to me'], ['none', 'Not assigned']], q.assigned, { on: { change: function () { q.assigned = this.value; load(); } } });
     var urgent = C.check('Urgent only', false); urgent.input.addEventListener('change', function () { q.urgent = this.checked ? '1' : ''; load(); });
     var search = C.input('search', '', { placeholder: 'Name, phone, service or case reference', on: { input: function () { clearTimeout(search.t); var s = this; search.t = setTimeout(function () { q.q = s.value; load(); }, 300); } } });
-    var v = el('div', {}, C.h('Cases', 1),
-      el('div', { class: 'c-filters' }, C.field('Show', status), C.field('Assigned', assigned), C.field('Search', search), urgent.box,
-        C.can('cases.edit') ? el('button', { class: 'btn btn-small', type: 'button', text: 'Log a request', on: { click: logRequestDialog } }) : null), body);
+    var tabs = el('div', { class: 'c-seg', role: 'group', 'aria-label': 'View' }, [['list', 'List', 'list'], ['board', 'Board', 'grid']].map(function (t) {
+      var b = el('button', { type: 'button', 'aria-pressed': String(view === t[0]), on: { click: function () { view = t[0]; try { localStorage.setItem('cases-view', view); } catch (e) {} tabs.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); load(); } } }, C.icon(t[2], 16), el('span', { text: t[1] })); return b;
+    }));
+    var v = el('div', {}, C.pageHead('Cases', 'Every request, from first contact to closing.', [tabs, C.can('cases.edit') ? el('button', { class: 'btn btn-small', type: 'button', text: 'Log a request', on: { click: logRequestDialog } }) : null]),
+      el('div', { class: 'c-filters' }, C.field('Show', status), C.field('Assigned', assigned), C.field('Search', search), urgent.box), body);
     load(); return v;
   });
 

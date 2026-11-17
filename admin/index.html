@@ -6,8 +6,8 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Staff console | MEDs Specialists Connect</title>
   <link rel="icon" type="image/png" href="../assets/logo-icon.png">
-  <link rel="stylesheet" href="../styles.css?v=7">
-  <link rel="stylesheet" href="admin.css?v=7">
+  <link rel="stylesheet" href="../styles.css?v=8">
+  <link rel="stylesheet" href="admin.css?v=8">
   <script>
     try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
   </script>
@@ -15,19 +15,26 @@
 <body class="console">
   <a class="skip" href="#view">Skip to content</a>
   <header class="c-bar">
-    <button class="c-menu btn btn-ghost btn-small" type="button" id="menu-btn" aria-expanded="false" aria-controls="c-nav">Menu</button>
-    <a class="c-brand" href="#/dashboard"><img src="../assets/logo-icon.png" alt="" width="32" height="32"><span>Staff console</span></a>
-    <p class="c-who" id="who"></p>
-    <button class="btn btn-ghost btn-small" type="button" id="signout">Sign out</button>
+    <button class="c-menu c-iconbtn" type="button" id="menu-btn" aria-expanded="false" aria-controls="c-nav" aria-label="Menu"></button>
+    <a class="c-brand" href="#/dashboard"><img src="../assets/logo-icon.png" alt="" width="32" height="32"><span>MEDs <b>Staff console</b></span></a>
+    <div class="c-search" role="search">
+      <label class="sr" for="gsearch">Search cases, clients and providers</label>
+      <span class="c-search-ic" id="search-ic"></span>
+      <input id="gsearch" type="search" placeholder="Search name, phone or case reference" autocomplete="off" maxlength="60">
+      <div class="c-results" id="gresults" aria-live="polite" hidden></div>
+    </div>
+    <button class="c-iconbtn" type="button" id="theme-btn" aria-label="Switch to night mode"></button>
+    <div class="c-user"><span id="who-av"></span><p class="c-who" id="who"></p></div>
   </header>
   <div class="c-body">
     <nav class="c-nav" id="c-nav" aria-label="Console"></nav>
     <main id="view" class="c-view" tabindex="-1"><p class="c-note" role="status">Loading…</p></main>
   </div>
   <div class="c-toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="core.js?v=7"></script>
-  <script src="pages-work.js?v=7"></script>
-  <script src="pages-admin.js?v=7"></script>
-  <script src="start.js?v=7"></script>
+  <script src="core.js?v=8"></script>
+  <script src="pages-work.js?v=8"></script>
+  <script src="pages-insight.js?v=8"></script>
+  <script src="pages-admin.js?v=8"></script>
+  <script src="start.js?v=8"></script>
 </body>
 </html>

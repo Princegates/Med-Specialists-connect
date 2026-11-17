@@ -114,8 +114,50 @@
     return wrap;
   };
 
+  // ---- icons (simple 24px outline icons) and small chart helpers
+  var ICONS = {
+    home: 'M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V11z', cases: 'M22 12h-6l-2 3h-4l-2-3H2 M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z',
+    tasks: 'M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11', calendar: 'M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
+    users: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75', pulse: 'M22 12h-4l-3 9L9 3l-3 9H2',
+    invoice: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8', card: 'M3 5h18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z M1 10h22',
+    chart: 'M12 20V10 M18 20V4 M6 20v-4', tag: 'M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z M7 7h.01', sliders: 'M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6',
+    shield: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', list: 'M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01', user: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+    search: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.35-4.35', sun: 'M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42',
+    moon: 'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z', logout: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9', menu: 'M3 12h18 M3 6h18 M3 18h18',
+    alert: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01', clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 6v6l4 2',
+    money: 'M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6', grid: 'M3 3h7v7H3z M14 3h7v7h-7z M14 14h7v7h-7z M3 14h7v7H3z', plus: 'M12 5v14 M5 12h14', chevl: 'M15 18l-6-6 6-6', chevr: 'M9 18l6-6-6-6'
+  };
+  C.icon = function (name, size) {
+    var ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('width', size || 20); svg.setAttribute('height', size || 20); svg.setAttribute('fill', 'none'); svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2'); svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+    (ICONS[name] || '').split(' M').forEach(function (d, i) { var p = document.createElementNS(ns, 'path'); p.setAttribute('d', (i ? 'M' : '') + d); svg.appendChild(p); });
+    return svg;
+  };
+  C.initials = function (name) { var p = String(name || '?').trim().split(/\s+/); return ((p[0] || '?')[0] + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase(); };
+  C.avatar = function (name) { return el('span', { class: 'c-avatar', 'aria-hidden': 'true', text: C.initials(name) }); };
+
+  // Horizontal bars: label, bar, value. Readable without the bar (values are text).
+  C.bars = function (rows, o) {
+    o = o || {}; var max = Math.max.apply(null, rows.map(function (r) { return r.value; }).concat([1]));
+    if (!rows.length || !rows.some(function (r) { return r.value > 0; })) return el('p', { class: 'c-note', text: o.empty || 'Nothing to show yet.' });
+    return el('ul', { class: 'c-bars' }, rows.map(function (r) {
+      return el('li', {}, el('span', { class: 'c-bar-l', text: r.label }), el('span', { class: 'c-bar-t', 'aria-hidden': 'true' }, el('span', { class: 'c-bar-f', style: 'width:' + Math.max(2, Math.round(r.value / max * 100)) + '%' })), el('span', { class: 'c-bar-v', text: o.format ? o.format(r.value) : String(r.value) }));
+    }));
+  };
+  // Vertical columns, one per month.
+  C.columns = function (rows, o) {
+    o = o || {}; var max = Math.max.apply(null, rows.map(function (r) { return r.value; }).concat([1]));
+    return el('ul', { class: 'c-cols-chart' }, rows.map(function (r) {
+      var mon = new Date(r.month + '-01T00:00:00Z').toLocaleDateString('en-GB', { month: 'short', timeZone: 'UTC' });
+      return el('li', {}, el('span', { class: 'c-col-v', text: o.format ? o.format(r.value) : String(r.value) }), el('span', { class: 'c-col-t', 'aria-hidden': 'true' }, el('span', { class: 'c-col-f', style: 'height:' + (r.value ? Math.max(4, Math.round(r.value / max * 100)) : 0) + '%' })), el('span', { class: 'c-col-l', text: mon }));
+    }));
+  };
+  C.card = function (title, body, action) { return el('section', { class: 'c-panel' }, el('header', {}, el('h2', { text: title }), action || null), body); };
+  C.pageHead = function (title, sub, actions) { return el('div', { class: 'c-pagehead' }, el('div', {}, el('h1', { text: title }), sub ? el('p', { class: 'c-sub', text: sub }) : null), actions ? el('div', { class: 'c-actions' }, actions) : null); };
+
   // ---- routing
-  C.route = function (name, label, perm, fn, inNav) { C.routes[name] = { fn: fn, perm: perm, label: label }; if (inNav !== false) C.nav.push({ name: name, label: label, perm: perm }); };
+  C.route = function (name, label, perm, fn, inNav, group, icon) { C.routes[name] = { fn: fn, perm: perm, label: label }; if (inNav !== false) C.nav.push({ name: name, label: label, perm: perm, group: group, icon: icon }); };
   C.render = function () {
     var parts = (location.hash.replace(/^#\/?/, '') || 'dashboard').split('/'), name = parts[0].split('?')[0], id = parts[1] && decodeURIComponent(parts[1]);
     var r = C.routes[name]; var view = document.getElementById('view');

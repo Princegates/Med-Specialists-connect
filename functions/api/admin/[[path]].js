@@ -14,6 +14,7 @@ import * as settings from '../../_lib/admin/settings.js';
 import * as staffApi from '../../_lib/admin/staff.js';
 import * as dash from '../../_lib/admin/dashboard.js';
 import * as audit from '../../_lib/admin/audit.js';
+import * as insight from '../../_lib/admin/insight.js';
 import * as tasks from '../../_lib/admin/tasks.js';
 import { TASK_TYPES } from '../../_lib/admin/tasks.js';
 import { CASE_STATUSES, APPT_STATUSES } from '../../_lib/admin/cases.js';
@@ -33,6 +34,9 @@ const ROUTES = [
   ['POST', /^cases\/([\w-]+)\/contact$/, (x, m) => cases.logCommunication(x, m[1])],
   ['POST', /^cases\/([\w-]+)\/propose$/, (x, m) => cases.propose(x, m[1])],
   ['POST', /^assignments\/([\w-]+)$/, (x, m) => cases.respond(x, m[1])],
+  ['GET', /^search$/, insight.search],
+  ['GET', /^calendar$/, insight.calendar],
+  ['GET', /^reports$/, insight.reports],
   ['GET', /^tasks$/, tasks.list],
   ['POST', /^tasks$/, tasks.create],
   ['POST', /^tasks\/([\w-]+)\/done$/, (x, m) => tasks.complete(x, m[1])],
