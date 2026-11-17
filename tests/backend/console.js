@@ -89,7 +89,18 @@ const yr = new Date().getUTCFullYear();
   ok('changing password needs the current one (403)', r.status === 403, r);
   r = await AUTH(OWNER, 'password', { current: PW, next: 'weak' });
   ok('a weak new password is refused (400)', r.status === 400, r);
-  await A(OWNER, 'settings', { values: { require_mfa: 'false' } }); // the rest of the run uses password-only staff
+  r = await A(OWNER, 'settings', { values: { mfa_policy: 'off' } });
+  ok('turning the authenticator requirement off needs your password (403)', r.status === 403, r);
+  r = await A(OWNER, 'settings', { values: { mfa_policy: 'off' }, password: 'Not-My-Password-1' });
+  ok('a wrong password does not lower it either (403)', r.status === 403, r);
+  r = await A(OWNER, 'settings', { values: { mfa_policy: 'off' }, password: PW });
+  ok('with the right password the admin can turn the requirement off', r.status === 200, r);
+  r = await A(OWNER, 'settings');
+  ok('the setting shows as off', r.j.settings.find((s) => s.key === 'mfa_policy').value === 'off');
+  r = await A(OWNER, 'audit?entity=settings');
+  ok('the change is recorded in the audit log with before and after', r.j.events.some((e) => e.action === 'security' && /from privileged to off/.test(e.detail)), r.j.events.slice(0, 3));
+  r = await A(OWNER, 'settings', { values: { mfa_policy: 'bogus' } });
+  ok('an unknown policy is refused (400)', r.status === 400, r);
 
   console.log('Settings and encryption');
   r = await A(OWNER, 'settings');
@@ -632,5 +643,15 @@ const yr = new Date().getUTCFullYear();
   ok('signing out ends the session for good (401)', r.status === 200 && afterOut.status === 401, afterOut.status);
   r = await req('/api/admin/me', { headers: { Cookie: '__Host-msc_session=' + 'a'.repeat(64) } });
   ok('a made-up session cookie is refused (401)', r.status === 401, r.status);
+  console.log('Raising the sign-in protection for everyone');
+  r = await A(OWNER, 'settings', { values: { mfa_policy: 'everyone' } });
+  ok('raising the protection needs no extra confirmation', r.status === 200, r);
+  r = await A(COORD2, 'cases');
+  ok('with "everyone" an ordinary coordinator must set up the app first (403, mfa_setup)', r.status === 403 && r.j.code === 'mfa_setup', r);
+  r = await A(OWNER, 'settings', { values: { mfa_policy: 'privileged' }, password: PW });
+  ok('stepping back down to privileged roles needs the password', r.status === 200, r);
+  r = await A(COORD2, 'cases');
+  ok('and coordinators can work again', r.status === 200, r.status);
+
   done();
 })().catch((e) => { console.error('TEST CRASH', e); process.exit(2); });

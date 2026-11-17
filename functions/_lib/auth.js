@@ -120,5 +120,8 @@ export function newRecoveryCodes() {
 
 export const PRIVILEGED = ['superadmin', 'owner', 'supervisor', 'finance', 'admin'];
 export async function mfaRequiredFor(env, staff) {
-  return PRIVILEGED.includes(staff.role) && (await getSetting(env, 'require_mfa')) !== 'false';
+  const policy = await getSetting(env, 'mfa_policy');
+  if (policy === 'off') return false;
+  if (policy === 'everyone') return true;
+  return PRIVILEGED.includes(staff.role);
 }

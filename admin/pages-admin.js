@@ -45,7 +45,7 @@
       d.settings.filter(function (s) { return s.group === tab; }).forEach(function (s) {
         var inp, hint = s.help || '';
         if (s.type === 'bool') { var ck = C.check(s.label, s.value === 'true'); ck.input.disabled = !canEdit || !!s.readonly; inputs[s.key] = ck.input; form.append(ck.box); if (hint) form.append(el('p', { class: 'c-hint', text: hint })); return; }
-        if (s.type === 'select') inp = C.select(s.options, s.value || s.default);
+        if (s.type === 'select') inp = C.select(s.options.map(function (o) { return [o, (s.labels && s.labels[o]) || C.label(o)]; }), s.value || s.default);
         else if (s.type === 'textarea') inp = C.textarea(s.value, { maxlength: 600 });
         else if (s.type === 'secret') { inp = C.input('password', '', { autocomplete: 'off', placeholder: s.set ? 'Saved. Type a new one to replace it.' : 'Not saved yet' }); hint = (s.set ? 'A key is saved and cannot be shown again. ' : '') + hint; }
         else inp = C.input(s.type === 'email' ? 'email' : 'text', s.value);
@@ -64,10 +64,22 @@
           else if (i.value !== (def.value || '')) values[k] = i.value;
         });
         if (!Object.keys(values).length && !clear.length) { C.say('Nothing changed.'); return; }
-        C.api('settings', { values: values, clear: clear }).then(function () { C.say('Settings saved.'); C.render(); }).catch(C.fail);
+        function save(extra) { return C.api('settings', Object.assign({ values: values, clear: clear }, extra || {})).then(function () { C.say('Settings saved.'); C.render(); }); }
+        var before = (d.settings.filter(function (x) { return x.key === 'mfa_policy'; })[0] || {}).value || 'privileged';
+        var lowering = values.mfa_policy && values.mfa_policy !== before && (values.mfa_policy === 'off' || (values.mfa_policy === 'privileged' && before === 'everyone'));
+        if (lowering) {
+          var pw = C.input('password', '', { autocomplete: 'current-password', required: true });
+          C.dialog({ title: 'Lower the sign-in protection?', submit: 'Confirm and save', intro: 'Without an authenticator-app code, anyone who learns a staff password could see patient information. Enter your own password to confirm. The change is recorded in the audit log.', body: C.field('Your password', pw), onSubmit: function () { return save({ password: pw.value }); } });
+          return;
+        }
+        save().catch(C.fail);
       });
       v.append(form);
 
+      if (tab === 'security') {
+        v.append(C.section('Where things stand', el('p', { class: 'c-note', text: 'Each person sets up their own authenticator app the first time they sign in after it becomes required. You can reset one person\'s app under Staff if they lose their phone.' }),
+          el('p', {}, C.link('Open Staff', '#/staff'), ' · ', C.link('See sign-ins in the audit log', '#/audit'))));
+      }
       if (tab === 'email' && canEdit) {
         var to = C.input('email', C.me.email);
         v.append(C.section('Check that email works', el('p', { class: 'c-note', text: 'Save your settings first, then send a test message.' }), C.field('Send the test to', to),

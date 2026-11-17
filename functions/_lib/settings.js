@@ -37,7 +37,7 @@ export const DEFS = [
 
   { group: 'payments', key: 'payment_provider', label: 'Payment provider', type: 'select', options: ['paystack'], default: 'paystack' },
   { group: 'payments', key: 'paystack_secret_key', label: 'Paystack secret key', type: 'secret', help: 'Use your test key (sk_test_...) first, then your live key (sk_live_...).' },
-  { group: 'security', key: 'require_mfa', label: 'Require an authenticator-app code for owners, supervisors, finance and administrators', type: 'bool', default: 'true', help: 'Strongly recommended: patient information is sensitive. Staff set it up the first time they sign in.' },
+  { group: 'security', key: 'mfa_policy', label: 'Who must use an authenticator-app code to sign in', type: 'select', options: ['privileged', 'everyone', 'off'], labels: { privileged: 'Super administrators, owners, supervisors, finance and administrators (recommended)', everyone: 'Every staff member', off: 'Nobody (optional for everyone)' }, default: 'privileged', help: 'Patient information is sensitive, so leave this on. Turning it off needs your password. People who already set up the app are still asked for a code unless they turn it off in My account.' },
   { group: 'security', key: 'session_hours', label: 'Hours before staff must sign in again', type: 'number', default: '12' },
   { group: 'payments', key: 'payments_verified', label: 'Payment connection verified by a successful test', type: 'bool', default: 'false', readonly: true }
 ];

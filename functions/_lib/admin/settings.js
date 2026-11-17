@@ -1,6 +1,7 @@
 import { can } from '../perms.js';
 import { describeSettings, saveSettings, getSecret, getSetting, markVerified, GROUPS } from '../settings.js';
 import { sendEmail } from '../email.js';
+import { verifyPassword } from '../auth.js';
 import { audit } from '../audit.js';
 import { json, fail, clean } from '../http.js';
 
@@ -15,9 +16,16 @@ export async function get(x) {
 
 export async function save(x) {
   if (!can(x.staff, 'settings.edit')) return fail(403, 'Not allowed.');
+  // Weakening sign-in protection needs the person's own password, so a left-open screen cannot do it.
+  const before = await getSetting(x.env, 'mfa_policy'), want = x.body.values && x.body.values.mfa_policy;
+  if (want && want !== before && (want === 'off' || (want === 'privileged' && before === 'everyone'))) {
+    const row = await x.env.DB.prepare('SELECT password_hash FROM staff WHERE id = ?').bind(x.staff.id).first();
+    if (!(await verifyPassword(String(x.body.password || ''), row && row.password_hash))) return fail(403, 'Enter your password to confirm lowering the sign-in protection.');
+  }
   const r = await saveSettings(x.env, x.body.values, x.body.clear, x.staff.email);
   if (r.error) return fail(400, r.error);
   if (r.changed.length) await audit(x.env, x.staff.email, 'settings', null, 'updated', r.changed.join(', '));
+  if (r.changed.includes('mfa_policy')) await audit(x.env, x.staff.email, 'settings', null, 'security', `Two-step sign-in policy changed from ${before} to ${want}`);
   return json({ ok: true, changed: r.changed });
 }
 

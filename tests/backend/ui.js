@@ -71,7 +71,7 @@ const COOKIE = '__Host-msc_session';
   sessions[OWNER] = await cookieOf(oc);
 
   // ---- set-up through the API now that the owner has a session
-  await fetch(B + '/api/admin/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: sessions[OWNER], Origin: B }, body: JSON.stringify({ values: { billing_enabled: 'true', prices_confirmed: 'true', site_url: B, require_mfa: 'true' } }) });
+  await fetch(B + '/api/admin/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: sessions[OWNER], Origin: B }, body: JSON.stringify({ values: { billing_enabled: 'true', prices_confirmed: 'true', site_url: B, mfa_policy: 'privileged' } }) });
   const A = async (who, path, body) => req('/api/admin/' + path, body === undefined ? { headers: await adminHdr(who) } : { method: 'POST', headers: await adminHdr(who), body });
   const known = require('./lib.js').known;
   let r = await A(OWNER, 'staff', { email: COORD, name: 'UI Coordinator', role: 'coordinator' }); known[COORD] = r.j.tempPassword;
@@ -189,6 +189,14 @@ const COOKIE = '__Host-msc_session';
   await axe(ap, 'settings');
   await ap.goto(B + '/admin/#/settings?tab=payments'); await ap.waitForSelector('code');
   ok('payment settings show the webhook address to copy into Paystack', /paystack-webhook/.test(await ap.innerText('code')));
+  await ap.goto(B + '/admin/#/settings?tab=security'); await ap.waitForSelector('.c-form select');
+  ok('the security tab offers who must use an authenticator app', /Every staff member/.test(await ap.innerText('.c-form')) && /Nobody/.test(await ap.innerText('.c-form')));
+  await ap.selectOption('.c-form select >> nth=0', 'off'); await ap.click('button:has-text("Save settings")'); await ap.waitForSelector('dialog[open]');
+  ok('turning it off asks for your password first', /Lower the sign-in protection/.test(await ap.innerText('dialog')));
+  await axe(ap, 'confirm dialog');
+  await ap.fill('dialog input[type=password]', 'Wrong-Password-9!'); await ap.click('dialog button[type=submit]'); await ap.waitForSelector('dialog .c-error:not([hidden])');
+  ok('a wrong password is explained inside the dialog', /password/i.test(await ap.innerText('dialog .c-error')));
+  await ap.click('dialog button:has-text("Cancel")');
   await ap.goto(B + '/admin/#/staff'); await ap.waitForSelector('.c-table tbody tr');
   ok('staff page lists people with their roles', /Network manager/.test(await ap.innerText('.c-table')));
   await axe(ap, 'staff page');
