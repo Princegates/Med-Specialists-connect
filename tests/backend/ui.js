@@ -166,6 +166,17 @@ const COOKIE = '__Host-msc_session';
   await p.click('#callback-form button[type=submit]'); await p.waitForTimeout(1200);
   ok('the call-back form needs only a name, a number and consent, and says thank you', web3.length === before + 1 && /We will call you back/.test(await p.innerText('#callback-form .form-status')), await p.innerText('#callback-form .form-status'));
 
+  console.log('Look and feel');
+  await p.goto(B + '/index.html'); await p.waitForTimeout(1200);
+  ok('the site is set in Geist', await p.evaluate(async () => { await document.fonts.ready; return getComputedStyle(document.querySelector('h1')).fontFamily.startsWith('Geist') && document.fonts.check('600 20px Geist'); }));
+  ok('the home page opens with a full-screen photo behind the headline', await p.evaluate(() => { const h = document.querySelector('.hero').getBoundingClientRect(), i = document.querySelector('.photo-hero img').getBoundingClientRect(); return h.height >= innerHeight - 2 && i.width >= innerWidth - 2 && i.height >= h.height - 2; }));
+  ok('at the top the menu is see-through over the photo, white text', await p.evaluate(() => { const h = document.querySelector('.site-header'); return getComputedStyle(h).backgroundColor === 'rgba(0, 0, 0, 0)' && getComputedStyle(document.querySelector('.nav a')).color === 'rgb(255, 255, 255)'; }));
+  await p.evaluate(() => window.scrollTo({ top: 1400, behavior: 'instant' })); await p.waitForTimeout(700);
+  ok('after scrolling it turns solid with dark text', await p.evaluate(() => { const h = document.querySelector('.site-header'); return h.classList.contains('scrolled') && getComputedStyle(document.querySelector('.nav a')).color !== 'rgb(255, 255, 255)'; }));
+  ok('buttons are solid black rectangles', await p.evaluate(() => { const b = getComputedStyle(document.querySelector('#wiz-next')); return b.backgroundColor === 'rgb(10, 10, 10)' && b.borderRadius === '4px'; }));
+  await p.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await p.screenshot({ path: S + 'ui-site-stark.png' });
+
   console.log('Menu, founder, vision, specialist finder, network page');
   await p.goto(B + '/index.html'); await p.waitForTimeout(600);
   const navText = await p.innerText('#nav');
@@ -191,6 +202,7 @@ const COOKIE = '__Host-msc_session';
   await p.goto(B + '/index.html'); await p.waitForTimeout(400);
   await p.click('#find-form button[type=submit]');
   ok('choosing nothing asks for a specialty first', (await p.getAttribute('#find-spec', 'aria-invalid')) === 'true');
+  await p.waitForTimeout(700);
   await axe(p, 'home page with founder, vision and finder');
   await p.goto(B + '/network'); await p.waitForTimeout(400);
   ok('the network page explains who is in the network and how they are chosen, and invents no partners', /Our healthcare network/.test(await p.innerText('h1')) && /How we choose/.test(await p.innerText('main')) && /Partner listings are on their way/.test(await p.innerText('main')));
