@@ -35,7 +35,7 @@
     var label = dark ? 'Switch to day mode' : 'Switch to night mode';
     themeBtn.setAttribute('aria-label', label);
     themeBtn.setAttribute('title', label);
-    if (themeMeta) themeMeta.setAttribute('content', dark ? '#120b0f' : '#78002c');
+    if (themeMeta) themeMeta.setAttribute('content', dark ? '#120b0f' : '#1f1a1d');
   }
   function applyTheme(next) {
     root.setAttribute('data-theme', next);
