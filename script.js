@@ -35,17 +35,26 @@
     var label = dark ? 'Switch to day mode' : 'Switch to night mode';
     themeBtn.setAttribute('aria-label', label);
     themeBtn.setAttribute('title', label);
-    if (themeMeta) themeMeta.setAttribute('content', dark ? '#0f1117' : '#fe0054');
+    if (themeMeta) themeMeta.setAttribute('content', dark ? '#0b1a2a' : '#ebf1ee');
   }
-  themeBtn.addEventListener('click', function () {
-    var next = isDark() ? 'light' : 'dark';
-    if (motionOk()) {
-      root.classList.add('theme-anim'); themeBtn.classList.add('spin');
-      setTimeout(function () { root.classList.remove('theme-anim'); themeBtn.classList.remove('spin'); }, 550);
-    }
+  function applyTheme(next) {
     root.setAttribute('data-theme', next);
     try { localStorage.setItem('theme', next); } catch (e) {}
     syncTheme();
+  }
+  // Where the browser can, the new colours grow out of the switch as a circle; otherwise they simply change.
+  themeBtn.addEventListener('click', function () {
+    var next = isDark() ? 'light' : 'dark';
+    if (!document.startViewTransition || !motionOk()) { applyTheme(next); return; }
+    var b = themeBtn.getBoundingClientRect(), x = b.left + b.width / 2, y = b.top + b.height / 2;
+    var reach = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    root.classList.add('theme-vt');
+    var vt = document.startViewTransition(function () { applyTheme(next); });
+    vt.ready.then(function () {
+      root.animate({ clipPath: ['circle(0px at ' + x + 'px ' + y + 'px)', 'circle(' + reach + 'px at ' + x + 'px ' + y + 'px)'] },
+        { duration: 650, easing: 'cubic-bezier(.2, .7, .2, 1)', pseudoElement: '::view-transition-new(root)' });
+    }).catch(function () {});
+    vt.finished.then(function () { root.classList.remove('theme-vt'); }, function () { root.classList.remove('theme-vt'); });
   });
   if (mq && mq.addEventListener) mq.addEventListener('change', syncTheme);
   syncTheme();
@@ -69,7 +78,7 @@
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  // The only scroll-triggered motion: the line under "How it works" draws once when it comes into view.
+  // Under "How it works", the line between the stations draws once when it comes into view.
   var stepsEl = document.querySelector('.steps');
   if (stepsEl && 'IntersectionObserver' in window) {
     var sio = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { stepsEl.classList.add('in'); sio.disconnect(); } }); }, { threshold: .3 });
@@ -314,8 +323,9 @@
       steps.forEach(function (st, k) { st.classList.toggle('active', k === at); });
       steps[at].style.setProperty('--from', dir === 'back' ? '-24px' : '24px');
       nEl.textContent = String(at + 1); nameEl.textContent = steps[at].getAttribute('data-name');
-      bar.setAttribute('aria-valuenow', String(at + 1)); bar.firstElementChild.style.width = ((at + 1) / steps.length * 100) + '%';
+      bar.setAttribute('aria-valuenow', String(at + 1)); bar.firstElementChild.style.width = (at / (steps.length - 1) * 100) + '%'; // the line reaches the station you are on
       rform.classList.toggle('last', at === steps.length - 1);
+      rform.setAttribute('data-at', String(at));
       back.hidden = at === 0;
       if (focus) { var lg = steps[at].querySelector('legend'); lg.setAttribute('tabindex', '-1'); lg.focus({ preventScroll: false }); }
     }
@@ -346,16 +356,30 @@
     });
   }
 
-  /* ================= Quiet helpers: scroll progress and the current section in the menu ================= */
+  /* ================= Quiet helpers: scroll progress (phones) and the current section in the menu ================= */
   var prog = document.querySelector('#progress span');
   if (prog) {
     var pTick = false;
     window.addEventListener('scroll', function () { if (pTick) return; pTick = true; requestAnimationFrame(function () { var h = document.documentElement.scrollHeight - innerHeight; prog.style.transform = 'scaleX(' + (h > 0 ? Math.min(1, scrollY / h) : 0) + ')'; pTick = false; }); }, { passive: true });
   }
+  // Every section is watched, so reading a part of the page that has no menu entry clears the old highlight
+  // instead of leaving it on whatever came before. A section inside the About menu marks "About us".
+  function sectionSpy(sel, attr, value, onChange) {
+    var map = {}; document.querySelectorAll(sel).forEach(function (a) { map[(a.getAttribute('href') || '').replace(/^.*#/, '') || a.getAttribute('data-tab')] = a; });
+    var watch = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        Object.keys(map).forEach(function (k) { map[k].removeAttribute(attr); });
+        var a = map[e.target.id]; if (a) a.setAttribute(attr, value);
+        if (onChange) onChange(a || null);
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    document.querySelectorAll('main > section[id]').forEach(function (s) { watch.observe(s); });
+  }
   if ('IntersectionObserver' in window) {
-    var links = {}; document.querySelectorAll('.nav a[href^="#"]').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
-    var spy = new IntersectionObserver(function (es) { es.forEach(function (e) { var a = links[e.target.id]; if (a) { if (e.isIntersecting) { Object.keys(links).forEach(function (k) { links[k].removeAttribute('aria-current'); }); a.setAttribute('aria-current', 'true'); } } }); }, { rootMargin: '-45% 0px -50% 0px' });
-    Object.keys(links).forEach(function (id) { var sec = document.getElementById(id); if (sec) spy.observe(sec); });
+    sectionSpy('.nav a[href^="#"]', 'aria-current', 'true', function (a) {
+      document.querySelectorAll('.nav-drop').forEach(function (d) { d.classList.toggle('has-current', !!(a && d.parentNode.contains(a))); });
+    });
   }
 
   /* ================= Works like an app on a phone ================= */
@@ -398,11 +422,7 @@
   }, { passive: true });
 
   // Highlight the tab for the part of the page being read
-  if ('IntersectionObserver' in window) {
-    var tabs = {}; document.querySelectorAll('.actionbar a[data-tab]').forEach(function (a) { tabs[a.getAttribute('data-tab')] = a; });
-    var tspy = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting && tabs[e.target.id]) { Object.keys(tabs).forEach(function (k) { tabs[k].removeAttribute('aria-current'); }); tabs[e.target.id].setAttribute('aria-current', 'page'); } }); }, { rootMargin: '-40% 0px -55% 0px' });
-    Object.keys(tabs).forEach(function (id) { var sec = document.getElementById(id); if (sec) tspy.observe(sec); });
-  }
+  if ('IntersectionObserver' in window) sectionSpy('.actionbar a[data-tab]', 'aria-current', 'page');
 
   // Service worker: faster opening and a friendly page when the signal drops
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
@@ -438,4 +458,53 @@
     });
     finder.addEventListener('change', function (e) { if (e.target.id === 'find-spec') e.target.removeAttribute('aria-invalid'); });
   }
+
+  /* ================= The route line, the front desk, the request stations ================= */
+
+  // The route line down the left of the page fills to where you are reading, and each section's station fills
+  // once you have passed it. It only exists on wide screens; elsewhere this does nothing.
+  var route = document.querySelector('.route');
+  if (route) {
+    var stations = [].slice.call(document.querySelectorAll('main > .section'));
+    var rTick = false;
+    var follow = function () {
+      rTick = false;
+      var r = route.getBoundingClientRect(); if (!r.height) return;
+      var mid = window.innerHeight * 0.55;
+      route.style.setProperty('--route', Math.max(0, Math.min(1, (mid - r.top) / r.height)).toFixed(4));
+      stations.forEach(function (s) { var w = s.firstElementChild; if (w) s.classList.toggle('passed', w.getBoundingClientRect().top + 14 < mid); });
+    };
+    var queue = function () { if (!rTick) { rTick = true; requestAnimationFrame(follow); } };
+    window.addEventListener('scroll', queue, { passive: true });
+    window.addEventListener('resize', queue);
+    follow();
+  }
+
+  // The front desk: pointing at (or tabbing to) a service shows its photo beside the list.
+  var desk = document.querySelector('.desk');
+  if (desk) {
+    var deskRows = [].slice.call(desk.querySelectorAll('.dir li')), deskShots = [].slice.call(desk.querySelectorAll('.desk-view img'));
+    var showShot = function (li) {
+      var k = Number(li.getAttribute('data-shot'));
+      deskRows.forEach(function (r) { r.classList.toggle('on', r === li); });
+      deskShots.forEach(function (im, i) { im.classList.toggle('on', i === k); });
+    };
+    deskRows.forEach(function (li) {
+      li.addEventListener('mouseenter', function () { showShot(li); });
+      li.addEventListener('focusin', function () { showShot(li); });
+    });
+    if (deskRows[0]) showShot(deskRows[0]);
+  }
+
+  // The WhatsApp button steps aside while WhatsApp is already on screen (the hero, the contact panel, the footer).
+  var fab = document.querySelector('.wa-fab');
+  if (fab && 'IntersectionObserver' in window) {
+    var showing = new Set();
+    var fio = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) showing.add(e.target); else showing.delete(e.target); });
+      fab.classList.toggle('away', showing.size > 0);
+    }, { threshold: 0.2 });
+    ['.hero', '#contact', '.site-footer'].forEach(function (s) { var n = document.querySelector(s); if (n) fio.observe(n); });
+  }
+
 })();
