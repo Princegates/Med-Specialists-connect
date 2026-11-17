@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="MEDs Specialists Connect">
   <meta property="og:url" content="https://www.medspecialistconnect.com/">
-  <meta property="og:title" content="MEDs Specialists Connect | An ease to a quality healthcare">
+  <meta property="og:title" content="MEDs Specialists Connect | Your personal healthcare connection">
   <meta property="og:description" content="Tell us what you need. We connect you to the right specialist and coordinate your care. We also run specialized medical units with hospitals and clinics.">
   <meta property="og:image" content="https://www.medspecialistconnect.com/assets/og-image.png">
   <meta property="og:image:width" content="1200">
@@ -70,13 +70,14 @@
     <section class="hero" id="top">
       <div class="wrap hero-grid">
         <div>
-          <p class="eyebrow">Healthcare concierge &amp; medical services management</p>
-          <h1>An ease to a quality healthcare.</h1>
+          <p class="eyebrow">Your personal healthcare connection</p>
+          <h1>Healthcare made easier. Care made accessible.</h1>
           <p class="lead">Tell us what you need. We connect you to the right specialist, arrange the appointment and coordinate your care, so you skip the hospital hassle and focus on getting well.</p>
           <div class="cta-row">
-            <a class="btn" href="#request">Request care</a>
+            <a class="btn" href="#request">Request healthcare assistance</a>
             <a class="btn btn-ghost" href="#institutions">Partner with us</a>
           </div>
+          <p class="hero-services">Specialist consultations &middot; Home healthcare &middot; Diagnostics &middot; Medical coordination</p>
         </div>
         <figure class="photo photo-hero">
           <img src="assets/photos/hero-nurse-patient.webp" alt="An African nurse in blue scrubs smiling as she explains something on a tablet to an older African woman in a patterned headwrap, with a family member beside her" width="1400" height="788" loading="eager" fetchpriority="high">
@@ -98,10 +99,14 @@
           <select id="r-service" name="service" required>
             <option value="" selected disabled>Choose a service</option>
             <option value="Specialist appointment">Specialist appointment</option>
-            <option value="Health insurance assistance">Health insurance assistance</option>
-            <option value="Diagnostic tests or scans">Diagnostic tests or scans</option>
-            <option value="Home healthcare">Home healthcare</option>
+            <option value="Home doctor visit">Home doctor visit</option>
+            <option value="Home nursing">Home nursing</option>
+            <option value="MRI or CT scan">MRI or CT scan</option>
+            <option value="Laboratory tests">Laboratory tests</option>
             <option value="Ambulance coordination">Ambulance coordination</option>
+            <option value="Hospital admission assistance">Hospital admission assistance</option>
+            <option value="Insurance claims assistance">Insurance claims assistance</option>
+            <option value="Second medical opinion">Second medical opinion</option>
             <option value="Dialysis services">Dialysis services</option>
             <option value="Medical advice on where to go">Advice on where to go</option>
           </select>
@@ -136,6 +141,10 @@
           </div>
           <div class="row-2">
             <div>
+              <label for="r-date">Preferred date <span class="opt">(optional)</span></label>
+              <input id="r-date" name="preferred_date" type="date">
+            </div>
+            <div>
               <label for="r-time">Best time to call</label>
               <select id="r-time" name="call_time">
                 <option>Any time</option>
@@ -144,11 +153,9 @@
                 <option>Evening</option>
               </select>
             </div>
-            <div>
-              <label for="r-area">Area or city <span class="opt">(optional)</span></label>
-              <input id="r-area" name="area" type="text" autocomplete="address-level2">
-            </div>
           </div>
+          <label for="r-area">Area or city <span class="opt">(optional)</span></label>
+          <input id="r-area" name="area" type="text" autocomplete="address-level2">
           <input class="hp" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
           <label class="consent"><input type="checkbox" name="consent" required><span>I agree that MEDs Specialists Connect may contact me about this request and use the details I have given, as described in the <a href="privacy" target="_blank" rel="noopener">privacy notice<span class="sr"> (opens in a new tab)</span></a>.</span></label>
           <button class="btn" type="submit">Send request</button>
@@ -225,16 +232,48 @@
         </div>
         <ol class="steps">
           <li><span class="num">Step 1</span><h3>Tell us</h3><p>Call us or send a request on this website. Describe what you need or which specialist you want to see.</p></li>
-          <li><span class="num">Step 2</span><h3>We match you</h3><p>We find an appropriate private specialist or service for your situation.</p></li>
-          <li><span class="num">Step 3</span><h3>We arrange it</h3><p>We schedule the appointment, at a clinic or from the comfort of your home where possible.</p></li>
+          <li><span class="num">Step 2</span><h3>We match you and confirm the cost</h3><p>We find an appropriate private specialist or service and send you an itemised invoice, or an estimate first when the provider's price varies.</p></li>
+          <li><span class="num">Step 3</span><h3>You pay and we arrange it</h3><p>Once the fee is settled, we schedule the appointment, at a clinic or from the comfort of your home where possible.</p></li>
           <li><span class="num">Step 4</span><h3>We follow through</h3><p>Insurance, diagnostics and logistics are coordinated so your care stays on track.</p></li>
         </ol>
 
       </div>
     </section>
 
+    <!-- FEES -->
+    <section class="section tint" id="fees">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Fees and payment</p>
+          <h2>Clear fees, no surprises.</h2>
+          <p class="sub">You pay only for the services you choose. Our coordination fee is shown separately from what doctors, hospitals and laboratories charge.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="fee-table">
+            <caption class="sr">How each service is charged</caption>
+            <thead>
+              <tr><th scope="col">Service</th><th scope="col">How it is charged</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Specialist appointment coordination</th><td>Fixed coordination fee</td></tr>
+              <tr><th scope="row">Home doctor visit</th><td>Doctor fee plus coordination fee</td></tr>
+              <tr><th scope="row">Home nursing</th><td>Quoted according to duration</td></tr>
+              <tr><th scope="row">MRI or CT scan booking</th><td>Provider price plus disclosed fee</td></tr>
+              <tr><th scope="row">Laboratory investigations</th><td>Based on the tests selected</td></tr>
+              <tr><th scope="row">Ambulance coordination</th><td>Provider quotation plus disclosed fee</td></tr>
+              <tr><th scope="row">Hospital admission assistance</th><td>Fixed or quoted service fee</td></tr>
+              <tr><th scope="row">Insurance claims assistance</th><td>Fixed administrative fee</td></tr>
+              <tr><th scope="row">Second medical opinion coordination</th><td>Quoted service fee</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="product-note">Fixed fees are invoiced straight away. Where a provider&rsquo;s price varies, we send you an estimate first, and you pay once the details are confirmed. Ask us for the current fee for any service before you commit.</p>
+        <div class="cta-row cta-center"><a class="btn" href="#request">Request healthcare assistance</a></div>
+      </div>
+    </section>
+
     <!-- DOCTOR REFERRALS -->
-    <section class="section tint" id="refer">
+    <section class="section" id="refer">
       <div class="wrap two-col">
         <div>
           <p class="eyebrow">For doctors and specialists</p>
@@ -276,7 +315,7 @@
     </section>
 
     <!-- INSTITUTIONS -->
-    <section class="section" id="institutions">
+    <section class="section tint" id="institutions">
       <div class="wrap">
         <div class="split split-rev split-head">
           <div class="section-head">
@@ -325,7 +364,7 @@
     </section>
 
     <!-- PRODUCTS -->
-    <section class="section tint" id="products">
+    <section class="section" id="products">
       <div class="wrap">
         <div class="section-head">
           <p class="eyebrow">Medical products</p>
@@ -384,7 +423,7 @@
     </section>
 
     <!-- DIALYSIS CASE STUDY -->
-    <section class="section" id="dialysis">
+    <section class="section tint" id="dialysis">
       <div class="wrap split split-rev">
         <div>
           <p class="eyebrow">Our partnership at ADMed Specialist Clinic</p>
@@ -403,7 +442,7 @@
     </section>
 
     <!-- ABOUT -->
-    <section class="section tint" id="about">
+    <section class="section" id="about">
       <div class="wrap">
         <div class="two-col">
           <div>
@@ -432,7 +471,7 @@
     </section>
 
     <!-- FAQ -->
-    <section class="section" id="faq">
+    <section class="section tint" id="faq">
       <div class="wrap">
         <div class="section-head">
           <p class="eyebrow">Questions</p>
@@ -446,6 +485,10 @@
           <details>
             <summary>What happens after I send a request?</summary>
             <div class="faq-body"><p>Our team calls you back to understand what you need. We then find an appropriate specialist or service and arrange the next steps, at a clinic or at home where possible.</p></div>
+          </details>
+          <details>
+            <summary>How much does it cost, and how do I pay?</summary>
+            <div class="faq-body"><p>Each service has a clear charge, and our coordination fee is shown separately from what doctors, hospitals and laboratories charge. Fixed fees are invoiced straight away. Where a provider&rsquo;s price varies, we send an estimate first and you pay once the details are confirmed. See <a href="#fees">how each service is charged</a>.</p></div>
           </details>
           <details>
             <summary>What should I do in an emergency?</summary>
@@ -539,6 +582,7 @@
         <h2>Explore</h2>
         <ul>
           <li><a href="#request">Request care</a></li>
+          <li><a href="#fees">Fees and payment</a></li>
           <li><a href="#patients">For patients</a></li>
           <li><a href="#refer">For doctors</a></li>
           <li><a href="#institutions">For hospitals</a></li>

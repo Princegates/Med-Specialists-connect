@@ -70,7 +70,7 @@
   // or old browsers, so content is never left hidden.
   if (!reduceMotion && 'IntersectionObserver' in window) {
     var targets = document.querySelectorAll(
-      '.section-head, .cards > li, .steps > li, .faq > *, .product-grid > *, .split > *, .two-up > *, .two-col > *, .photo-wide'
+      '.section-head, .cards > li, .steps > li, .faq > *, .product-grid > *, .table-wrap, .split > *, .two-up > *, .two-col > *, .photo-wide'
     );
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -93,6 +93,10 @@
       io.observe(el);
     });
   }
+
+  // Date pickers can't pick a day that has already passed
+  var today = new Date(); today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+  document.querySelectorAll('input[type="date"]').forEach(function (d) { d.min = today.toISOString().slice(0, 10); });
 
   var year = document.getElementById('year');
   if (year) year.textContent = new Date().getFullYear();
