@@ -6,7 +6,8 @@ export const GROUPS = [
   { id: 'business', label: 'Business details' },
   { id: 'billing', label: 'Billing and prices' },
   { id: 'email', label: 'Email' },
-  { id: 'payments', label: 'Payments' }
+  { id: 'payments', label: 'Payments' },
+  { id: 'security', label: 'Security' }
 ];
 
 export const DEFS = [
@@ -36,6 +37,8 @@ export const DEFS = [
 
   { group: 'payments', key: 'payment_provider', label: 'Payment provider', type: 'select', options: ['paystack'], default: 'paystack' },
   { group: 'payments', key: 'paystack_secret_key', label: 'Paystack secret key', type: 'secret', help: 'Use your test key (sk_test_...) first, then your live key (sk_live_...).' },
+  { group: 'security', key: 'require_mfa', label: 'Require an authenticator-app code for owners, supervisors, finance and administrators', type: 'bool', default: 'true', help: 'Strongly recommended: patient information is sensitive. Staff set it up the first time they sign in.' },
+  { group: 'security', key: 'session_hours', label: 'Hours before staff must sign in again', type: 'number', default: '12' },
   { group: 'payments', key: 'payments_verified', label: 'Payment connection verified by a successful test', type: 'bool', default: 'false', readonly: true }
 ];
 

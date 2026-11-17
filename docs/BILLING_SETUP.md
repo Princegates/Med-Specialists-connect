@@ -4,15 +4,19 @@ The backend lives in `functions/` and runs on Cloudflare Pages with a D1 databas
 from the staff console, so deploying this is safe: the website keeps emailing requests exactly as before.
 
 ## 1. One-time Cloudflare set-up
-1. **D1 database.** Workers & Pages → D1 → Create database `meds`. Then Pages project → Settings → Bindings → add a D1 binding named `DB` pointing at it (Production).
-2. **Encryption key.** Pages project → Settings → Variables and Secrets → add a **secret** called `SETTINGS_ENC_KEY`: at least 24 random characters. API keys you save in the console are encrypted with it. Keep a copy somewhere safe: if it is lost, saved keys must be entered again.
-3. **Sign-in (Cloudflare Access).** Zero Trust → Access → Applications → Add a self-hosted application for the hostnames `www.medspecialistconnect.com` and `medspecialistconnect.com` with paths `admin*` and `api/admin*`. Add an *Allow* policy listing the staff emails, and turn on one-time PIN or Google sign-in. For staff with sensitive roles, also require multi-factor authentication in the policy.
-4. Copy the application's **Audience (AUD) tag** and your **team domain** (`yourteam.cloudflareaccess.com`). Add them as variables `CF_ACCESS_AUD` and `CF_ACCESS_TEAM_DOMAIN`.
-5. Optional: `ADMIN_EMAILS` (comma separated). If set, only these emails can become the first owner.
-6. Redeploy. The database tables create themselves the first time the console opens.
+1. **D1 database.** Workers & Pages → D1 → Create a database. Then Pages project → Settings → Bindings → add a D1 binding named `DB` pointing at it (Production).
+2. **Encryption key.** Settings → Variables and Secrets → add a **secret** `SETTINGS_ENC_KEY`: at least 24 random characters. API keys and authenticator keys saved in the platform are encrypted with it. Keep a copy somewhere safe.
+3. **Set-up code.** Add a second **secret** `SETUP_CODE`: at least 12 random characters. It is needed once, to create the owner account, and stops anyone else claiming the platform first.
+4. Redeploy. The database tables create themselves the first time the platform is opened.
 
-## 2. First sign-in
-Open `https://www.medspecialistconnect.com/admin/`. The first allowed person to sign in becomes the **owner**. Add everyone else under **Staff** (and in the Access policy). Roles: owner, supervisor, coordinator, finance, network manager, compliance, management (read-only), administrator.
+The platform has its own sign-in, so Cloudflare Access is **not** needed. If you created an Access application for `/admin*` earlier, delete it (or keep it only if you want a second lock in front, in which case staff sign in twice).
+
+## 2. Create the owner account
+Open `https://www.medspecialistconnect.com/admin/`. On a new platform you will see **Set up your platform**: enter the set-up code, your name, your email and a password (at least 10 characters). You become the owner and are taken straight to setting up an authenticator app (Google Authenticator, Microsoft Authenticator or Authy) and saving eight one-time recovery codes. Once the owner exists, the set-up page can never be used again.
+
+Add everyone else under **Staff**: you are shown a one-time password for each person, which you give them in person or by phone. They choose their own password at first sign-in. Roles: owner, supervisor, coordinator, finance, network manager, compliance, management (read-only), administrator.
+
+Security built in: passwords are salted and slow-hashed; five wrong tries lock an account for 15 minutes; owners, supervisors, finance and administrators must use an authenticator app (Settings → Security); sessions last 12 hours; switching someone off or resetting their password signs them out everywhere; every sign-in, failure and reset is in the audit log. If someone loses their phone they use a recovery code, or the owner resets their authenticator under Staff.
 
 ## 3. Switch on, from the console
 Go to **Settings** and work down the Dashboard go-live checklist:
@@ -23,7 +27,7 @@ Go to **Settings** and work down the Dashboard go-live checklist:
 5. Make one real test request on the website with the test key; pay with a Paystack test card/number; confirm the invoice shows paid and a receipt email arrives.
 6. When satisfied, replace the test key with your live key and test again.
 
-Environment variables (`BILLING_ENABLED`, `PRICES_CONFIRMED`, `SITE_URL`, `PAYSTACK_SECRET_KEY`, `EMAIL_API_KEY`) still work as fallbacks, but anything saved in the console takes priority.
+The `CF_ACCESS_*` and `ADMIN_EMAILS` variables are no longer used. Environment variables (`BILLING_ENABLED`, `PRICES_CONFIRMED`, `SITE_URL`, `PAYSTACK_SECRET_KEY`, `EMAIL_API_KEY`) still work as fallbacks, but anything saved in the console takes priority.
 
 ## What the system does
 - Website request → client record, patient record, consent record, case with a random reference (`MSC-XXXXXXXX`) and private tracking link (`/track`).

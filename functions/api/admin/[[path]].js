@@ -1,5 +1,6 @@
 import { ensureSchema } from '../../_lib/schema.js';
 import { resolveStaff } from '../../_lib/admin/auth.js';
+import { mfaRequiredFor } from '../../_lib/auth.js';
 import { getFlags } from '../../_lib/settings.js';
 import { can } from '../../_lib/perms.js';
 import { json, fail, readJson } from '../../_lib/http.js';
@@ -21,7 +22,7 @@ import { PROVIDER_TYPES, PROVIDER_STATUSES, CREDENTIAL_TYPES, SERVICE_MODES } fr
 // Every route under /api/admin: GET reads, POST changes. Sign-in comes from Cloudflare Access; what each person
 // may do comes from their role in the Staff list.
 const ROUTES = [
-  ['GET', /^me$/, (x) => json({ ok: true, me: staffApi.meInfo(x.staff) })],
+  ['GET', /^me$/, async (x) => json({ ok: true, me: staffApi.meInfo(x.staff, await mfaRequiredFor(x.env, x.staff)) })],
   ['GET', /^meta$/, async (x) => json({ ok: true, flags: await getFlags(x.env), caseStatuses: CASE_STATUSES, providerTypes: PROVIDER_TYPES, providerStatuses: PROVIDER_STATUSES, credentialTypes: CREDENTIAL_TYPES, taskTypes: TASK_TYPES, serviceModes: SERVICE_MODES, apptStatuses: APPT_STATUSES, outcomes: ['service_delivered','information_given','referred_elsewhere','client_declined','unable_to_help','duplicate','no_response','other'], services: (await services.list(x).then((r) => r.json())).services || [] })],
   ['GET', /^dashboard$/, dash.dashboard],
   ['GET', /^cases$/, cases.list],
@@ -78,11 +79,11 @@ export async function onRequest(context) {
   if (!env.DB) return fail(503, 'The database is not set up yet.');
   try {
     await ensureSchema(env.DB);
-    const who = await resolveStaff(request, env);
-    if (!who.staff) return fail(who.status, who.error);
     const url = new URL(request.url), method = request.method;
-    if (method !== 'GET' && request.headers.get('Origin') !== url.origin) return fail(403, 'Cross-site request refused.');
     const path = (params.path || []).map(decodeURIComponent).join('/');
+    const who = await resolveStaff(request, env, path);
+    if (!who.staff) return json({ ok: false, error: who.error, code: who.code }, who.status);
+    if (method !== 'GET' && request.headers.get('Origin') !== url.origin) return fail(403, 'Cross-site request refused.');
     let body = {};
     if (method === 'POST') { try { body = await readJson(request, 60000); } catch (e) { return fail(400, 'Invalid request.'); } }
     const x = { context, request, env, url, staff: who.staff, body };

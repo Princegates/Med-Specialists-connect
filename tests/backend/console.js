@@ -1,12 +1,19 @@
 // End-to-end checks of the whole backend: settings, roles, the public request flow, payments, cases, clients,
 // providers, billing, accounts, dashboard and audit. Run against `wrangler pages dev` with a fresh database.
 const { execSync } = require('child_process');
-const { B, req, hmac, adminHdr, ok, done, mk } = require('./lib.js');
+const { B, PW, req, login, adminHdr, forget, known, sessions, totp, hmac, ok, done, mk } = require('./lib.js');
 const SITE_DIR = process.env.SITE_DIR || process.cwd();
 const WR = process.env.WRANGLER || 'npx wrangler';
 
 const OWNER = 'boss@example.com', COORD = 'coord@example.com', COORD2 = 'coord2@example.com', FIN = 'fin@example.com', OPS = 'ops@example.com', SYS = 'sys@example.com', STRANGER = 'stranger@example.com';
-const A = (who, path, body) => req('/api/admin/' + path, body === undefined ? { headers: adminHdr(who) } : { method: 'POST', headers: adminHdr(who), body });
+const A = async (who, path, body) => {
+  const h = await adminHdr(who);
+  const r = await req('/api/admin/' + path, body === undefined ? { headers: h } : { method: 'POST', headers: h, body });
+  if (path === 'staff' && body && body.email && r.j && r.j.tempPassword) known[body.email] = r.j.tempPassword; // remember the one-time password
+  return r;
+};
+const AUTH = async (who, path, body) => req('/api/auth/' + path, { method: 'POST', headers: await adminHdr(who), body: body || {} });
+const SETUP_CODE = 'test-setup-code-1234';
 const mails = async () => (await fetch('http://127.0.0.1:9003/mock/emails')).json();
 const resetMails = () => fetch('http://127.0.0.1:9003/mock/reset', { method: 'POST' });
 const waitMail = async (pred, ms = 5000) => { const t = Date.now(); while (Date.now() - t < ms) { const m = (await mails()).find(pred); if (m) return m; await new Promise((r) => setTimeout(r, 150)); } return null; };
@@ -17,17 +24,72 @@ const sql = (q) => {
 const yr = new Date().getUTCFullYear();
 
 (async () => {
-  console.log('Fresh database, first sign-in');
+  console.log('First-time set-up and sign-in');
   let r = await req('/api/config');
   ok('billing starts switched off', r.j.billingEnabled === false && r.j.pricesConfirmed === false, r.j);
-  r = await A(STRANGER, 'me');
-  ok('a stranger signing in first is NOT made owner (not in ADMIN_EMAILS)', r.status === 403, r);
-  r = await A(OWNER, 'me');
-  ok('the first allowed sign-in becomes the owner', r.status === 200 && r.j.me.role === 'owner' && r.j.me.perms[0] === '*', r.j);
-  r = await A(STRANGER, 'me');
-  ok('a stranger is refused once staff exist (403)', r.status === 403 && /Ask the owner/.test(r.j.error), r);
+  r = await req('/api/auth/state');
+  ok('a fresh platform says set-up is needed', r.j.setupNeeded === true && r.j.signedIn === false, r.j);
   r = await req('/api/admin/me');
   ok('no sign-in at all -> 401', r.status === 401, r.status);
+  const setupBody = { code: SETUP_CODE, name: 'The Owner', email: OWNER, password: PW };
+  r = await req('/api/auth/setup', { method: 'POST', headers: { Origin: 'https://evil.example' }, body: setupBody });
+  ok('set-up from another website is refused (403)', r.status === 403, r.status);
+  r = await req('/api/auth/setup', { method: 'POST', headers: { Origin: B }, body: { ...setupBody, code: 'guess-guess-guess' } });
+  ok('set-up with the wrong set-up code is refused (403)', r.status === 403, r);
+  r = await req('/api/auth/setup', { method: 'POST', headers: { Origin: B }, body: { ...setupBody, password: 'short' } });
+  ok('a weak password is refused with a reason (400)', r.status === 400 && /10 characters/.test(r.j.error), r);
+  r = await req('/api/auth/setup', { method: 'POST', headers: { Origin: B }, body: { ...setupBody, password: 'boss12345678' } });
+  ok('a password containing the email name is refused (400)', r.status === 400, r);
+  let rawr = await fetch(B + '/api/auth/setup', { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: B }, body: JSON.stringify(setupBody) });
+  const setupJson = await rawr.json(), cookieHdr = rawr.headers.getSetCookie()[0];
+  ok('set-up with the right code creates the owner and signs them in', rawr.status === 200 && setupJson.me.role === 'owner' && /HttpOnly/.test(cookieHdr) && /Secure/.test(cookieHdr) && /SameSite=Strict/.test(cookieHdr) && cookieHdr.startsWith('__Host-'), cookieHdr);
+  sessions[OWNER] = cookieHdr.split(';')[0];
+  r = await req('/api/auth/setup', { method: 'POST', headers: { Origin: B }, body: setupBody });
+  ok('set-up cannot be run a second time (409)', r.status === 409, r.status);
+  r = await req('/api/auth/state');
+  ok('state now says set-up is done', r.j.setupNeeded === false, r.j);
+  r = await login(OWNER, { password: 'Wrong-Password-1!' });
+  const wrongPw = r;
+  r = await login('nobody@example.com', { password: 'Wrong-Password-1!' });
+  ok('a wrong password and an unknown email give the same answer (401)', wrongPw.status === 401 && r.status === 401 && wrongPw.j.error === r.j.error, [wrongPw.j, r.j]);
+  r = await A(OWNER, 'me');
+  ok('the owner is identified, with everything allowed', r.status === 200 && r.j.me.role === 'owner' && r.j.me.perms[0] === '*', r.j);
+  ok('the owner is told an authenticator app is required', r.j.me.mfaRequired === true && r.j.me.mfaEnabled === false, r.j.me);
+  r = await A(OWNER, 'settings');
+  ok('until it is set up the owner can reach nothing else (403, mfa_setup)', r.status === 403 && r.j.code === 'mfa_setup', r);
+
+  console.log('Authenticator app and recovery codes');
+  r = await AUTH(OWNER, 'mfa/begin');
+  const secret = r.j.secret;
+  ok('starting set-up gives a key and an app link', r.status === 200 && /^[A-Z2-7]{32}$/.test(secret) && r.j.uri.startsWith('otpauth://totp/'), r);
+  const storedTotp = sql("SELECT totp_secret FROM staff WHERE email = 'boss@example.com'")[0].totp_secret;
+  ok('the key is stored encrypted, not in the clear', storedTotp.startsWith('v1.') && !storedTotp.includes(secret), storedTotp);
+  r = await AUTH(OWNER, 'mfa/confirm', { code: '000000' });
+  ok('a wrong code does not turn it on (400)', r.status === 400, r);
+  r = await AUTH(OWNER, 'mfa/confirm', { code: totp(secret) });
+  const recovery = r.j.recoveryCodes;
+  ok('the right code turns it on and shows 8 recovery codes once', r.status === 200 && recovery.length === 8 && /^[0-9a-z]{5}-[0-9a-z]{5}$/.test(recovery[0]), r);
+  const rc = sql("SELECT recovery_codes FROM staff WHERE email = 'boss@example.com'")[0].recovery_codes;
+  ok('recovery codes are stored hashed', !recovery.some((c) => rc.includes(c)), 'codes in the clear');
+  r = await A(OWNER, 'settings');
+  ok('once set up, the owner can use the platform', r.status === 200, r.status);
+  r = await login(OWNER);
+  ok('signing in now asks for the app code and gives no session yet', r.status === 200 && r.j.mfa === true && !r.cookie, r);
+  r = await login(OWNER, { code: '123456' });
+  ok('a wrong app code is refused (401)', r.status === 401, r);
+  r = await login(OWNER, { code: totp(secret) });
+  ok('the right app code signs in', r.status === 200 && !!r.cookie && r.j.me.role === 'owner', r);
+  r = await login(OWNER, { recovery: recovery[0] });
+  ok('a recovery code signs in when the phone is lost', r.status === 200 && !!r.cookie, r);
+  r = await login(OWNER, { recovery: recovery[0] });
+  ok('a recovery code works only once (401)', r.status === 401, r);
+  r = await AUTH(OWNER, 'mfa/disable', { password: PW });
+  ok('a role that must use the app cannot turn it off (400)', r.status === 400, r);
+  r = await AUTH(OWNER, 'password', { current: 'nope-nope-nope1', next: 'Another-Password-9!' });
+  ok('changing password needs the current one (403)', r.status === 403, r);
+  r = await AUTH(OWNER, 'password', { current: PW, next: 'weak' });
+  ok('a weak new password is refused (400)', r.status === 400, r);
+  await A(OWNER, 'settings', { values: { require_mfa: 'false' } }); // the rest of the run uses password-only staff
 
   console.log('Settings and encryption');
   r = await A(OWNER, 'settings');
@@ -81,8 +143,12 @@ const yr = new Date().getUTCFullYear();
   console.log('Staff and roles');
   for (const [email, name, role] of [[COORD, 'Coordinator One', 'coordinator'], [COORD2, 'Coordinator Two', 'coordinator'], [FIN, 'Finance Officer', 'finance'], [OPS, 'Ops Lead', 'supervisor'], [SYS, 'System Admin', 'admin']]) {
     r = await A(OWNER, 'staff', { email, name, role });
-    ok(`owner adds ${role}`, r.status === 200 && /Cloudflare Access/.test(r.j.reminder), r);
+    ok(`owner adds ${role} and gets a one-time password`, r.status === 200 && r.j.tempPassword.length >= 12, r);
   }
+  r = await login(COORD2);
+  ok('a new staff member signs in with the one-time password and must change it', r.status === 200 && r.j.me.mustChange === true, r.j);
+  r = await req('/api/admin/cases', { headers: { Cookie: r.cookie, Origin: B } });
+  ok('until they do, the platform refuses everything else (403, must_change)', r.status === 403 && r.j.code === 'must_change', r);
   r = await A(OWNER, 'staff', { email: COORD, name: 'x', role: 'coordinator' });
   ok('duplicate staff email refused (409)', r.status === 409, r.status);
   r = await A(OWNER, 'staff', { email: 'x@example.com', name: 'x', role: 'wizard' });
@@ -316,13 +382,13 @@ const yr = new Date().getUTCFullYear();
   ok('summary: one voided invoice and the money still owed by age', s.voided.n === 1 && s.outstanding.count >= 1 && s.outstanding.ageing[0].band === '0-7 days', s.outstanding);
   r = await A(COORD, 'accounts/summary');
   ok('a coordinator cannot open accounts (403)', r.status === 403, r.status);
-  r = await fetch(B + '/api/admin/accounts/export?type=invoices', { headers: adminHdr(FIN) });
+  r = await fetch(B + '/api/admin/accounts/export?type=invoices', { headers: await adminHdr(FIN) });
   const csv = await r.text();
   ok('CSV export works for finance', r.status === 200 && /text\/csv/.test(r.headers.get('content-type')) && csv.split('\n')[0] === 'Number,Date,Client,Service,Status,Total (GHS),Paid on,Channel' && csv.includes('450.50'), csv.split('\n')[0]);
-  r = await fetch(B + '/api/admin/accounts/export?type=invoices', { headers: adminHdr(COORD) });
+  r = await fetch(B + '/api/admin/accounts/export?type=invoices', { headers: await adminHdr(COORD) });
   ok('a coordinator cannot export (403)', r.status === 403, r.status);
   await A(OWNER, `clients/${ama.id}/update`, { name: '=1+1' });
-  r = await fetch(B + '/api/admin/accounts/export?type=payments', { headers: adminHdr(FIN) });
+  r = await fetch(B + '/api/admin/accounts/export?type=payments', { headers: await adminHdr(FIN) });
   ok('spreadsheet formulas are neutralised in the export', !(await r.text()).split('\n').some((l) => l.split(',').some((c) => /^[=+\-@]/.test(c))), 'formula cell found');
 
   console.log('Clients: CRM, export, erasure');
@@ -363,7 +429,7 @@ const yr = new Date().getUTCFullYear();
   ok('the audit log records changes but never a secret value', events.includes('settings') && !events.includes('SECRET') && !events.includes('sk_test') && /paid/.test(events) && /anonymised/.test(events));
   r = await A(COORD, 'audit');
   ok('a coordinator cannot read the audit log (403)', r.status === 403, r.status);
-  r = await req('/api/admin/cases/x/update', { method: 'POST', headers: { 'Cf-Access-Jwt-Assertion': adminHdr(OWNER)['Cf-Access-Jwt-Assertion'] }, body: {} });
+  r = await req('/api/admin/cases/x/update', { method: 'POST', headers: { Cookie: sessions[OWNER] }, body: {} });
   ok('a change without a matching Origin is refused (403)', r.status === 403, r.status);
   r = await A(OWNER, 'nothing-here');
   ok('an unknown admin route is 404', r.status === 404, r.status);
@@ -502,6 +568,31 @@ const yr = new Date().getUTCFullYear();
 
   r = await A(OWNER, 'staff/' + byEmail(COORD).id + '/update', { active: false });
   r = await A(COORD, 'me');
-  ok('a switched-off staff member is refused at once (403)', r.status === 403, r.status);
+  ok('a switched-off staff member is signed out at once (401)', r.status === 401, r.status);
+  r = await login(COORD);
+  ok('and cannot sign back in (401)', r.status === 401, r.status);
+
+  console.log('Lock-out, password reset and sign-out');
+  for (let i = 0; i < 5; i++) await login(FIN, { password: 'Wrong-Password-1!' });
+  r = await login(FIN);
+  ok('five wrong passwords lock the account, even for the right password (429)', r.status === 429, r);
+  const fin = (await A(OWNER, 'staff')).j.staff.find((x) => x.email === FIN);
+  ok('the owner can see it is locked', !!fin.locked_until, fin);
+  r = await A(OWNER, `staff/${fin.id}/update`, { reset_password: true });
+  ok('the owner can reset the password and gets a one-time password', r.status === 200 && r.j.tempPassword.length >= 12, r);
+  known[FIN] = r.j.tempPassword; forget(FIN);
+  r = await login(FIN);
+  ok('after a reset they can sign in again and must change it', r.status === 200 && r.j.me.mustChange === true, r.j);
+  const finCookie = r.cookie;
+  r = await A(OWNER, `staff/${fin.id}/update`, { reset_mfa: true });
+  ok('the owner can reset someone\'s authenticator app', r.status === 200, r);
+  r = await req('/api/admin/me', { headers: { Cookie: finCookie } });
+  ok('a reset signs the person out everywhere (401)', r.status === 401, r.status);
+  const out = await login(OPS); const ocookie = out.cookie;
+  r = await req('/api/auth/logout', { method: 'POST', headers: { Cookie: ocookie, Origin: B }, body: {} });
+  const afterOut = await req('/api/admin/me', { headers: { Cookie: ocookie } });
+  ok('signing out ends the session for good (401)', r.status === 200 && afterOut.status === 401, afterOut.status);
+  r = await req('/api/admin/me', { headers: { Cookie: '__Host-msc_session=' + 'a'.repeat(64) } });
+  ok('a made-up session cookie is refused (401)', r.status === 401, r.status);
   done();
 })().catch((e) => { console.error('TEST CRASH', e); process.exit(2); });

@@ -2,10 +2,11 @@ import { can, ROLES, permsFor } from '../perms.js';
 import { nowIso } from '../db.js';
 import { audit } from '../audit.js';
 import { json, fail, clean } from '../http.js';
+import { hashPassword, tempPassword, endAllSessions } from '../auth.js';
 
 export async function listFull(x) {
   if (!can(x.staff, 'staff.edit')) return fail(403, 'Not allowed.');
-  const { results } = await x.env.DB.prepare('SELECT id, email, name, role, active, created_at, last_seen FROM staff ORDER BY created_at').all();
+  const { results } = await x.env.DB.prepare('SELECT id, email, name, role, active, created_at, last_seen, totp_enabled, must_change, locked_until FROM staff ORDER BY created_at').all();
   return json({ ok: true, staff: results, roles: ROLES });
 }
 
@@ -25,9 +26,11 @@ export async function create(x) {
   if (role === 'owner' && x.staff.role !== 'owner') return fail(403, 'Only an owner can add another owner.');
   if (await x.env.DB.prepare('SELECT id FROM staff WHERE email = ?').bind(email).first()) return fail(409, 'This email is already a staff member.');
   const id = crypto.randomUUID();
-  await x.env.DB.prepare('INSERT INTO staff (id, email, name, role, active, created_at) VALUES (?, ?, ?, ?, 1, ?)').bind(id, email, name, role, nowIso()).run();
+  // A one-time password is shown once. They must choose their own the first time they sign in.
+  const temp = tempPassword();
+  await x.env.DB.prepare('INSERT INTO staff (id, email, name, role, active, created_at, password_hash, must_change) VALUES (?, ?, ?, ?, 1, ?, ?, 1)').bind(id, email, name, role, nowIso(), await hashPassword(temp)).run();
   await audit(x.env, x.staff.email, 'staff', id, 'created', `${email} as ${role}`);
-  return json({ ok: true, id, reminder: 'Also add this email to the Cloudflare Access policy so they can sign in.' });
+  return json({ ok: true, id, tempPassword: temp, reminder: 'Give them this one-time password in person or by phone. They must choose their own when they first sign in.' });
 }
 
 export async function update(x, id) {
@@ -44,7 +47,22 @@ export async function update(x, id) {
   }
   await x.env.DB.prepare('UPDATE staff SET name = ?, role = ?, active = ? WHERE id = ?').bind(clean(b.name, 100) || s.name, role, active, id).run();
   await audit(x.env, x.staff.email, 'staff', id, 'updated', `${s.email}: role ${s.role} to ${role}, ${active ? 'active' : 'off'}`);
-  return json({ ok: true });
+  // Switching someone off, or changing their role, signs them out everywhere at once.
+  if (!active || role !== s.role) await endAllSessions(x.env, id);
+  const out = { ok: true };
+  if (b.reset_password) {
+    const temp = tempPassword();
+    await x.env.DB.prepare('UPDATE staff SET password_hash = ?, must_change = 1, failed_logins = 0, locked_until = NULL WHERE id = ?').bind(await hashPassword(temp), id).run();
+    await endAllSessions(x.env, id);
+    await audit(x.env, x.staff.email, 'staff', id, 'password_reset', `Password reset for ${s.email}`);
+    out.tempPassword = temp;
+  }
+  if (b.reset_mfa) {
+    await x.env.DB.prepare('UPDATE staff SET totp_enabled = 0, totp_secret = NULL, recovery_codes = NULL WHERE id = ?').bind(id).run();
+    await endAllSessions(x.env, id);
+    await audit(x.env, x.staff.email, 'staff', id, 'mfa_reset', `Authenticator reset for ${s.email}`);
+  }
+  return json(out);
 }
 
-export const meInfo = (staff) => ({ id: staff.id, email: staff.email, name: staff.name, role: staff.role, roleLabel: ROLES[staff.role], perms: permsFor(staff.role) });
+export const meInfo = (staff, mfaRequired) => ({ id: staff.id, email: staff.email, name: staff.name, role: staff.role, roleLabel: ROLES[staff.role], perms: permsFor(staff.role), mfaEnabled: !!staff.totp_enabled, mfaRequired: !!mfaRequired, mustChange: !!staff.must_change });

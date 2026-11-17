@@ -89,3 +89,5 @@ dialog h2 { margin: 0 0 12px; font-size: 1.25rem; }
 }
 @media (prefers-reduced-motion: reduce) { .c-toast { transition: none; } }
 .c-form textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--field-border); border-radius: 10px; background: var(--field-bg); color: var(--ink); font: inherit; margin-bottom: 8px; }
+.c-codes { list-style: none; padding: 0; margin: 12px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+.c-codes code, .c-key { padding: 6px 10px; border-radius: 8px; background: var(--pink-tint); border: 1px solid var(--pink-line); font-size: 1rem; letter-spacing: .04em; overflow-wrap: anywhere; }

@@ -38,7 +38,8 @@
     var opts = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
     return fetch('/api/admin/' + path, opts).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) {
-        if (!r.ok || j.ok === false) { var e = new Error(j.error || 'Something went wrong.'); e.status = r.status; throw e; }
+        if (r.status === 401) { location.replace('login.html'); }
+        if (!r.ok || j.ok === false) { var e = new Error(j.error || 'Something went wrong.'); e.status = r.status; e.code = j.code; throw e; }
         return j;
       });
     });
@@ -125,6 +126,6 @@
     document.getElementById('c-nav').classList.remove('open'); document.getElementById('menu-btn').setAttribute('aria-expanded', 'false');
     Promise.resolve(r.fn(id)).then(function (node) {
       view.replaceChildren(node); view.focus({ preventScroll: true });
-    }).catch(function (e) { view.replaceChildren(el('p', { class: 'c-error', role: 'alert', text: e.status === 401 ? 'Please sign in through Cloudflare Access to use the console.' : e.message })); });
+    }).catch(function (e) { view.replaceChildren(el('p', { class: 'c-error', role: 'alert', text: e.message })); });
   };
 })();

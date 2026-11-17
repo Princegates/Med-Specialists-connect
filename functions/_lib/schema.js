@@ -119,6 +119,23 @@ const MIGRATIONS = [
       for (const r of results) await db.prepare('UPDATE requests SET ref = COALESCE(ref, ?), track_token = COALESCE(track_token, ?) WHERE id = ?').bind(newRef(), newToken(), r.id).run();
     }
   }
+  ,
+  {
+    id: '0004_login',
+    sql: [
+      // Staff sign in with their own password; optional authenticator-app code; sessions are stored hashed.
+      `ALTER TABLE staff ADD COLUMN password_hash TEXT`,
+      `ALTER TABLE staff ADD COLUMN must_change INTEGER NOT NULL DEFAULT 0`,
+      `ALTER TABLE staff ADD COLUMN failed_logins INTEGER NOT NULL DEFAULT 0`,
+      `ALTER TABLE staff ADD COLUMN locked_until TEXT`,
+      `ALTER TABLE staff ADD COLUMN totp_secret TEXT`,
+      `ALTER TABLE staff ADD COLUMN totp_enabled INTEGER NOT NULL DEFAULT 0`,
+      `ALTER TABLE staff ADD COLUMN recovery_codes TEXT`,
+      `ALTER TABLE staff ADD COLUMN password_changed_at TEXT`,
+      `CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, staff_id TEXT NOT NULL, created_at TEXT NOT NULL, expires_at TEXT NOT NULL, last_seen TEXT NOT NULL, ip TEXT, agent TEXT)`,
+      `CREATE INDEX IF NOT EXISTS idx_sessions_staff ON sessions(staff_id)`
+    ]
+  }
 ];
 
 let ready = null;

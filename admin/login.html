@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Sign in | MEDs Specialists Connect</title>
+  <link rel="icon" type="image/png" href="../assets/logo-icon.png">
+  <link rel="preload" href="../assets/fonts/josefin-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/nunito-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../styles.css?v=8">
+  <link rel="stylesheet" href="login.css?v=8">
+  <script>
+    try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  </script>
+</head>
+<body class="login-body">
+  <div class="login">
+    <aside class="login-brand" aria-hidden="true">
+      <img src="../assets/logo-icon.png" alt="" width="64" height="64">
+      <p class="login-name">MEDs Specialists Connect</p>
+      <p class="login-tag">An ease to a quality Healthcare</p>
+      <ul>
+        <li>Every request, one queue</li>
+        <li>Verified doctors and providers</li>
+        <li>Invoices and payments, tracked</li>
+      </ul>
+    </aside>
+    <main class="login-main" id="main">
+      <div class="login-card">
+        <img class="login-logo" src="../assets/logo-icon.png" alt="" width="44" height="44">
+        <h1 id="title">Staff sign in</h1>
+        <p class="login-sub" id="sub">Use the email and password your owner gave you.</p>
+        <p class="login-error" id="error" role="alert" hidden></p>
+
+        <form id="form-login" novalidate>
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="username" required>
+          <label for="password">Password</label>
+          <div class="pw"><input id="password" type="password" autocomplete="current-password" required><button type="button" class="pw-show" data-for="password" aria-label="Show password">Show</button></div>
+          <button class="btn" type="submit">Sign in</button>
+        </form>
+
+        <form id="form-mfa" novalidate hidden>
+          <label for="code">6-digit code from your authenticator app</label>
+          <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required>
+          <button class="btn" type="submit">Verify and sign in</button>
+          <button class="link" type="button" id="use-recovery">Lost your phone? Use a recovery code</button>
+        </form>
+
+        <form id="form-recovery" novalidate hidden>
+          <label for="recovery">Recovery code</label>
+          <input id="recovery" type="text" autocomplete="off" required placeholder="xxxxx-xxxxx">
+          <button class="btn" type="submit">Sign in with recovery code</button>
+          <button class="link" type="button" id="back-mfa">Back to the app code</button>
+        </form>
+
+        <form id="form-setup" novalidate hidden>
+          <label for="s-code">Set-up code</label>
+          <input id="s-code" type="password" autocomplete="off" required>
+          <p class="hint">The code you saved as <code>SETUP_CODE</code> in Cloudflare.</p>
+          <label for="s-name">Your name</label>
+          <input id="s-name" type="text" autocomplete="name" required>
+          <label for="s-email">Your email</label>
+          <input id="s-email" type="email" autocomplete="username" required>
+          <label for="s-pass">Choose a password</label>
+          <div class="pw"><input id="s-pass" type="password" autocomplete="new-password" required><button type="button" class="pw-show" data-for="s-pass" aria-label="Show password">Show</button></div>
+          <p class="hint">At least 10 characters, with letters and a number or symbol.</p>
+          <button class="btn" type="submit">Create the owner account</button>
+        </form>
+
+        <p class="login-foot"><a href="../">← Back to the website</a></p>
+      </div>
+    </main>
+  </div>
+  <script src="login.js?v=8"></script>
+</body>
+</html>
