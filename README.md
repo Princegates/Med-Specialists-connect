@@ -27,18 +27,19 @@ the whole repository root.
 
 ## The public site's design
 
-"Follow the line": in a hospital you find your way by signs and coloured lines on the floor, and MEDs is the line a
-patient follows. The home page opens on a "You are here" marker and a lobby-style directory board for choosing a
-service; a route line runs down the page and fills as you read, with a station at each section. Line colours mean
-something: pink for patients and families, green for doctors, blue for hospitals and clinics, and signal yellow only
-for emergency notices.
+"The consulting room": MEDs presented as a private healthcare consultancy. A deep consulting-room green, clinic
+white and stone pages, and brass taken from the name plate on a consulting-room door and the frames on its wall.
+The home page opens on a green panel with a large serif headline and a photograph hung in a thin brass frame; the
+"What do you need today?" card overlaps the panel's lower edge. The same brass frame returns on the founder's
+portrait and the case-study photographs. Everything else is quiet: hairlines, generous space, one accent.
 
-- Headings: **Overpass** (descended from US highway signage lettering). Reading text: **Atkinson Hyperlegible Next**
-  (made by the Braille Institute for low-vision readers). Both are self-hosted under the SIL Open Font License.
+- Headings: **Newsreader** (a serif with true display cuts). Reading text: **Atkinson Hyperlegible Next** (made by
+  the Braille Institute for low-vision readers). Both are self-hosted under the SIL Open Font License.
 - Display options (text size, high contrast, easy-to-read letters, less movement) are saved on the visitor's device.
-- Motion is one arrival moment, the route line, and transitions that answer what the visitor does (the day/night
-  switch, the request form's steps, questions opening, moving between pages). All of it is off for "Less movement"
-  and for devices set to reduce motion.
+- Motion is one arrival moment (the headline is unmasked, the photo unveils, the frame draws itself) and transitions
+  that answer what the visitor does (the day/night switch grows out of the button as a circle, the request form's
+  steps slide, questions open smoothly, pages crossfade). All of it is off for "Less movement" and for devices set
+  to reduce motion, and text is never faded in, so it is never caught faint.
 
 ## Running it locally
 

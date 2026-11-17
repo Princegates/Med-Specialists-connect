@@ -169,19 +169,17 @@ const COOKIE = '__Host-msc_session';
 
   console.log('Look and feel');
   await p.goto(B + '/index.html'); await p.waitForTimeout(1200);
-  ok('headings are set in Overpass and reading text in Atkinson Hyperlegible Next', await p.evaluate(async () => { await document.fonts.ready; return getComputedStyle(document.querySelector('h1')).fontFamily.startsWith('Overpass') && getComputedStyle(document.body).fontFamily.startsWith('"Atkinson Hyperlegible Next"') && document.fonts.check('800 20px Overpass') && document.fonts.check('400 18px "Atkinson Hyperlegible Next"'); }));
-  ok('the home page opens with "You are here", the headline, the service board and a photo, all on the first screen', await p.evaluate(() => { const vis = (s) => { const r = document.querySelector(s).getBoundingClientRect(); return r.height > 0 && r.top < innerHeight; }; const i = document.querySelector('.photo-hero img'); return vis('.here') && vis('.hero h1') && vis('.board') && vis('.photo-hero') && i.complete && i.naturalWidth > 100; }));
-  ok('the menu bar is solid and readable from the start', await p.evaluate(() => getComputedStyle(document.querySelector('.site-header')).backgroundColor !== 'rgba(0, 0, 0, 0)' && getComputedStyle(document.querySelector('.nav a')).color !== 'rgb(255, 255, 255)'));
-  const routeAt = () => p.evaluate(() => parseFloat(document.querySelector('.route').style.getPropertyValue('--route') || '0'));
-  const atTop = await routeAt();
-  await p.evaluate(() => document.querySelector('#fees').scrollIntoView({ behavior: 'instant' })); await p.waitForTimeout(700);
-  ok('the route line fills as you read down the page, and stations fill once passed', (await routeAt()) > atTop + 0.1 && await p.evaluate(() => document.querySelector('#request').classList.contains('passed') && !document.querySelector('#faq').classList.contains('passed')), [atTop, await routeAt()]);
+  ok('headings are set in Newsreader and reading text in Atkinson Hyperlegible Next', await p.evaluate(async () => { await document.fonts.ready; return getComputedStyle(document.querySelector('h1')).fontFamily.startsWith('Newsreader') && getComputedStyle(document.body).fontFamily.startsWith('"Atkinson Hyperlegible Next"') && document.fonts.check('450 40px Newsreader') && document.fonts.check('400 18px "Atkinson Hyperlegible Next"'); }));
+  ok('the home page opens on the green panel with the headline, a way to ask for care and the framed photo, all on the first screen', await p.evaluate(() => { const vis = (s) => { const r = document.querySelector(s).getBoundingClientRect(); return r.height > 0 && r.top < innerHeight; }; const i = document.querySelector('.photo-hero img'); return vis('.hero h1') && vis('.hero-cta .btn') && vis('.photo-hero') && getComputedStyle(document.querySelector('.hero-band')).backgroundColor === 'rgb(11, 48, 42)' && getComputedStyle(document.querySelector('.photo-hero'), '::after').borderTopWidth === '1px' && i.complete && i.naturalWidth > 100; }));
+  ok('the service card overlaps the green panel', await p.evaluate(() => document.querySelector('.brief').getBoundingClientRect().top < document.querySelector('.hero-band').getBoundingClientRect().bottom));
+  ok('the menu bar is solid and readable from the start', await p.evaluate(() => getComputedStyle(document.querySelector('.site-header')).backgroundColor !== 'rgba(0, 0, 0, 0)' && getComputedStyle(document.querySelector('.nav a')).color === 'rgb(14, 58, 51)'));
+  await p.evaluate(() => document.querySelector('#fees').scrollIntoView({ behavior: 'instant' })); await p.waitForTimeout(500);
   ok('after scrolling the top bar gains an edge', await p.evaluate(() => document.querySelector('.site-header').classList.contains('scrolled')));
-  ok('the main buttons are the logo pink with white text', await p.evaluate(() => { const b = getComputedStyle(document.querySelector('#wiz-next')); return b.backgroundColor === 'rgb(200, 0, 74)' && b.color === 'rgb(255, 255, 255)'; }));
+  ok('the main buttons are consulting-room green with white text', await p.evaluate(() => { const b = getComputedStyle(document.querySelector('#wiz-next')); return b.backgroundColor === 'rgb(14, 58, 51)' && b.color === 'rgb(255, 255, 255)'; }));
   await p.evaluate(() => document.querySelector('#patients').scrollIntoView({ behavior: 'instant' })); await p.waitForTimeout(300);
   await p.hover('.dir li:nth-child(3)'); await p.waitForTimeout(300);
   ok('pointing at a service shows its photo beside the list', await p.evaluate(() => document.querySelectorAll('.desk-view img')[2].classList.contains('on') && document.querySelectorAll('.desk-view img.on').length === 1));
-  ok('the request form shows its three stations', await p.evaluate(() => document.querySelectorAll('.wiz-stops li').length === 3 && document.querySelector('#request-form').getAttribute('data-at') === '0'));
+  ok('the request form shows its three steps', await p.evaluate(() => document.querySelectorAll('.wiz-stops li').length === 3 && document.querySelector('#request-form').getAttribute('data-at') === '0'));
   await p.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); await p.waitForTimeout(300);
   await p.screenshot({ path: S + 'ui-site-look.png' });
 

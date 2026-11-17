@@ -35,7 +35,7 @@
     var label = dark ? 'Switch to day mode' : 'Switch to night mode';
     themeBtn.setAttribute('aria-label', label);
     themeBtn.setAttribute('title', label);
-    if (themeMeta) themeMeta.setAttribute('content', dark ? '#0b1a2a' : '#ebf1ee');
+    if (themeMeta) themeMeta.setAttribute('content', dark ? '#0a1d19' : '#fbfcfb');
   }
   function applyTheme(next) {
     root.setAttribute('data-theme', next);
@@ -459,26 +459,7 @@
     finder.addEventListener('change', function (e) { if (e.target.id === 'find-spec') e.target.removeAttribute('aria-invalid'); });
   }
 
-  /* ================= The route line, the front desk, the request stations ================= */
-
-  // The route line down the left of the page fills to where you are reading, and each section's station fills
-  // once you have passed it. It only exists on wide screens; elsewhere this does nothing.
-  var route = document.querySelector('.route');
-  if (route) {
-    var stations = [].slice.call(document.querySelectorAll('main > .section'));
-    var rTick = false;
-    var follow = function () {
-      rTick = false;
-      var r = route.getBoundingClientRect(); if (!r.height) return;
-      var mid = window.innerHeight * 0.55;
-      route.style.setProperty('--route', Math.max(0, Math.min(1, (mid - r.top) / r.height)).toFixed(4));
-      stations.forEach(function (s) { var w = s.firstElementChild; if (w) s.classList.toggle('passed', w.getBoundingClientRect().top + 14 < mid); });
-    };
-    var queue = function () { if (!rTick) { rTick = true; requestAnimationFrame(follow); } };
-    window.addEventListener('scroll', queue, { passive: true });
-    window.addEventListener('resize', queue);
-    follow();
-  }
+  /* ================= The services index and the request steps ================= */
 
   // The front desk: pointing at (or tabbing to) a service shows its photo beside the list.
   var desk = document.querySelector('.desk');

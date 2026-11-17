@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>MEDs Specialists Connect | Healthcare Concierge</title>
   <meta name="description" content="Tell us what you need. We connect you to the right specialist, arrange the appointment and coordinate your care. We also run specialized medical units.">
-  <meta name="theme-color" content="#ebf1ee" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0b1a2a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fbfcfb" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0a1d19" media="(prefers-color-scheme: dark)">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="MEDs Connect">
@@ -28,10 +28,10 @@
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"MedicalBusiness","name":"MEDs Specialists Connect","url":"https://www.medspecialistconnect.com/","logo":"https://www.medspecialistconnect.com/assets/logo-icon.png","image":"https://www.medspecialistconnect.com/assets/og-image.png","slogan":"An ease to a quality Healthcare","telephone":["+233243560080","+233556924777"],"email":"medspecialistsconnect@gmail.com","address":{"@type":"PostalAddress","streetAddress":"6 Worship Curve, Spintex Road"},"sameAs":["https://www.instagram.com/meds_specialist/"]}
   </script>
-  <link rel="preload" href="assets/fonts/overpass-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/atkinson-next-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/photos/hero-nurse-patient.webp" as="image" fetchpriority="high">
-  <link rel="stylesheet" href="site.css?v=11">
+  <link rel="stylesheet" href="site.css?v=12">
   <script>
     /* Apply a saved theme before first paint so there is no flash */
     document.documentElement.classList.add('js');
@@ -101,19 +101,38 @@
   </header>
 
   <main id="main">
-    <div class="route" aria-hidden="true"><span class="route-fill"></span></div>
-
     <!-- HERO -->
     <section class="hero" id="top" aria-labelledby="hero-title">
-      <div class="wrap hero-grid">
-        <div class="hero-copy">
-          <p class="here" aria-hidden="true">You are here</p>
-          <h1 id="hero-title">Healthcare made easier. Care made accessible.</h1>
-          <p class="lead" id="hero-lead">Tell us what you need. We connect you to the right specialist, arrange the appointment and coordinate your care, so you skip the hospital hassle and focus on getting well.</p>
-          <button class="listen" type="button" data-listen="#hero-title, #hero-lead, #pick-title"><svg aria-hidden="true"><use href="#i-sound"/></svg><span>Listen to this</span></button>
+      <div class="hero-band">
+        <div class="wrap hero-grid">
+          <div class="hero-copy">
+            <h1 id="hero-title">Healthcare made easier. Care made accessible.</h1>
+            <p class="lead" id="hero-lead">Tell us what you need. We connect you to the right specialist, arrange the appointment and coordinate your care, so you skip the hospital hassle and focus on getting well.</p>
+            <div class="hero-cta">
+              <a class="btn btn-brass" href="#request">Request care</a>
+              <div class="reach">
+                <a class="btn btn-ghost" href="tel:+233243560080"><svg aria-hidden="true"><use href="#i-phone"/></svg>Call 0243 560 080</a>
+                <a class="btn btn-ghost" href="https://wa.me/233243560080?text=Hello%20MEDs%20Specialists%20Connect%2C%20I%20would%20like%20some%20help%20with%20healthcare." target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#wa"/></svg>WhatsApp<span class="sr"> (opens in a new tab)</span></a>
+              </div>
+            </div>
+            <button class="listen" type="button" data-listen="#hero-title, #hero-lead, #pick-title"><svg aria-hidden="true"><use href="#i-sound"/></svg><span>Listen to this</span></button>
+          </div>
+          <div class="hero-visual">
+            <figure class="photo photo-hero">
+              <img src="assets/photos/hero-nurse-patient.webp" alt="An African nurse in blue scrubs smiling as she explains something on a tablet to an older African woman in a patterned headwrap, with a family member beside her" width="1400" height="788" fetchpriority="high">
+              <figcaption class="ph-note">Add <code>assets/photos/hero-nurse-patient.webp</code></figcaption>
+            </figure>
+            <ol class="path" aria-label="How we connect you">
+              <li><span class="dot" aria-hidden="true"></span><strong>You</strong><span>tell us what you need</span></li>
+              <li><span class="dot" aria-hidden="true"></span><strong>Your coordinator</strong><span>arranges everything</span></li>
+              <li><span class="dot" aria-hidden="true"></span><strong>The right specialist</strong><span>sees you</span></li>
+            </ol>
+          </div>
         </div>
+      </div>
 
-        <div class="board">
+      <div class="wrap hero-lower">
+        <div class="brief">
           <h2 class="pick-title" id="pick-title">What do you need today?</h2>
           <ul class="pick" aria-labelledby="pick-title">
             <li><a href="#request" data-service="Specialist appointment"><span class="pic"><svg aria-hidden="true"><use href="#i-spec"/></svg></span><span>See a specialist</span></a></li>
@@ -125,31 +144,13 @@
           </ul>
           <p class="pick-more">Something else, such as insurance help or a second opinion? <a href="#request" data-service="">Tell us what you need</a>.</p>
         </div>
-
-        <div class="reach">
-          <a class="btn btn-ghost" href="tel:+233243560080"><svg aria-hidden="true"><use href="#i-phone"/></svg>Call 0243 560 080</a>
-          <a class="btn btn-ghost" href="https://wa.me/233243560080?text=Hello%20MEDs%20Specialists%20Connect%2C%20I%20would%20like%20some%20help%20with%20healthcare." target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#wa"/></svg>WhatsApp<span class="sr"> (opens in a new tab)</span></a>
-        </div>
-
         <nav class="lines-nav" aria-label="Who we help">
           <ul class="lines">
-            <li><a href="#request" style="--c: var(--pink)">Patients and families</a></li>
-            <li><a href="#refer" style="--c: var(--green)">Doctors referring a patient</a></li>
-            <li><a href="#institutions" style="--c: var(--blue)">Hospitals and clinics</a></li>
+            <li><a href="#request">Patients and families</a></li>
+            <li><a href="#refer">Doctors referring a patient</a></li>
+            <li><a href="#institutions">Hospitals and clinics</a></li>
           </ul>
         </nav>
-
-        <div class="hero-visual">
-          <figure class="photo photo-hero">
-            <img src="assets/photos/hero-nurse-patient.webp" alt="An African nurse in blue scrubs smiling as she explains something on a tablet to an older African woman in a patterned headwrap, with a family member beside her" width="1400" height="788" fetchpriority="high">
-            <figcaption class="ph-note">Add <code>assets/photos/hero-nurse-patient.webp</code></figcaption>
-          </figure>
-          <ol class="path" aria-label="How we connect you">
-            <li><span class="dot" aria-hidden="true"></span><strong>You</strong><span>tell us what you need</span></li>
-            <li><span class="dot" aria-hidden="true"></span><strong>Your coordinator</strong><span>arranges everything</span></li>
-            <li><span class="dot" aria-hidden="true"></span><strong>The right specialist</strong><span>sees you</span></li>
-          </ol>
-        </div>
       </div>
     </section>
 
@@ -816,6 +817,6 @@
     </a>
   </aside>
 
-  <script src="script.js?v=11"></script>
+  <script src="script.js?v=12"></script>
 </body>
 </html>
