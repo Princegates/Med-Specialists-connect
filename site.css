@@ -323,11 +323,10 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
 .dir h3 a::after { content: ''; position: absolute; inset: 0; }
 .dir p { margin: 8px 0 0; color: var(--soft); }
 .dir li:hover h3 a, .dir li:focus-within h3 a, .dir li.on h3 a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .18em; }
-.desk-view { position: sticky; top: 120px; aspect-ratio: 4 / 4.4; overflow: hidden; border-radius: var(--r); background: var(--line); }
-.desk-view::after { content: ''; position: absolute; inset: 12px; border: 1px solid rgba(255, 255, 255, .85); pointer-events: none; }
-.desk-view img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; opacity: 0; visibility: hidden; }
+/* the photographs are shown whole, as supplied: their own 4:3 shape, no zoom or crop, no frame, close to their own size */
+.desk-view { position: sticky; top: 120px; width: 100%; max-width: 400px; aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--r); background: var(--line); box-shadow: 0 30px 60px -36px rgba(var(--shade), .5); }
+.desk-view img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; visibility: hidden; }
 .desk-view img.on { opacity: 1; visibility: visible; }
-.desk-view img.crop { object-position: 50% 0; transform-origin: 50% 0; scale: 1.34; }  /* these photos carry a printed label along the bottom */
 
 /* ---------- How it works: four steps ---------- */
 .steps { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px; }
@@ -495,7 +494,7 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
   .path { display: none; }
   .photo-hero::after { background: linear-gradient(180deg, rgba(12, 10, 11, .5) 0, rgba(12, 10, 11, 0) 160px), linear-gradient(0deg, rgba(12, 10, 11, .92) 0%, rgba(12, 10, 11, .74) 55%, rgba(12, 10, 11, .45) 100%); }
   .pick { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .desk-view { position: relative; top: 0; aspect-ratio: 16 / 10; order: -1; }
+  .desk-view { position: relative; top: 0; order: -1; max-width: 460px; }
   .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 48px; }
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .product-grid { grid-template-columns: minmax(0, 1fr); gap: 48px; }
@@ -521,7 +520,7 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
   .hero-inner { padding: 112px 0 40px; }
   .hero .lead { margin: 20px 0 16px; }
   .photo-hero img { object-position: 64% 30%; }
-  .desk-view::after, .founder-photo::after, .board-section .photo::after, #dialysis .photo::after, #about .photo-wide::after { inset: 10px; }
+  .founder-photo::after, .board-section .photo::after, #dialysis .photo::after, #about .photo-wide::after { inset: 10px; }
   .pick a { min-height: 58px; padding: 0 12px; gap: 10px; font-size: .95rem; }
   .reach .btn { flex: 1 1 auto; }
   .ticker-track { padding: 15px 0; }
@@ -652,7 +651,7 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
   :root:not([data-motion="reduced"]) .dir li::before { transition: transform .6s var(--ease); }
   :root:not([data-motion="reduced"]) .dir .pic { transition: transform .45s var(--ease); }
   :root:not([data-motion="reduced"]) .dir li.on .pic { transform: translateX(4px); }
-  :root:not([data-motion="reduced"]) .desk-view img { transition: opacity .6s ease, visibility .6s, transform 1.4s var(--ease); transform: scale(1.06); }
+  :root:not([data-motion="reduced"]) .desk-view img { transition: opacity .6s ease, visibility .6s, transform .9s var(--ease); transform: scale(1.03); }
   :root:not([data-motion="reduced"]) .desk-view img.on { transform: none; }
   :root:not([data-motion="reduced"]) .cards .card { position: relative; }
   :root:not([data-motion="reduced"]) .cards .card::before { content: ''; position: absolute; left: 0; right: 0; top: -1px; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .7s var(--ease); }
