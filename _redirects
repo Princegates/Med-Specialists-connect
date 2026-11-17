@@ -1,0 +1,6 @@
+# Keep backend source, database files and notes out of public reach. Pages serves the whole repository root,
+# so these paths are sent to the home page instead of showing their contents.
+/functions/*  /  302
+/migrations/*  /  302
+/docs/*  /  302
+/tests/*  /  302

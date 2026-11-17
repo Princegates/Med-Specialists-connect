@@ -1,0 +1,5 @@
+.wrangler/
+node_modules/
+.dev.vars
+tests/backend/keys.json
+tests/backend/*.png

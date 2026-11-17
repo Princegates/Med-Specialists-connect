@@ -1,0 +1,34 @@
+.admin-body { background: var(--bg); }
+.adm-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 24px; border-bottom: 1px solid var(--pink-line); background: var(--surface); }
+.adm-title { display: flex; align-items: center; gap: 12px; }
+.adm-title h1 { font-size: 1.3rem; }
+.adm-who { margin: 0; color: var(--ink-soft); font-size: .9rem; }
+.adm-main { padding: 20px 24px 64px; }
+.adm-flags { padding: 10px 14px; border-radius: 10px; background: var(--pink-tint); border: 1px solid var(--pink-line); font-weight: 600; margin: 0 0 16px; }
+.adm-tools { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.adm-tools select { width: auto; min-width: 12rem; padding: 8px 12px; border: 1.5px solid var(--field-border); border-radius: 10px; background: var(--field-bg); color: var(--ink); font: inherit; }
+.adm-msg { min-height: 1.5em; color: var(--ink-soft); }
+.adm-msg.err { color: var(--err); font-weight: 600; }
+.adm-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--pink-line); border-radius: var(--radius); }
+.adm-table { width: 100%; border-collapse: collapse; min-width: 880px; }
+.adm-table th, .adm-table td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--pink-line); font-size: .95rem; }
+.adm-table thead th { font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.adm-table tr.urgent td:first-child { box-shadow: inset 4px 0 0 var(--err); }
+.adm-small { color: var(--ink-soft); font-size: .88rem; margin: 2px 0 0; }
+.adm-table .tag { display: inline-block; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--accent); color: var(--accent); font-size: .82rem; font-weight: 600; }
+.adm-table .tag.paid { border-color: var(--ok); color: var(--ok); }
+.adm-table select { padding: 6px 8px; border: 1.5px solid var(--field-border); border-radius: 8px; background: var(--field-bg); color: var(--ink); font: inherit; }
+.adm-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.adm-actions button, .adm-actions a { min-height: 36px; padding: 0 12px; border: 1.5px solid var(--accent); border-radius: 999px; background: none; color: var(--accent); font: 600 .85rem var(--font-body); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+.adm-actions button:hover, .adm-actions a:hover { background: var(--pink-tint); }
+.adm-actions .danger { border-color: var(--err); color: var(--err); }
+dialog { border: 1px solid var(--pink-line); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 24px; width: min(34rem, calc(100% - 32px)); }
+dialog::backdrop { background: rgba(0, 0, 0, .5); }
+dialog h2 { font-size: 1.4rem; margin-bottom: 8px; }
+dialog label { display: block; font-weight: 600; margin: 14px 0 4px; }
+dialog input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--field-border); border-radius: 10px; background: var(--field-bg); color: var(--ink); font: inherit; }
+.line-row { display: grid; grid-template-columns: 1fr 8rem 2.5rem; gap: 8px; margin-bottom: 8px; align-items: center; }
+.line-row button { min-height: 40px; border: 1.5px solid var(--field-border); border-radius: 8px; background: none; color: var(--ink); cursor: pointer; }
+.adm-total { margin: 16px 0 0; font-size: 1.1rem; }
+.adm-dlg-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.inv-error { color: var(--err); font-weight: 600; }

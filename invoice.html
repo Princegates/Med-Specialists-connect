@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Invoice | MEDs Specialists Connect</title>
+  <link rel="icon" type="image/png" href="assets/logo-icon.png">
+  <link rel="preload" href="assets/fonts/josefin-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/nunito-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="invoice.css?v=5">
+  <script>
+    try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  </script>
+</head>
+<body class="invoice-body">
+  <main id="main" class="invoice-page">
+    <p id="state" class="inv-state" role="status">Loading your invoice…</p>
+
+    <article class="invoice" id="invoice" hidden>
+      <header class="inv-head">
+        <div class="inv-brand">
+          <img src="assets/logo-icon.png" alt="" width="44" height="44">
+          <div>
+            <strong>MEDs Specialists Connect</strong>
+            <span>An ease to a quality Healthcare</span>
+          </div>
+        </div>
+        <span class="inv-badge" id="badge"></span>
+      </header>
+
+      <p class="inv-banner" id="banner" hidden></p>
+
+      <h1>Service invoice</h1>
+      <dl class="inv-meta">
+        <div><dt>Invoice number</dt><dd id="number"></dd></div>
+        <div><dt>Date issued</dt><dd id="issued"></dd></div>
+        <div><dt>Bill to</dt><dd id="billto"></dd></div>
+        <div><dt>Contact</dt><dd id="contact"></dd></div>
+      </dl>
+
+      <table class="inv-lines">
+        <caption class="sr">Charges</caption>
+        <thead><tr><th scope="col">Description</th><th scope="col" class="amt">Amount</th></tr></thead>
+        <tbody id="lines"></tbody>
+        <tfoot><tr><th scope="row">Total</th><td class="amt" id="total"></td></tr></tfoot>
+      </table>
+
+      <p class="inv-note" id="note" hidden></p>
+      <p class="inv-small">Charges by doctors, hospitals and laboratories, where they apply, are shown as separate lines.</p>
+
+      <div class="inv-actions">
+        <button class="btn" type="button" id="pay" hidden>Pay now</button>
+        <button class="btn btn-ghost" type="button" id="print">Save as PDF or print</button>
+      </div>
+      <p class="inv-error" id="error" role="alert" hidden></p>
+      <p class="inv-small" id="payhelp" hidden>Pay by Mobile Money, card or bank transfer through our secure payment partner, Paystack. We never see your card or Mobile Money PIN.</p>
+
+      <footer class="inv-foot">
+        <span>6 Worship Curve, Spintex Road</span>
+        <span>0243 560 080 &middot; 0556 924 777</span>
+        <span>medspecialistsconnect@gmail.com</span>
+      </footer>
+    </article>
+  </main>
+  <script src="invoice.js?v=5"></script>
+</body>
+</html>

@@ -14,3 +14,12 @@
 
 /script.js
   Cache-Control: no-cache
+/api/*
+  Cache-Control: no-store
+
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+
+/invoice
+  X-Robots-Tag: noindex, nofollow
+

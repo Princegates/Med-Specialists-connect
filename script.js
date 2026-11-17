@@ -148,6 +148,33 @@
       '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
   }
 
+  // Billing backend: switched on from Cloudflare settings. Until then these calls fail quietly
+  // and the forms behave exactly as before.
+  var billing = { on: false };
+  fetch('/api/config').then(function (r) { return r.ok ? r.json() : {}; }).then(function (c) { billing.on = !!c.billingEnabled; }).catch(function () {});
+
+  function money(pesewas) { return 'GH\u20B5' + (pesewas / 100).toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+  // Stores the care request. A refusal with a message (for example a bad phone number) is shown to the person;
+  // anything else (backend off or unreachable) returns {skipped:true} so the email path carries on alone.
+  function postApi(form) {
+    var f = new FormData(form);
+    var body = {
+      service: f.get('service'), for_whom: f.get('for_whom'), urgency: f.get('urgency'), message: f.get('message'),
+      name: f.get('name'), phone: f.get('phone'), email: f.get('email'), preferred_date: f.get('preferred_date'),
+      call_time: f.get('call_time'), area: f.get('area'), consent: !!f.get('consent'), botcheck: f.get('botcheck') ? 'x' : ''
+    };
+    return fetch('/api/request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) {
+        return r.json().then(function (j) {
+          if (r.ok && j.ok) return j;
+          if (r.status >= 400 && r.status < 500 && j.error) { var e = new Error(j.error); e.user = true; throw e; }
+          return { skipped: true };
+        });
+      })
+      .catch(function (e) { if (e && e.user) throw e; return { skipped: true }; });
+  }
+
   document.querySelectorAll('form[data-subject]').forEach(function (form) {
     var status = form.querySelector('.form-status');
     var button = form.querySelector('button[type="submit"]');
@@ -180,15 +207,35 @@
       var payload = { access_key: FORM_ACCESS_KEY, subject: subject, from_name: 'MEDs Specialists Connect website' };
       rows.forEach(function (r) { payload[r[0]] = r[1]; });
 
-      fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(payload)
-      }).then(function (r) { return r.json(); }).then(function (data) {
-        if (!data.success) throw new Error(data.message || 'failed');
-        say(success, 'ok');
+      // When the billing system is switched on, the request is stored first (and a fixed-fee invoice is
+      // issued); the team email is sent either way. If the billing system is off or unreachable, only the email goes.
+      var apiStep = (form.id === 'request-form' && billing.on) ? postApi(form) : Promise.resolve({ skipped: true });
+      apiStep.then(function (res) {
+        if (res.invoice) { payload['Invoice number'] = res.invoice.number; payload['Invoice link'] = location.origin + res.invoice.url; }
+        if (res.requestId) { payload['Case reference'] = res.requestId.slice(0, 8); payload['Billing status'] = res.status; }
+        return fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(function (r) { return r.json(); }).then(function (data) {
+          if (!data.success) throw new Error(data.message || 'failed');
+          return res;
+        }).catch(function (e) {
+          if (res.requestId) return res; // already stored, so the request is not lost
+          throw e;
+        });
+      }).then(function (res) {
+        if (res.invoice) {
+          say('Thank you. Your invoice ' + res.invoice.number + ' (' + money(res.invoice.total) + ') is ready. ' +
+            '<a href="' + res.invoice.url + '">View and pay your invoice</a>.', 'ok', true);
+        } else if (res.billing === 'quote') {
+          say('Thank you. We have your request. We will confirm the cost and send you an estimate before you pay.', 'ok');
+        } else {
+          say(success, 'ok');
+        }
         form.reset();
-      }).catch(function () {
+      }).catch(function (e) {
+        if (e && e.user) { say(e.message, 'err'); return; }
         say('We could not send that just now, and your details are still here. Please try again, or reach us on ' +
           '<a href="tel:+233243560080">0243 560 080</a> or <a href="' + WHATSAPP_URL + '" target="_blank" rel="noopener">WhatsApp</a>.', 'err', true);
       }).then(function () {
