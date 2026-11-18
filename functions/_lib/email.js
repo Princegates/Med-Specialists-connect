@@ -97,7 +97,7 @@ export async function emailTeamNewRequest(env, r) {
   if (!(await emailReady(env)) || (await getSetting(env, 'notify_new_request')) !== 'true') return { skipped: true };
   const to = (await getSetting(env, 'email_notify_to')) || (await getSetting(env, 'business_email'));
   const urgent = !!r.emergency || /^Urgent/.test(r.urgency || '');
-  const rows = [['Case reference', r.ref], ['Service', r.serviceLabel], ['Name', r.name], ['Phone', r.phone], ['Email', r.email], ['Urgency', r.urgency], ['For', r.for_whom], ['Area', r.area], ['Preferred date', r.preferred_date], ['Best time to call', r.call_time], ['Note', r.message], ['Invoice', r.invoiceNumber]].filter((x) => x[1]);
+  const rows = [['Case reference', r.ref], ['Service', r.serviceLabel], ['Visit', r.visit], ['Name', r.name], ['Phone', r.phone], ['Email', r.email], ['Urgency', r.urgency], ['For', r.for_whom], ['Area', r.area], ['Preferred date', r.preferred_date], ['Best time to call', r.call_time], ['Note', r.message], ['Invoice', r.invoiceNumber]].filter((x) => x[1]);
   return sendEmail(env, {
     to, kind: 'team', subject: `${r.emergency ? '[EMERGENCY FLAG] ' : urgent ? '[URGENT] ' : ''}New request: ${r.serviceLabel} from ${r.name}`,
     text: rows.map(([k, v]) => `${k}: ${v}`).join('\n'),

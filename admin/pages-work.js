@@ -132,7 +132,7 @@
       if (c.status === 'safety_escalation') v.append(el('p', { class: 'c-alert', role: 'alert', text: 'Possible emergency. Call the client now and, if there is any danger, direct them to call 112 or go to the nearest hospital. Record what you did below.' }));
 
       var details = el('dl', { class: 'c-dl' });
-      [['Client', d.client ? C.link(c.name, '#/clients/' + d.client.id) : c.name], ['Phone', c.phone], ['Email', c.email], ['Area', c.area], ['For', c.for_whom], ['Patient', d.patient && !d.patient.self ? d.patient.name + ' (' + C.label(d.patient.authority) + ')' : ''], ['Urgency', c.urgency], ['Came in by', c.channel], ['Preferred date', c.preferred_date], ['Best time to call', c.call_time], ['Note from the client', c.message]].forEach(function (p) {
+      [['Client', d.client ? C.link(c.name, '#/clients/' + d.client.id) : c.name], ['Phone', c.phone], ['Email', c.email], ['Area', c.area], ['Visit', c.visit_type === 'home' ? 'Home visit' : c.visit_type === 'private' ? 'Private consultation' : ''], ['For', c.for_whom], ['Patient', d.patient && !d.patient.self ? d.patient.name + ' (' + C.label(d.patient.authority) + ')' : ''], ['Urgency', c.urgency], ['Came in by', c.channel], ['Preferred date', c.preferred_date], ['Best time to call', c.call_time], ['Note from the client', c.message]].forEach(function (p) {
         if (p[1]) details.append(el('dt', { text: p[0] }), el('dd', {}, p[1]));
       });
       if (c.phone && c.phone !== 'removed') details.append(el('dt', { text: 'Message' }), el('dd', {}, el('a', { href: C.waLink(c.phone, 'Hello ' + c.name + ', this is MEDs Specialists Connect about your request ' + (c.ref || '') + '.'), target: '_blank', rel: 'noopener', text: 'Open WhatsApp' })));

@@ -127,3 +127,11 @@ const HOME_SERVICES = new Set([
   'Psychiatrist consult (private or home)', 'Dialysis services'
 ]);
 export const packageFor = (service) => (HOME_SERVICES.has(service) ? HOME_PACKAGE : null);
+
+// Where the consultation happens. 'choose' = the patient must say private or home; 'home' = home visit only.
+const VISIT_CHOOSE = new Set(['Urologist consult (private or home)', 'Nephrologist service (private or home)', 'Hematologist consult (private or home)', 'Gynecologist consult (private or home)', 'Physician specialist (private or home)', 'Psychiatrist consult (private or home)']);
+const VISIT_HOME = new Set(['GP consult (home)', 'Cardiac specialist consult (home)']);
+export const visitMode = (service) => (VISIT_CHOOSE.has(service) ? 'choose' : VISIT_HOME.has(service) ? 'home' : null);
+export const VISIT_LABEL = { home: 'Home visit', private: 'Private consultation' };
+// "Urologist consult (private or home)" becomes "Urologist consult (home)" or "(private)" once the patient has chosen.
+export const lineLabel = (label, visit) => (visit === 'home' || visit === 'private' ? label.replace(/\(private or home\)/i, `(${visit})`) : label);

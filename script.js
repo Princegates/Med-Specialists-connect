@@ -117,8 +117,10 @@
         if (el.checked && el.name === 'consent') rows.push(['Consent', 'Agreed to the privacy notice', 'consent']);
         return;
       }
+      if (el.type === 'radio' && !el.checked) return;
       if (el.value === '') return;
       var label = el.name;
+      if (el.name === 'visit') { rows.push(['Visit', el.value === 'home' ? 'Home visit' : 'Private consultation', 'visit']); return; }
       if (el.name === 'name') label = 'name';
       else if (el.id) {
         var l = form.querySelector('label[for="' + el.id + '"]');
@@ -157,7 +159,7 @@
     var body = {
       service: f.get('service'), for_whom: f.get('for_whom'), urgency: f.get('urgency'), message: f.get('message'),
       name: f.get('name'), phone: f.get('phone'), email: f.get('email'), preferred_date: f.get('preferred_date'),
-      call_time: f.get('call_time'), area: f.get('area'), consent: !!f.get('consent'), botcheck: f.get('botcheck') ? 'x' : ''
+      call_time: f.get('call_time'), area: f.get('area'), visit: f.get('visit') || '', consent: !!f.get('consent'), botcheck: f.get('botcheck') ? 'x' : ''
     };
     return fetch('/api/request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       .then(function (r) {
@@ -299,7 +301,7 @@
     var DRAFT = 'draft-v1', FIELDS = ['service', 'for_whom', 'urgency', 'call_time', 'area', 'name', 'phone', 'email'];
 
     function msg(el) {
-      if (el.validity.valueMissing) return el.tagName === 'SELECT' ? 'Please choose one.' : el.type === 'checkbox' ? 'Please tick this box to continue.' : 'Please fill this in.';
+      if (el.validity.valueMissing) return el.tagName === 'SELECT' || el.type === 'radio' ? 'Please choose one.' : el.type === 'checkbox' ? 'Please tick this box to continue.' : 'Please fill this in.';
       if (el.validity.typeMismatch) return el.type === 'email' ? 'Please check the email address.' : 'Please check this.';
       return el.validationMessage || 'Please check this.';
     }
@@ -307,7 +309,7 @@
     function showError(el) {
       clearError(el); var id = 'err-' + (el.id || el.name);
       var p = document.createElement('p'); p.className = 'field-error'; p.id = id; p.textContent = msg(el);
-      (el.closest('label.consent') || el).insertAdjacentElement('afterend', p);
+      (el.type === 'radio' ? el.closest('.visit') : (el.closest('label.consent') || el)).insertAdjacentElement('afterend', p);
       el.setAttribute('aria-invalid', 'true'); el.setAttribute('data-err', id); el.setAttribute('aria-describedby', id);
     }
     function validStep(i) {
@@ -340,12 +342,21 @@
       return svcLoad;
     }
     function labelOf(key) { return svcMap && svcMap[key] ? svcMap[key].label : key; }
+    // Private or home: asked only for the consultations that offer both.
+    var CHOOSE_VISIT = ['Urologist consult (private or home)', 'Nephrologist service (private or home)', 'Hematologist consult (private or home)', 'Gynecologist consult (private or home)', 'Physician specialist (private or home)', 'Psychiatrist consult (private or home)']; // also asked if the service list could not load
+    var visitBox = document.getElementById('visit-choice');
+    function setVisit(on) {
+      if (!visitBox) return;
+      visitBox.hidden = !on;
+      [].forEach.call(visitBox.querySelectorAll('input'), function (r) { r.disabled = !on; r.required = on; if (!on) { r.checked = false; clearError(r); } });
+    }
     // Shows what the chosen service includes. Prices are never shown here: they appear only on the invoice.
     function showInfo() {
       if (!info) return;
       loadServices().then(function (map) {
         var s = map[rform.elements.service.value];
         info.replaceChildren();
+        setVisit((s && s.visit === 'choose') || CHOOSE_VISIT.indexOf(rform.elements.service.value) > -1);
         // A priced service with no list of tests has nothing to explain, so nothing is shown.
         if (!s || !window.PackageDetails || (!s.details && s.billing === 'fixed')) { info.hidden = true; return; }
         var h = document.createElement('h3'); h.textContent = s.label;

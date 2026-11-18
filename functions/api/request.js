@@ -7,6 +7,7 @@ import { newRef, newToken } from '../_lib/ids.js';
 import { emailInvoice, emailTeamNewRequest, emailReady } from '../_lib/email.js';
 import { audit } from '../_lib/audit.js';
 import { json, fail, readJson, clean, later } from '../_lib/http.js';
+import { visitMode, lineLabel, VISIT_LABEL } from '../_lib/packages.js';
 
 const OPEN = "('closed', 'completed', 'cancelled')";
 
@@ -32,6 +33,14 @@ export async function onRequestPost(context) {
   if (!/^[+0-9()\s-]{7,30}$/.test(phone)) return fail(400, 'Please enter a valid phone number.');
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail(400, 'Please check the email address.');
   if (b.consent !== true) return fail(400, 'Please agree to the privacy notice.');
+  // Private or home: the patient must choose for the six consultations that offer both; the two home-only ones are home visits.
+  const mode = visitMode(def.value);
+  let visit = null;
+  if (mode === 'home') visit = 'home';
+  else if (mode === 'choose') {
+    visit = clean(b.visit, 10);
+    if (visit !== 'home' && visit !== 'private') return fail(400, 'Please choose private or home.');
+  }
   const date = clean(b.preferred_date, 10);
   if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail(400, 'Please check the preferred date.');
 
@@ -67,9 +76,9 @@ export async function onRequestPost(context) {
   const self = !forWhom || /^myself$/i.test(forWhom);
   await env.DB.batch([
     env.DB.prepare(
-      'INSERT INTO requests (id, created_at, service, for_whom, urgency, message, name, phone, email, preferred_date, call_time, area, status, client_id, assigned_to, ref, track_token, patient_id, channel, priority, next_action, next_action_due) ' +
-      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-    ).bind(id, now, service, row.for_whom, row.urgency, row.message, name, phone, row.email, row.preferred_date, row.call_time, row.area, status, clientId, assignedTo, ref, token, patientId, 'website', emergency ? 'emergency' : /^Urgent/i.test(urgency) ? 'high' : 'normal', nextAction, due),
+      'INSERT INTO requests (id, created_at, service, for_whom, urgency, message, name, phone, email, preferred_date, call_time, area, status, client_id, assigned_to, ref, track_token, patient_id, channel, priority, next_action, next_action_due, visit_type) ' +
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(id, now, service, row.for_whom, row.urgency, row.message, name, phone, row.email, row.preferred_date, row.call_time, row.area, status, clientId, assignedTo, ref, token, patientId, 'website', emergency ? 'emergency' : /^Urgent/i.test(urgency) ? 'high' : 'normal', nextAction, due, visit),
     env.DB.prepare('INSERT INTO patients (id, created_at, name, area, client_id, self, relationship, authority) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
       .bind(patientId, now, self ? name : 'Patient (name to be confirmed)', row.area || null, clientId, self ? 1 : 0, self ? 'self' : forWhom, self ? 'self' : 'to_be_confirmed'),
     env.DB.prepare('INSERT INTO consents (id, client_id, patient_id, purpose, notice_version, status, channel, given_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
@@ -79,14 +88,14 @@ export async function onRequestPost(context) {
 
   let invoice = null;
   if (!emergency && def.billing === 'fixed' && f.pricesConfirmed && def.lines.length) {
-    const made = await createInvoice(env.DB, id, def.lines, null);
+    const made = await createInvoice(env.DB, id, def.lines.map((l) => ({ ...l, description: lineLabel(l.description, visit) })), null);
     if (!made.conflict) {
       invoice = { id: made.id, number: made.number, total: made.total, url: `/invoice?id=${made.id}` };
       await audit(env, 'system', 'invoice', made.id, 'issued', made.number);
       later(context, emailInvoice(env, made.id));
     }
   }
-  later(context, emailTeamNewRequest(env, { ...row, serviceLabel: def.label, invoiceNumber: invoice && invoice.number, emergency, ref }));
+  later(context, emailTeamNewRequest(env, { ...row, serviceLabel: def.label, invoiceNumber: invoice && invoice.number, emergency, ref, visit: visit ? VISIT_LABEL[visit] : null }));
 
   // Tells the website it can skip its own email to the team, because this system has already emailed them.
   const teamNotified = (await emailReady(env)) && (await getSetting(env, 'notify_new_request')) === 'true' && (await getSetting(env, 'email_verified')) === 'true';

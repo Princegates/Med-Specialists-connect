@@ -1,5 +1,5 @@
 import { getServices } from '../_lib/services.js';
-import { detailsFor } from '../_lib/packages.js';
+import { detailsFor, visitMode } from '../_lib/packages.js';
 import { json, fail } from '../_lib/http.js';
 
 // GET /api/services: the services on offer, with their current price and, for the laboratory packages, what each one
@@ -13,7 +13,8 @@ export async function onRequestGet({ env }) {
       services: list.map((s) => ({
         value: s.value, label: s.label, billing: s.billing,
         price: s.billing === 'fixed' ? s.lines.reduce((t, l) => t + l.amount, 0) : null,
-        details: detailsFor(s.value)
+        details: detailsFor(s.value),
+        visit: visitMode(s.value)
       }))
     });
   } catch (e) { return fail(500, 'Not available.'); }

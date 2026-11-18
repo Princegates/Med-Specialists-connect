@@ -201,6 +201,12 @@ const MIGRATIONS = [
       }
     }
   }
+  ,
+  {
+    id: '0009_visit_type',
+    // Where a consultation takes place: at the patient's home or privately (at a clinic).
+    sql: [`ALTER TABLE requests ADD COLUMN visit_type TEXT`]
+  }
 ];
 
 let ready = null;
