@@ -37,6 +37,10 @@
     else show(banner, false);
 
     show($('pay'), d.payable); show($('payhelp'), d.payable);
+
+    // What the client has chosen, test by test.
+    var inc = $('included'), body = $('included-body'); body.textContent = '';
+    if (d.included && window.PackageDetails) { body.appendChild(window.PackageDetails.render(d.included, { labelOf: function (k) { return k; } })); show(inc, true); } else show(inc, false);
   }
 
   function load() {

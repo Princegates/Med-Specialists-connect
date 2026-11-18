@@ -9,6 +9,7 @@
   <link rel="preload" href="assets/fonts/josefin-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/nunito-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="package-details.css?v=9">
   <link rel="stylesheet" href="invoice.css?v=7">
   <script src="/assets/boot.js"></script>
 </head>
@@ -48,6 +49,11 @@
       <p class="inv-note" id="note" hidden></p>
       <p class="inv-small">Charges by doctors, hospitals and laboratories, where they apply, are shown as separate lines.</p>
 
+      <section class="inv-included" id="included" hidden>
+        <h2>What is included</h2>
+        <div id="included-body"></div>
+      </section>
+
       <div class="inv-actions">
         <button class="btn" type="button" id="pay" hidden>Pay now</button>
         <button class="btn btn-ghost" type="button" id="print">Save as PDF or print</button>
@@ -62,6 +68,7 @@
       </footer>
     </article>
   </main>
-  <script src="invoice.js?v=7"></script>
+  <script src="assets/package-details.js?v=9"></script>
+  <script src="invoice.js?v=9"></script>
 </body>
 </html>

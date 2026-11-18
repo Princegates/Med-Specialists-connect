@@ -32,3 +32,7 @@
   .inv-brand strong, .inv-badge { color: #c8003f; }
   .inv-meta dt, .inv-note, .inv-small, .inv-foot, .inv-lines thead th, .inv-brand span { color: #444; }
 }
+
+.inv-included { margin-top: 28px; padding-top: 18px; border-top: 1px solid #ddd; }
+.inv-included h2 { margin: 0 0 12px; font-size: 1.25rem; }
+@media print { .inv-included .pkg-more { display: block; } .inv-included .pkg-more > :not(summary) { display: block; } }

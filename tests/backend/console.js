@@ -600,6 +600,24 @@ const yr = new Date().getUTCFullYear();
   ok('pressing "Create invoice" six times at once makes exactly one invoice (one 200, five 409)', rush.filter((x) => x.status === 200).length === 1 && rush.filter((x) => x.status === 409).length === 5, rush.map((x) => x.status));
   ok('and the database holds a single live invoice for that case', sql(`SELECT COUNT(*) AS c FROM invoices WHERE request_id = '${dc}' AND status != 'void'`)[0].c === 1);
 
+  console.log('What each laboratory package includes');
+  r = await req('/api/services');
+  const svc = (v) => r.j.services.find((x) => x.value === v);
+  const exec = svc("On-call men's executive health check");
+  ok('the public service list carries each lab package with its price and tests', r.status === 200 && exec.price === 412300 && exec.details.tests.length === 18 && exec.details.tests.some((t) => t.name === 'Total testosterone') && exec.details.tests.some((t) => /Total PSA/.test(t.name) && t.flag), exec && exec.details && exec.details.tests.length);
+  ok('a higher package lists everything below it and marks what is new', exec.details.tests[0].name === 'Full blood count (FBC)' && exec.details.tests.filter((t) => t.added).map((t) => t.name).join('|') === 'Total testosterone|H. pylori stool antigen|Stool occult blood|Vitamin B12' && exec.details.base.key === "On-call men's complete health check-up", exec.details.tests.filter((t) => t.added).length);
+  ok('men\'s packages carry who should be checked, the process and the important note', exec.details.who.length === 3 && exec.details.process.length === 5 && /not all tests are necessary/i.test(exec.details.important) && exec.details.notes.some((n) => /24 to 48 hours/.test(n)));
+  ok('the package sizes match the flyers (men 7/14/18, women 11/19/25, renal 8)', [7, 14, 18].every((n, i) => svc(["On-call men's essential check-up", "On-call men's complete health check-up", "On-call men's executive health check"][i]).details.tests.length === n) && [11, 19, 25].every((n, i) => svc(["On-call women's essential check-up", "On-call women's complete health check", "On-call women's executive health check"][i]).details.tests.length === n) && svc('On-call kidney or renal function test').details.tests.length === 8);
+  const couples = svc('Couples fertility assessment');
+  ok('the couples fertility package adds the semen analysis and the couple consultation to the women\'s package', couples.details.tests.length === 8 && couples.details.tests.some((t) => /Semen analysis/.test(t.name)) && couples.details.also.includes('Couple-focused consultation') && couples.details.also.includes('Fertility-focused doctor consultation'), couples.details.also);
+  ok('services without a description simply have none, and quoted ones have no price', svc('GP consult (home)').details === null && typeof svc('GP consult (home)').price === 'number' && svc('Specialist appointment').price === null);
+  ok('the public list exposes only value, label, billing, price and details (no ids, price lines or settings)', r.j.services.every((x) => Object.keys(x).sort().join() === 'billing,details,label,price,value') && Object.keys(r.j).sort().join() === 'ok,services');
+  r = await req('/api/request', { method: 'POST', body: mk({ phone: '0201112299', name: 'Lab Client', service: "On-call men's essential check-up" }) });
+  ok('a lab package is invoiced at its listed price', r.status === 200 && r.j.invoice && r.j.invoice.total === 201600, r.j);
+  const labInv = r.j.invoice;
+  r = await req('/api/invoice?id=' + labInv.id);
+  ok('the invoice page data lists the tests the client is paying for', r.status === 200 && r.j.included.tests.length === 7 && r.j.included.tests[0].name === 'Full blood count (FBC)', r.j.included && r.j.included.tests.length);
+
   console.log('Tamper-evident audit log');
   r = await A(COMP, 'audit/verify');
   ok('the audit chain checks out', r.status === 200 && r.j.ok === true && r.j.checked > 30, r.j);

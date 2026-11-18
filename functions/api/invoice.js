@@ -1,6 +1,7 @@
 import { getFlags, getSetting, getSecret } from '../_lib/settings.js';
 import { ensureSchema } from '../_lib/schema.js';
 import { json, fail } from '../_lib/http.js';
+import { detailsFor } from '../_lib/packages.js';
 
 const mask = (p) => { const d = String(p).replace(/\D/g, ''); return d.length > 6 ? d.slice(0, 3) + ' *** ' + d.slice(-3) : '***'; };
 
@@ -14,7 +15,7 @@ export async function onRequestGet({ request, env }) {
   const id = new URL(request.url).searchParams.get('id') || '';
   if (!/^[0-9a-f-]{36}$/i.test(id)) return fail(404, 'Invoice not found.');
   const row = await env.DB.prepare(
-    'SELECT i.number, i.status, i.currency, i.total, i.lines, i.note, i.created_at, i.paid_at, r.name, r.phone ' +
+    'SELECT i.number, i.status, i.currency, i.total, i.lines, i.note, i.created_at, i.paid_at, r.name, r.phone, r.service ' +
     'FROM invoices i JOIN requests r ON r.id = i.request_id WHERE i.id = ?'
   ).bind(id).first();
   if (!row) return fail(404, 'Invoice not found.');
@@ -29,6 +30,7 @@ export async function onRequestGet({ request, env }) {
       name: await getSetting(env, 'business_name'), phone: await getSetting(env, 'business_phone'),
       email: await getSetting(env, 'business_email'), address: await getSetting(env, 'business_address'), note: await getSetting(env, 'invoice_note')
     },
+    included: detailsFor(row.service),
     payable: f.pricesConfirmed && !!(await getSecret(env, 'paystack_secret_key')) && row.status === 'issued' && row.total > 0,
     testMode: !f.pricesConfirmed
   });

@@ -333,8 +333,49 @@
     function save() { try { var d = {}; FIELDS.forEach(function (n) { var el = rform.elements[n]; if (el && el.value) d[n] = el.value; }); sessionStorage.setItem(DRAFT, JSON.stringify(d)); } catch (e) {} }
     function restore() { try { var d = JSON.parse(sessionStorage.getItem(DRAFT) || '{}'); FIELDS.forEach(function (n) { var el = rform.elements[n]; if (el && d[n]) el.value = d[n]; }); } catch (e) {} }
 
+    // What the chosen service includes, shown right under the choice.
+    var svcMap = null, svcLoad = null, info = document.getElementById('svc-info');
+    function loadServices() {
+      if (!svcLoad) svcLoad = fetch('/api/services').then(function (r) { return r.ok ? r.json() : { services: [] }; }).then(function (d) { svcMap = {}; (d.services || []).forEach(function (s) { svcMap[s.value] = s; }); return svcMap; }).catch(function () { svcMap = {}; return svcMap; });
+      return svcLoad;
+    }
+    function labelOf(key) { return svcMap && svcMap[key] ? svcMap[key].label : key; }
+    function showInfo() {
+      if (!info) return;
+      loadServices().then(function (map) {
+        var s = map[rform.elements.service.value];
+        info.replaceChildren();
+        if (!s || !window.PackageDetails) { info.hidden = true; return; }
+        var h = document.createElement('h3'); h.textContent = s.label;
+        var p = document.createElement('p'); p.className = 'svc-price';
+        if (s.price) { p.append(document.createTextNode(window.PackageDetails.money(s.price))); var sp = document.createElement('span'); sp.textContent = ' \u00b7 you see this price before you pay'; p.append(sp); }
+        else { p.textContent = s.billing === 'none' ? 'No charge' : 'We confirm the price with you before you pay.'; }
+        info.append(h, p);
+        if (s.details) info.append(window.PackageDetails.render(s.details, { labelOf: labelOf }));
+        info.hidden = false;
+      });
+    }
+    rform.elements.service.addEventListener('change', showInfo);
+
+    // On the price list, each package gets a "What's included" button that opens its details in place.
+    loadServices().then(function (map) {
+      document.querySelectorAll('#fees tr').forEach(function (row) {
+        var a = row.querySelector('a[data-service]'), s = a && map[a.getAttribute('data-service')];
+        if (!s || !s.details || !window.PackageDetails) return;
+        var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'inc-btn'; btn.setAttribute('aria-expanded', 'false'); btn.textContent = 'What\u2019s included';
+        var open = null;
+        btn.addEventListener('click', function () {
+          if (open) { open.remove(); open = null; btn.setAttribute('aria-expanded', 'false'); btn.textContent = 'What\u2019s included'; return; }
+          open = document.createElement('tr'); open.className = 'inc-row';
+          var td = document.createElement('td'); td.colSpan = 3; td.append(window.PackageDetails.render(s.details, { labelOf: labelOf })); open.append(td);
+          row.after(open); btn.setAttribute('aria-expanded', 'true'); btn.textContent = 'Hide what\u2019s included';
+        });
+        row.querySelector('td.act').prepend(btn);
+      });
+    });
+
     rform.classList.add('on'); head.hidden = false; back.hidden = true; next.hidden = false;
-    restore(); show(0, 'fwd', false);
+    restore(); show(0, 'fwd', false); if (rform.elements.service.value) showInfo();
     next.addEventListener('click', function () { if (validStep(at)) { show(at + 1, 'fwd', true); } });
     back.addEventListener('click', function () { show(at - 1, 'back', true); });
     rform.addEventListener('input', function (e) { if (e.target.getAttribute && e.target.getAttribute('aria-invalid')) clearError(e.target); save(); });
@@ -343,14 +384,14 @@
     // On the last step, show what is wrong before the browser's own check refuses to send.
     document.getElementById('wiz-send').addEventListener('click', function (e) { if (!validStep(at)) { e.preventDefault(); } });
     rform.addEventListener('reset', function () { try { sessionStorage.removeItem(DRAFT); } catch (e) {} setTimeout(function () { show(0, 'back', false); }, 0); });
-    rform.wizard = { next: function () { next.click(); }, atLast: function () { return at === steps.length - 1; }, go: function (i) { show(i, 'fwd', false); } };
+    rform.wizard = { info: showInfo, next: function () { next.click(); }, atLast: function () { return at === steps.length - 1; }, go: function (i) { show(i, 'fwd', false); } };
 
     // The big buttons at the top of the page pick the service, then take the person to the urgency question.
     var pickStatus = document.createElement('p'); pickStatus.className = 'sr'; pickStatus.setAttribute('role', 'status'); document.body.append(pickStatus);
     document.querySelectorAll('[data-service]').forEach(function (a) {
       a.addEventListener('click', function () {
         var v = a.getAttribute('data-service'), sel = rform.elements.service;
-        if (v) { sel.value = v; clearError(sel); save(); pickStatus.textContent = 'Selected: ' + a.textContent.trim() + '. Check how urgent it is, then choose Next.'; }
+        if (v) { sel.value = v; clearError(sel); save(); showInfo(); pickStatus.textContent = 'Selected: ' + a.textContent.trim() + '. Check how urgent it is, then choose Next.'; }
         show(0, 'back', false);
         setTimeout(function () { (v ? rform.elements.urgency : sel).focus({ preventScroll: true }); }, 450);
       });
@@ -452,7 +493,7 @@
         var chosen = spec.selectedOptions[0]; rf.elements.service.value = (chosen && chosen.getAttribute('data-service')) || 'Specialist appointment';
         rf.elements.message.value = 'Looking for: ' + spec.value + (area.value.trim() ? '. Area: ' + area.value.trim() : '') + '.';
         if (area.value.trim()) rf.elements.area.value = area.value.trim();
-        if (rf.wizard) rf.wizard.go(0);
+        if (rf.wizard) { rf.wizard.go(0); rf.wizard.info(); }
         document.getElementById('request').scrollIntoView({ behavior: motionOk() ? 'smooth' : 'auto' });
         setTimeout(function () { rf.elements.urgency.focus({ preventScroll: true }); }, 500);
       }
