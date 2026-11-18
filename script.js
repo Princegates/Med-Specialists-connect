@@ -226,7 +226,7 @@
           say('<strong>If someone is in danger, call 112 now.</strong> We have flagged your request as urgent and will call you straight away.' + trackNote, 'err', true);
         } else if (res.invoice) {
           say('Thank you. Your invoice ' + res.invoice.number + ' (' + money(res.invoice.total) + ') is ready. ' +
-            '<a href="' + res.invoice.url + '">View and pay your invoice</a>.' + trackNote, 'ok', true);
+            '<a href="' + res.invoice.url + '" target="_blank" rel="noopener">View and pay your invoice<span class="sr"> (opens in a new tab)</span></a>.' + trackNote, 'ok', true);
         } else if (res.billing === 'quote') {
           say('Thank you. We have your request. We will confirm the cost and send you an estimate before you pay.' + trackNote, 'ok', true);
         } else if (res.track) {
