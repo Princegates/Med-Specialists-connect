@@ -40,7 +40,7 @@
 
     // What the client has chosen, test by test.
     var inc = $('included'), body = $('included-body'); body.textContent = '';
-    if (d.included && window.PackageDetails) { body.appendChild(window.PackageDetails.render(d.included, { labelOf: function (k) { return k; }, packagePrice: inv.total })); show(inc, true); } else show(inc, false);
+    if (d.included && window.PackageDetails) { body.appendChild(window.PackageDetails.render(d.included, { labelOf: function (k) { return k; }, packagePrice: inv.total, showPrices: true })); show(inc, true); } else show(inc, false);
   }
 
   function load() {

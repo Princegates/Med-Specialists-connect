@@ -1,4 +1,5 @@
-/* Draws "what is included" for a laboratory package. Shared by the home page (request form and price list) and the
+/* Draws "what is included" for a laboratory package. Prices are drawn only when the caller asks (opts.showPrices): the browsing
+   list shows none, the request form and the invoice do. Shared by the home page (request form and price list) and the
    invoice page. Everything is built with text nodes, never HTML, so nothing from the server can run as code. */
 (function () {
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
@@ -20,13 +21,13 @@
       if (t.note) txt.append(el('small', null, t.note));
       li.append(txt);
       if (t.added) li.append(el('span', 'pkg-new', 'New'));
-      if (t.price) li.append(el('span', 'pkg-price', money(t.price)));
+      if (t.price && opts.showPrices) li.append(el('span', 'pkg-price', money(t.price)));
       ul.append(li);
     });
-    if (d.tests.some(function (t) { return t.price; })) ul.className += ' pkg-priced';
+    if (opts.showPrices && d.tests.some(function (t) { return t.price; })) ul.className += ' pkg-priced';
     box.append(ul);
     // Individual prices are the clinic's; say how they relate to the package price.
-    if (d.priceBasis === 'clinic') {
+    if (opts.showPrices && d.priceBasis === 'clinic') {
       var sum = d.tests.reduce(function (n, t) { return n + (t.price || 0); }, 0);
       var line = el('p', 'pkg-total');
       line.append(el('span', null, 'Clinic price of the tests above, added up'), el('strong', null, money(sum)));

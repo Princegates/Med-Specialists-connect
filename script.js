@@ -351,7 +351,7 @@
         if (s.price) { p.append(document.createTextNode(window.PackageDetails.money(s.price))); var sp = document.createElement('span'); sp.textContent = ' \u00b7 you see this price before you pay'; p.append(sp); }
         else { p.textContent = s.billing === 'none' ? 'No charge' : 'We confirm the price with you before you pay.'; }
         info.append(h, p);
-        if (s.details) info.append(window.PackageDetails.render(s.details, { labelOf: labelOf, packagePrice: s.price }));
+        if (s.details) info.append(window.PackageDetails.render(s.details, { labelOf: labelOf, packagePrice: s.price, showPrices: true }));
         info.hidden = false;
       });
     }
@@ -367,7 +367,7 @@
         btn.addEventListener('click', function () {
           if (open) { open.remove(); open = null; btn.setAttribute('aria-expanded', 'false'); btn.textContent = 'What\u2019s included'; return; }
           open = document.createElement('tr'); open.className = 'inc-row';
-          var td = document.createElement('td'); td.colSpan = 3; td.append(window.PackageDetails.render(s.details, { labelOf: labelOf, packagePrice: s.price })); open.append(td);
+          var td = document.createElement('td'); td.colSpan = row.cells.length; td.append(window.PackageDetails.render(s.details, { labelOf: labelOf })); open.append(td);
           row.after(open); btn.setAttribute('aria-expanded', 'true'); btn.textContent = 'Hide what\u2019s included';
         });
         row.querySelector('td.act').prepend(btn);
