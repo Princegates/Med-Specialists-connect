@@ -156,6 +156,39 @@ const MIGRATIONS = [
       `ALTER TABLE staff ADD COLUMN totp_last INTEGER NOT NULL DEFAULT 0`
     ]
   }
+  ,
+  {
+    id: '0007_price_list',
+    sql: [],
+    // The business's real price list. New services are added; the old placeholder prices are replaced (only if nobody
+    // has edited them in the console) and anything without a supplied price becomes "staff confirm the price".
+    after: async (db) => {
+      const now = new Date().toISOString();
+      let n = 20;
+      for (const [value, sv] of Object.entries(SERVICES)) {
+        if (!sv.category) continue;
+        await db.prepare('INSERT OR IGNORE INTO services (value, label, billing, lines, active, sort, updated_at) VALUES (?, ?, ?, ?, 1, ?, ?)').bind(value, sv.label, sv.billing, JSON.stringify(sv.lines), n++, now).run();
+        await db.prepare('UPDATE services SET category = ? WHERE value = ? AND category IS NULL').bind(sv.category, value).run();
+      }
+      const old = {
+        'Specialist appointment': '[{"description":"Specialist appointment coordination","amount":10000}]',
+        'Insurance claims assistance': '[{"description":"Insurance claims assistance (administrative fee)","amount":10000}]',
+        'Hospital admission assistance': '[{"description":"Hospital admission assistance","amount":15000}]',
+        'Dialysis services': '[{"description":"Dialysis services","amount":0}]'
+      };
+      for (const [value, oldLines] of Object.entries(old)) {
+        const sv = SERVICES[value];
+        await db.prepare('UPDATE services SET label = ?, billing = ?, lines = ?, updated_at = ? WHERE value = ? AND lines = ?').bind(sv.label, sv.billing, JSON.stringify(sv.lines), now, value, oldLines).run();
+      }
+      await db.prepare("UPDATE services SET label = 'Specialist appointment (other specialties)' WHERE value = 'Specialist appointment' AND label = 'Specialist appointment coordination'").run();
+      await db.prepare("UPDATE services SET label = 'Other laboratory tests' WHERE value = 'Laboratory tests' AND label = 'Laboratory investigations'").run();
+      // Replaced by "GP consult (home)", which has a real price.
+      await db.prepare("UPDATE services SET active = 0 WHERE value = 'Home doctor visit' AND lines = '[{\"description\":\"Coordination fee\",\"amount\":10000},{\"description\":\"Doctor fee (provider charge)\",\"amount\":0}]'").run();
+      // Suggested lines for the scan and ambulance quotes no longer pre-fill an invented coordination fee.
+      await db.prepare("UPDATE services SET lines = ? WHERE value = 'MRI or CT scan' AND lines = ?").bind(JSON.stringify(SERVICES['MRI or CT scan'].lines), '[{"description":"Coordination fee","amount":10000},{"description":"Scan fee (provider charge)","amount":0}]').run();
+      await db.prepare("UPDATE services SET lines = ? WHERE value = 'Ambulance coordination' AND lines = ?").bind(JSON.stringify(SERVICES['Ambulance coordination'].lines), '[{"description":"Coordination fee","amount":10000},{"description":"Ambulance transport (provider charge)","amount":0}]').run();
+    }
+  }
 ];
 
 let ready = null;

@@ -108,7 +108,7 @@
           <h2 class="pick-title" id="pick-title">What do you need today?</h2>
           <ul class="pick" aria-labelledby="pick-title">
             <li><a href="#request" data-service="Specialist appointment"><span class="pic"><svg aria-hidden="true"><use href="#i-spec"/></svg></span><span>See a specialist</span></a></li>
-            <li><a href="#request" data-service="Home doctor visit"><span class="pic"><svg aria-hidden="true"><use href="#i-home"/></svg></span><span>A doctor or nurse at home</span></a></li>
+            <li><a href="#request" data-service="GP consult (home)"><span class="pic"><svg aria-hidden="true"><use href="#i-home"/></svg></span><span>A doctor or nurse at home</span></a></li>
             <li><a href="#request" data-service="MRI or CT scan"><span class="pic"><svg aria-hidden="true"><use href="#i-scan"/></svg></span><span>A scan</span></a></li>
             <li><a href="#request" data-service="Laboratory tests"><span class="pic"><svg aria-hidden="true"><use href="#i-lab"/></svg></span><span>Lab tests</span></a></li>
             <li><a href="#request" data-service="Ambulance coordination"><span class="pic"><svg aria-hidden="true"><use href="#i-amb"/></svg></span><span>An ambulance</span></a></li>
@@ -164,17 +164,39 @@
             <label for="r-service">Service</label>
             <select id="r-service" name="service" required>
               <option value="" selected disabled>Choose a service</option>
-              <option value="Specialist appointment">Specialist appointment</option>
-              <option value="Home doctor visit">Home doctor visit</option>
-              <option value="Home nursing">Home nursing</option>
-              <option value="MRI or CT scan">MRI or CT scan</option>
-              <option value="Laboratory tests">Laboratory tests</option>
-              <option value="Ambulance coordination">Ambulance coordination</option>
-              <option value="Hospital admission assistance">Hospital admission assistance</option>
-              <option value="Insurance claims assistance">Insurance claims assistance</option>
-              <option value="Second medical opinion">Second medical opinion</option>
-              <option value="Dialysis services">Dialysis services</option>
-              <option value="Medical advice on where to go">Advice on where to go</option>
+              <optgroup label="Home and private consultations">
+                <option value="GP consult (home)">GP consult (home) (GH₵800)</option>
+                <option value="Cardiac specialist consult (home)">Cardiac specialist consult (home) (GH₵2,500)</option>
+                <option value="Urologist consult (private or home)">Urologist consult (private or home) (GH₵2,000)</option>
+                <option value="Nephrologist service (private or home)">Nephrologist service (private or home) (GH₵2,000)</option>
+                <option value="Hematologist consult (private or home)">Hematologist consult (private or home) (GH₵2,000)</option>
+                <option value="Gynecologist consult (private or home)">Gynecologist consult (private or home) (GH₵2,000)</option>
+                <option value="Physician specialist (private or home)">Physician specialist (private or home) (GH₵1,500)</option>
+                <option value="Psychiatrist consult (private or home)">Psychiatrist consult (private or home) (GH₵3,000)</option>
+                <option value="Dialysis services">On-call dialysis treatment (anytime) (GH₵2,000)</option>
+              </optgroup>
+              <optgroup label="Laboratory services">
+                <option value="On-call kidney or renal function test">On-call kidney or renal function test (GH₵1,274)</option>
+                <option value="On-call men's essential check-up">On-call men's essential check-up (GH₵2,016)</option>
+                <option value="On-call men's complete health check-up">On-call men's complete health check-up (GH₵3,598)</option>
+                <option value="On-call men's executive health check">On-call men's executive health check (GH₵4,123)</option>
+                <option value="On-call women's essential check-up">On-call women's essential check-up (GH₵3,290)</option>
+                <option value="On-call women's complete health check">On-call women's complete health check (GH₵6,118)</option>
+                <option value="On-call women's executive health check">On-call women's executive health check (GH₵7,189)</option>
+                <option value="Women's fertility assessment">Women's fertility assessment (GH₵3,213)</option>
+                <option value="Couples fertility assessment">Couples fertility assessment (GH₵3,521)</option>
+              </optgroup>
+              <optgroup label="Other help (we confirm the price first)">
+                <option value="Specialist appointment">Specialist appointment, other specialties</option>
+                <option value="Home nursing">Home nursing</option>
+                <option value="MRI or CT scan">MRI or CT scan</option>
+                <option value="Laboratory tests">Other laboratory tests</option>
+                <option value="Ambulance coordination">Ambulance coordination</option>
+                <option value="Hospital admission assistance">Hospital admission assistance</option>
+                <option value="Insurance claims assistance">Insurance claims assistance</option>
+                <option value="Second medical opinion">Second medical opinion</option>
+                <option value="Medical advice on where to go">Advice on where to go</option>
+              </optgroup>
             </select>
             <label for="r-urgency">How urgent is it?</label>
             <select id="r-urgency" name="urgency">
@@ -255,7 +277,7 @@
         <div class="desk">
           <ul class="dir">
             <li data-shot="0"><span class="pic" aria-hidden="true"><svg><use href="#i-spec"/></svg></span><div><h3><a href="#request" data-service="Specialist appointment">Specialist appointments</a></h3><p>Referred by your doctor, or looking for one? We find an appropriate private specialist and arrange your consultation.</p></div></li>
-            <li data-shot="1"><span class="pic" aria-hidden="true"><svg><use href="#i-home"/></svg></span><div><h3><a href="#request" data-service="Home doctor visit">Care at home</a></h3><p>Arrangements for a doctor or nurse to see your loved one at home, with the hospital details taken care of.</p></div></li>
+            <li data-shot="1"><span class="pic" aria-hidden="true"><svg><use href="#i-home"/></svg></span><div><h3><a href="#request" data-service="GP consult (home)">Care at home</a></h3><p>Arrangements for a doctor or nurse to see your loved one at home, with the hospital details taken care of.</p></div></li>
             <li data-shot="2"><span class="pic" aria-hidden="true"><svg><use href="#i-scan"/></svg></span><div><h3><a href="#request" data-service="">Diagnostics</a></h3><p>We coordinate tests and scans with diagnostic centres and help you get the results to the right doctor.</p></div></li>
             <li data-shot="3"><span class="pic" aria-hidden="true"><svg><use href="#i-doc"/></svg></span><div><h3><a href="#request" data-service="Insurance claims assistance">Insurance assistance</a></h3><p>Help with insurance coordination and claims follow-up so you are not left chasing paperwork.</p></div></li>
             <li data-shot="4"><span class="pic" aria-hidden="true"><svg><use href="#i-help"/></svg></span><div><h3><a href="#request" data-service="Medical advice on where to go">Advice on where to go</a></h3><p>Not sure which specialist or facility you need? Call us and we will point you in the right direction.</p></div></li>
@@ -285,19 +307,22 @@
           <label for="find-spec">Which specialist?</label>
           <select id="find-spec">
             <option value="">Choose a specialty</option>
-            <option>General physician</option>
-            <option>Cardiologist (heart)</option>
+            <option data-service="GP consult (home)">General practitioner (GP)</option>
+            <option data-service="Physician specialist (private or home)">Physician specialist (internal medicine)</option>
+            <option data-service="Cardiac specialist consult (home)">Cardiologist (heart)</option>
+            <option data-service="Urologist consult (private or home)">Urologist</option>
+            <option data-service="Nephrologist service (private or home)">Nephrologist (kidneys)</option>
+            <option data-service="Hematologist consult (private or home)">Hematologist (blood)</option>
+            <option data-service="Gynecologist consult (private or home)">Gynecologist (women&rsquo;s health)</option>
+            <option data-service="Psychiatrist consult (private or home)">Psychiatrist (mental health)</option>
             <option>Paediatrician (children)</option>
-            <option>Obstetrician and gynaecologist</option>
             <option>Orthopaedic surgeon (bones and joints)</option>
             <option>Ear, nose and throat (ENT)</option>
             <option>Dermatologist (skin)</option>
             <option>Neurologist (brain and nerves)</option>
-            <option>Urologist</option>
             <option>Eye specialist</option>
             <option>Dentist</option>
-            <option>Nephrologist (kidneys)</option>
-            <option>Not sure, please advise me</option>
+            <option data-service="Medical advice on where to go">Not sure, please advise me</option>
           </select>
           <label for="find-area">Your area or city <span class="opt">(optional)</span></label>
           <input id="find-area" type="text" autocomplete="address-level2" placeholder="For example: Spintex, Accra">
@@ -325,32 +350,73 @@
     </section>
 
     <!-- FEES -->
-    <section class="section" id="fees">
+    <section class="section" id="fees" aria-labelledby="fees-title">
       <div class="wrap">
         <div class="section-head">
-          <h2 id="fees-title">Clear fees, no surprises.</h2>
-          <p class="sub">You pay only for the services you choose. Our coordination fee is shown separately from what doctors, hospitals and laboratories charge.</p>
+          <h2 id="fees-title">Our prices</h2>
+          <p class="sub">All prices are in Ghana cedis (GH₵). You see the price before you pay. For anything not priced below, we tell you the cost first.</p>
         </div>
+
+        <h3 class="price-group">Home and private consultations</h3>
+        <p class="price-note">These services by our medical licensed team come with a lab or nurse technician to take blood samples as may be required.</p>
         <div class="table-wrap">
           <table class="fee-table">
-            <caption class="sr">How each service is charged</caption>
-            <thead>
-              <tr><th scope="col">Service</th><th scope="col">How it is charged</th></tr>
-            </thead>
+            <caption class="sr">Home and private consultation prices</caption>
+            <thead><tr><th scope="col">Service</th><th scope="col" class="price">Price</th><th scope="col"><span class="sr">Action</span></th></tr></thead>
             <tbody>
-              <tr><th scope="row">Specialist appointment coordination</th><td>Fixed coordination fee</td></tr>
-              <tr><th scope="row">Home doctor visit</th><td>Doctor fee plus coordination fee</td></tr>
-              <tr><th scope="row">Home nursing</th><td>Quoted according to duration</td></tr>
-              <tr><th scope="row">MRI or CT scan booking</th><td>Provider price plus disclosed fee</td></tr>
-              <tr><th scope="row">Laboratory investigations</th><td>Based on the tests selected</td></tr>
-              <tr><th scope="row">Ambulance coordination</th><td>Provider quotation plus disclosed fee</td></tr>
-              <tr><th scope="row">Hospital admission assistance</th><td>Fixed or quoted service fee</td></tr>
-              <tr><th scope="row">Insurance claims assistance</th><td>Fixed administrative fee</td></tr>
-              <tr><th scope="row">Second medical opinion coordination</th><td>Quoted service fee</td></tr>
+              <tr><th scope="row">GP consult (home)</th><td class="price">GH₵800</td><td class="act"><a href="#request" data-service="GP consult (home)">Request<span class="sr"> GP consult (home)</span></a></td></tr>
+              <tr><th scope="row">Cardiac specialist consult (home)</th><td class="price">GH₵2,500</td><td class="act"><a href="#request" data-service="Cardiac specialist consult (home)">Request<span class="sr"> Cardiac specialist consult (home)</span></a></td></tr>
+              <tr><th scope="row">Urologist consult (private or home)</th><td class="price">GH₵2,000</td><td class="act"><a href="#request" data-service="Urologist consult (private or home)">Request<span class="sr"> Urologist consult (private or home)</span></a></td></tr>
+              <tr><th scope="row">Nephrologist service (private or home)</th><td class="price">GH₵2,000</td><td class="act"><a href="#request" data-service="Nephrologist service (private or home)">Request<span class="sr"> Nephrologist service (private or home)</span></a></td></tr>
+              <tr><th scope="row">Hematologist consult (private or home)</th><td class="price">GH₵2,000</td><td class="act"><a href="#request" data-service="Hematologist consult (private or home)">Request<span class="sr"> Hematologist consult (private or home)</span></a></td></tr>
+              <tr><th scope="row">Gynecologist consult (private or home)</th><td class="price">GH₵2,000</td><td class="act"><a href="#request" data-service="Gynecologist consult (private or home)">Request<span class="sr"> Gynecologist consult (private or home)</span></a></td></tr>
+              <tr><th scope="row">Physician specialist (private or home)</th><td class="price">GH₵1,500</td><td class="act"><a href="#request" data-service="Physician specialist (private or home)">Request<span class="sr"> Physician specialist (private or home)</span></a></td></tr>
+              <tr><th scope="row">Psychiatrist consult (private or home)</th><td class="price">GH₵3,000</td><td class="act"><a href="#request" data-service="Psychiatrist consult (private or home)">Request<span class="sr"> Psychiatrist consult (private or home)</span></a></td></tr>
+              <tr><th scope="row">On-call dialysis treatment (anytime)</th><td class="price">GH₵2,000</td><td class="act"><a href="#request" data-service="Dialysis services">Request<span class="sr"> On-call dialysis treatment (anytime)</span></a></td></tr>
             </tbody>
           </table>
         </div>
-        <p class="product-note">Fixed fees are invoiced straight away. Where a provider&rsquo;s price varies, we send you an estimate first, and you pay once the details are confirmed. Ask us for the current fee for any service before you commit.</p>
+
+        <h3 class="price-group">Laboratory services</h3>
+        <p class="price-note">These laboratory services come with the option of subscribing to consult any related medical specialist in our catalogue for test review and advice (medication).</p>
+        <div class="table-wrap">
+          <table class="fee-table">
+            <caption class="sr">Laboratory service prices</caption>
+            <thead><tr><th scope="col">Service</th><th scope="col" class="price">Price</th><th scope="col"><span class="sr">Action</span></th></tr></thead>
+            <tbody>
+              <tr><th scope="row">On-call kidney or renal function test</th><td class="price">GH₵1,274</td><td class="act"><a href="#request" data-service="On-call kidney or renal function test">Request<span class="sr"> On-call kidney or renal function test</span></a></td></tr>
+              <tr><th scope="row">On-call men&rsquo;s essential check-up</th><td class="price">GH₵2,016</td><td class="act"><a href="#request" data-service="On-call men's essential check-up">Request<span class="sr"> On-call men&rsquo;s essential check-up</span></a></td></tr>
+              <tr><th scope="row">On-call men&rsquo;s complete health check-up</th><td class="price">GH₵3,598</td><td class="act"><a href="#request" data-service="On-call men's complete health check-up">Request<span class="sr"> On-call men&rsquo;s complete health check-up</span></a></td></tr>
+              <tr><th scope="row">On-call men&rsquo;s executive health check</th><td class="price">GH₵4,123</td><td class="act"><a href="#request" data-service="On-call men's executive health check">Request<span class="sr"> On-call men&rsquo;s executive health check</span></a></td></tr>
+              <tr><th scope="row">On-call women&rsquo;s essential check-up</th><td class="price">GH₵3,290</td><td class="act"><a href="#request" data-service="On-call women's essential check-up">Request<span class="sr"> On-call women&rsquo;s essential check-up</span></a></td></tr>
+              <tr><th scope="row">On-call women&rsquo;s complete health check</th><td class="price">GH₵6,118</td><td class="act"><a href="#request" data-service="On-call women's complete health check">Request<span class="sr"> On-call women&rsquo;s complete health check</span></a></td></tr>
+              <tr><th scope="row">On-call women&rsquo;s executive health check</th><td class="price">GH₵7,189</td><td class="act"><a href="#request" data-service="On-call women's executive health check">Request<span class="sr"> On-call women&rsquo;s executive health check</span></a></td></tr>
+              <tr><th scope="row">Women&rsquo;s fertility assessment</th><td class="price">GH₵3,213</td><td class="act"><a href="#request" data-service="Women's fertility assessment">Request<span class="sr"> Women&rsquo;s fertility assessment</span></a></td></tr>
+              <tr><th scope="row">Couples fertility assessment</th><td class="price">GH₵3,521</td><td class="act"><a href="#request" data-service="Couples fertility assessment">Request<span class="sr"> Couples fertility assessment</span></a></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="price-group">Other services</h3>
+        <p class="price-note">The price depends on the provider and your needs, so we confirm the cost with you before you pay.</p>
+        <div class="table-wrap">
+          <table class="fee-table">
+            <caption class="sr">Services priced on request</caption>
+            <thead><tr><th scope="col">Service</th><th scope="col" class="price">Price</th><th scope="col"><span class="sr">Action</span></th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Specialist appointments in other specialties</th><td class="price quoted">Quoted first</td><td class="act"><a href="#request" data-service="Specialist appointment">Request<span class="sr"> Specialist appointments in other specialties</span></a></td></tr>
+              <tr><th scope="row">Home nursing</th><td class="price quoted">Quoted first</td><td class="act"><a href="#request" data-service="Home nursing">Request<span class="sr"> Home nursing</span></a></td></tr>
+              <tr><th scope="row">MRI or CT scan booking</th><td class="price quoted">Quoted first</td><td class="act"><a href="#request" data-service="MRI or CT scan">Request<span class="sr"> MRI or CT scan booking</span></a></td></tr>
+              <tr><th scope="row">Other laboratory tests</th><td class="price quoted">Quoted first</td><td class="act"><a href="#request" data-service="Laboratory tests">Request<span class="sr"> Other laboratory tests</span></a></td></tr>
+              <tr><th scope="row">Ambulance coordination</th><td class="price quoted">Quoted first</td><td class="act"><a href="#request" data-service="Ambulance coordination">Request<span class="sr"> Ambulance coordination</span></a></td></tr>
+              <tr><th scope="row">Hospital admission assistance</th><td class="price quoted">Quoted first</td><td class="act"><a href="#request" data-service="Hospital admission assistance">Request<span class="sr"> Hospital admission assistance</span></a></td></tr>
+              <tr><th scope="row">Insurance claims assistance</th><td class="price quoted">Quoted first</td><td class="act"><a href="#request" data-service="Insurance claims assistance">Request<span class="sr"> Insurance claims assistance</span></a></td></tr>
+              <tr><th scope="row">Second medical opinion</th><td class="price quoted">Quoted first</td><td class="act"><a href="#request" data-service="Second medical opinion">Request<span class="sr"> Second medical opinion</span></a></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="product-note">Fixed prices are invoiced straight away and you can pay online. Where the price varies, we send you an estimate first, and you pay once the details are confirmed.</p>
         <div class="cta-row cta-center"><a class="btn" href="#request">Request healthcare assistance</a></div>
       </div>
     </section>

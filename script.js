@@ -449,7 +449,7 @@
       if (!spec.value) { spec.focus(); spec.setAttribute('aria-invalid', 'true'); return; }
       spec.removeAttribute('aria-invalid');
       if (rf) {
-        rf.elements.service.value = spec.value.indexOf('Not sure') === 0 ? 'Medical advice on where to go' : 'Specialist appointment';
+        var chosen = spec.selectedOptions[0]; rf.elements.service.value = (chosen && chosen.getAttribute('data-service')) || 'Specialist appointment';
         rf.elements.message.value = 'Looking for: ' + spec.value + (area.value.trim() ? '. Area: ' + area.value.trim() : '') + '.';
         if (area.value.trim()) rf.elements.area.value = area.value.trim();
         if (rf.wizard) rf.wizard.go(0);

@@ -342,7 +342,7 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
 .fee-table { width: 100%; border-collapse: collapse; }
 .fee-table th, .fee-table td { padding: 18px 26px; text-align: left; vertical-align: top; }
 .fee-table thead th { color: var(--accent-text); font: 700 .95rem var(--font-body); border-bottom: 2px solid var(--accent); }
-.fee-table tbody th { width: 55%; font: 600 1.08rem/1.35 var(--font-head); letter-spacing: -.01em; }
+.fee-table tbody th { width: auto; font: 600 1.08rem/1.35 var(--font-head); letter-spacing: -.01em; }
 .fee-table td { color: var(--soft); }
 .fee-table tbody tr + tr > * { border-top: 1px solid var(--line); }
 .product-note { margin: 26px 0 0; max-width: 58rem; color: var(--soft); font-size: 1rem; }
@@ -699,3 +699,20 @@ html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-
 html[data-motion="reduced"] .ticker-track { flex-wrap: wrap; width: auto; }
 html[data-motion="reduced"] .ticker span:nth-child(n+9) { display: none; }
 @media print { .site-header, .actionbar, .wa-fab, .progress, .listen, .pick, .reach, .ticker, .photo-hero { display: none !important; } body { background: #fff; color: #000; } .hero, .contact { background: #fff; color: #000; min-height: 0; } .hero h1, .hero .lead, .contact h2 { color: #000; } }
+
+/* ---------- Price lists ---------- */
+.price-group { margin: 56px 0 8px; font-size: 1.5rem; }
+.price-group:first-of-type { margin-top: 0; }
+.price-note { margin: 0 0 18px; max-width: 46rem; color: var(--soft); }
+.fee-table .price { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.fee-table td.price { color: var(--ink); font: 700 1.1rem var(--font-head); letter-spacing: -.01em; }
+.fee-table td.quoted { color: var(--soft); font: 500 1rem var(--font-body); }
+.fee-table .act { text-align: right; white-space: nowrap; width: 1%; }
+.fee-table .act a { color: var(--accent-text); font-weight: 650; }
+.table-wrap { max-width: 62rem; }
+@media (max-width: 640px) {
+  .fee-table th, .fee-table td { padding: 14px 12px; }
+  .fee-table tbody th { font-size: 1rem; }
+  .fee-table td.price { font-size: 1rem; }
+  .fee-table .act a { font-size: .9rem; }
+}

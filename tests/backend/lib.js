@@ -52,5 +52,5 @@ let pass = 0, fails = 0;
 const ok = (name, cond, extra) => { if (cond) { pass++; console.log('  ok   ' + name); } else { fails++; console.log('  FAIL ' + name + (extra !== undefined ? '  -> ' + JSON.stringify(extra) : '')); } };
 const done = () => { console.log(`\n${pass} passed, ${fails} failed`); process.exit(fails ? 1 : 0); };
 const hmac = (body) => crypto.createHmac('sha512', 'sk_test_local_secret').update(body).digest('hex');
-const mk = (o = {}) => ({ service: 'Specialist appointment', name: 'Ama Mensah', phone: '0244000111', consent: true, urgency: 'Routine', for_whom: 'Myself', ...o });
+const mk = (o = {}) => ({ service: 'GP consult (home)', name: 'Ama Mensah', phone: '0244000111', consent: true, urgency: 'Routine', for_whom: 'Myself', ...o });
 module.exports = { B, PW, req, login, adminHdr, forget, known, sessions, totp, nextTotp, ok, done, hmac, mk };
