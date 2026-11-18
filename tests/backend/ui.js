@@ -337,6 +337,12 @@ const COOKIE = '__Host-msc_session';
   await p.goto(B + trackHref); await p.waitForTimeout(800);
   ok('private pages are never kept on the phone by the service worker', await p.evaluate(async () => { const urls = []; for (const k of await caches.keys()) for (const r of await (await caches.open(k)).keys()) urls.push(r.url); return !urls.some((u) => /\/(invoice|track)/.test(u)); }));
 
+  console.log('Home page buttons');
+  await p.goto(B + '/index.html'); await p.waitForTimeout(900);
+  ok('the six big buttons on the opening screen have small icons, not giant ones', await p.evaluate(() => { const l = [...document.querySelectorAll('.pick a')]; return l.length === 6 && l.every((a) => { const i = a.querySelector('svg').getBoundingClientRect(), r = a.getBoundingClientRect(); return i.width <= 40 && i.height <= 40 && r.height <= 90 && a.querySelector('.pic'); }); }));
+  ok('and the icons in the services list are small too', await p.evaluate(() => [...document.querySelectorAll('#patients .pic svg')].every((s) => s.getBoundingClientRect().width <= 48)));
+  await p.screenshot({ path: S + 'ui-site-hero.png' });
+
   console.log('Menu, founder, vision, network page');
   await p.goto(B + '/index.html'); await p.waitForTimeout(600);
   const navText = await p.innerText('#nav');

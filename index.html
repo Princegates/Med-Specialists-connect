@@ -50,6 +50,7 @@
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round"/></symbol>
     <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7zM14 3v4h4M10 12h5M10 16h5" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 2.700c3.500 4 6 7 6 10a6 6 0 0 1-12 0c0-3 2.500-6 6-10z" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.500 4.500 4.500L19 7.500" fill="none" stroke="currentColor" stroke-width="2.400" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   </svg>
   <a class="skip" href="#main">Skip to content</a>
@@ -108,12 +109,12 @@
 
           <h2 class="pick-title" id="pick-title">What do you need today?</h2>
           <ul class="pick" aria-labelledby="pick-title">
-            <li><a href="#fees"><svg aria-hidden="true"><use href="#i-spec"/></svg><span>See a specialist</span></a></li>
-            <li><a href="#request" data-service="GP consult (home)"><svg aria-hidden="true"><use href="#i-home"/></svg><span>A doctor at home</span></a></li>
-            <li><a href="#fees"><svg aria-hidden="true"><use href="#i-lab"/></svg><span>A check-up or lab test</span></a></li>
-            <li><a href="#request" data-service="On-call kidney or renal function test"><svg aria-hidden="true"><use href="#i-scan"/></svg><span>Kidney function test</span></a></li>
-            <li><a href="#request" data-service="Dialysis services"><svg aria-hidden="true"><use href="#i-amb"/></svg><span>On-call dialysis</span></a></li>
-            <li><a href="#request" data-service="Medical advice on where to go"><svg aria-hidden="true"><use href="#i-help"/></svg><span>I am not sure</span></a></li>
+            <li><a href="#fees"><span class="pic"><svg aria-hidden="true"><use href="#i-spec"/></svg></span><span>See a specialist</span></a></li>
+            <li><a href="#request" data-service="GP consult (home)"><span class="pic"><svg aria-hidden="true"><use href="#i-home"/></svg></span><span>A doctor at home</span></a></li>
+            <li><a href="#fees"><span class="pic"><svg aria-hidden="true"><use href="#i-lab"/></svg></span><span>A check-up or lab test</span></a></li>
+            <li><a href="#request" data-service="On-call kidney or renal function test"><span class="pic"><svg aria-hidden="true"><use href="#i-doc"/></svg></span><span>Kidney function test</span></a></li>
+            <li><a href="#request" data-service="Dialysis services"><span class="pic"><svg aria-hidden="true"><use href="#i-drop"/></svg></span><span>On-call dialysis</span></a></li>
+            <li><a href="#request" data-service="Medical advice on where to go"><span class="pic"><svg aria-hidden="true"><use href="#i-help"/></svg></span><span>I am not sure</span></a></li>
           </ul>
           <p class="pick-more">Need something that is not listed? Call us on <a href="tel:+233243560080">0243 560 080</a>.</p>
           <div class="reach">
@@ -280,7 +281,7 @@
             <li data-shot="0"><span class="pic" aria-hidden="true"><svg><use href="#i-spec"/></svg></span><div><h3><a href="#fees">Specialist consultations</a></h3><p>Referred by your doctor, or looking for one? We find an appropriate specialist and arrange your consultation, at home or privately.</p></div></li>
             <li data-shot="1"><span class="pic" aria-hidden="true"><svg><use href="#i-home"/></svg></span><div><h3><a href="#request" data-service="GP consult (home)">Care at home</a></h3><p>Arrangements for a doctor or nurse to see your loved one at home, with the hospital details taken care of.</p></div></li>
             <li data-shot="2"><span class="pic" aria-hidden="true"><svg><use href="#i-scan"/></svg></span><div><h3><a href="#fees">Health check-ups and lab tests</a></h3><p>On-call laboratory tests and health check-ups for men and women, including kidney function and fertility, with the option of a specialist review of your results.</p></div></li>
-            <li data-shot="3"><span class="pic" aria-hidden="true"><svg><use href="#i-amb"/></svg></span><div><h3><a href="#request" data-service="Dialysis services">On-call dialysis</a></h3><p>Dialysis treatment on call, whenever you need it.</p></div></li>
+            <li data-shot="3"><span class="pic" aria-hidden="true"><svg><use href="#i-drop"/></svg></span><div><h3><a href="#request" data-service="Dialysis services">On-call dialysis</a></h3><p>Dialysis treatment on call, whenever you need it.</p></div></li>
             <li data-shot="4"><span class="pic" aria-hidden="true"><svg><use href="#i-help"/></svg></span><div><h3><a href="#request" data-service="Medical advice on where to go">Advice on where to go</a></h3><p>Not sure which specialist or facility you need? Call us and we will point you in the right direction.</p></div></li>
           </ul>
           <figure class="desk-view">
