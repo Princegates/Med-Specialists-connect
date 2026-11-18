@@ -201,7 +201,7 @@ const COOKIE = '__Host-msc_session';
   const firstRow = p.locator('#fees tr:has(a[data-service="GP consult (home)"])');
   ok('each row has just the service and a Request button', (await firstRow.locator('td').count()) === 1 && /Request/.test(await firstRow.innerText()) && !/GH₵/.test(await firstRow.innerText()));
   await p.click('#fees a[data-service="Cardiac specialist consult (home)"]'); await p.waitForTimeout(900);
-  ok('Request picks that service, and only now is its price shown', (await p.inputValue('#r-service')) === 'Cardiac specialist consult (home)' && /GH₵2,500/.test(await p.innerText('#svc-info')) && /you see this price before you pay/.test(await p.innerText('#svc-info')));
+  ok('Request picks that service, and only now is its price shown', (await p.inputValue('#r-service')) === 'Cardiac specialist consult (home)' && /GH₵2,500/.test(await p.innerText('#svc-info')) && !/before you pay/.test(await p.innerText('#svc-info')));
   ok('every service in the list can be chosen in the request form', await p.evaluate(() => [...document.querySelectorAll('#fees a[data-service]')].every((a) => [...document.querySelectorAll('#r-service option')].some((o) => o.value === a.getAttribute('data-service')))));
   await p.selectOption('#find-spec', 'Cardiologist (heart)'); await p.click('#find-form button[type=submit]'); await p.waitForTimeout(700);
   ok('the specialist finder maps a cardiologist to the cardiac consult', (await p.inputValue('#r-service')) === 'Cardiac specialist consult (home)');

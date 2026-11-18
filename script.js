@@ -348,7 +348,7 @@
         if (!s || !window.PackageDetails) { info.hidden = true; return; }
         var h = document.createElement('h3'); h.textContent = s.label;
         var p = document.createElement('p'); p.className = 'svc-price';
-        if (s.price) { p.append(document.createTextNode(window.PackageDetails.money(s.price))); var sp = document.createElement('span'); sp.textContent = ' \u00b7 you see this price before you pay'; p.append(sp); }
+        if (s.price) { p.append(document.createTextNode(window.PackageDetails.money(s.price))); }
         else { p.textContent = s.billing === 'none' ? 'No charge' : 'We confirm the price with you before you pay.'; }
         info.append(h, p);
         if (s.details) info.append(window.PackageDetails.render(s.details, { labelOf: labelOf, packagePrice: s.price, showPrices: true }));
