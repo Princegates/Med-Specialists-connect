@@ -11,14 +11,7 @@
   <link rel="preload" href="assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/atkinson-next-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="site.css?v=18">
-  <script>
-    document.documentElement.classList.add('js');
-    try {
-      var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
-      var prefs = JSON.parse(localStorage.getItem('prefs') || '{}');
-      ['size', 'contrast', 'motion', 'font'].forEach(function (k) { if (prefs[k]) document.documentElement.setAttribute('data-' + k, prefs[k]); });
-    } catch (e) {}
-  </script>
+  <script src="/assets/boot.js"></script>
 </head>
 <body class="site">
   <a class="skip" href="#main">Skip to content</a>

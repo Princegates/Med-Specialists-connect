@@ -1,7 +1,7 @@
 // End-to-end checks of the whole backend: settings, roles, the public request flow, payments, cases, clients,
 // providers, billing, accounts, dashboard and audit. Run against `wrangler pages dev` with a fresh database.
 const { execSync } = require('child_process');
-const { B, PW, req, login, adminHdr, forget, known, sessions, totp, hmac, ok, done, mk } = require('./lib.js');
+const { B, PW, req, login, adminHdr, forget, known, sessions, totp, nextTotp, hmac, ok, done, mk } = require('./lib.js');
 const SITE_DIR = process.env.SITE_DIR || process.cwd();
 const WR = process.env.WRANGLER || 'npx wrangler';
 
@@ -77,8 +77,11 @@ const yr = new Date().getUTCFullYear();
   ok('signing in now asks for the app code and gives no session yet', r.status === 200 && r.j.mfa === true && !r.cookie, r);
   r = await login(OWNER, { code: '123456' });
   ok('a wrong app code is refused (401)', r.status === 401, r);
-  r = await login(OWNER, { code: totp(secret) });
+  const goodCode = await nextTotp(secret);
+  r = await login(OWNER, { code: goodCode });
   ok('the right app code signs in', r.status === 200 && !!r.cookie && r.j.me.role === 'superadmin', r);
+  r = await login(OWNER, { code: goodCode });
+  ok('the same code cannot be used a second time (401)', r.status === 401, r);
   r = await login(OWNER, { recovery: recovery[0] });
   ok('a recovery code signs in when the phone is lost', r.status === 200 && !!r.cookie, r);
   r = await login(OWNER, { recovery: recovery[0] });
@@ -585,6 +588,18 @@ const yr = new Date().getUTCFullYear();
   r = await A(OPS, `cases/${forMum}/update`, { assigned_to: byEmail(COORD2).id });
   ok('a supervisor can reassign any case', r.status === 200, r);
 
+  console.log('Things happening at the same moment');
+  const burst = await Promise.all(Array.from({ length: 25 }, (_, i) => req('/api/request', { method: 'POST', body: mk({ phone: '02077700' + String(i).padStart(2, '0'), name: 'Burst ' + i, service: 'Medical advice on where to go' }) })));
+  ok('25 requests arriving together are all accepted', burst.every((x) => x.status === 200), burst.map((x) => x.status));
+  r = await A(COMP, 'audit/verify');
+  ok('and the audit chain is still intact afterwards (no false alarms)', r.status === 200 && r.j.ok === true && r.j.checked > 60, r.j);
+  r = await A(OWNER, 'cases', { service: 'Home nursing', name: 'Double Click', phone: '0207000998', channel: 'phone' });
+  const dc = r.j.id;
+  const lines = [{ description: 'Home nursing visit', amountGhs: 120 }];
+  const rush = await Promise.all(Array.from({ length: 6 }, () => A(OWNER, `cases/${dc}/invoice`, { lines })));
+  ok('pressing "Create invoice" six times at once makes exactly one invoice (one 200, five 409)', rush.filter((x) => x.status === 200).length === 1 && rush.filter((x) => x.status === 409).length === 5, rush.map((x) => x.status));
+  ok('and the database holds a single live invoice for that case', sql(`SELECT COUNT(*) AS c FROM invoices WHERE request_id = '${dc}' AND status != 'void'`)[0].c === 1);
+
   console.log('Tamper-evident audit log');
   r = await A(COMP, 'audit/verify');
   ok('the audit chain checks out', r.status === 200 && r.j.ok === true && r.j.checked > 30, r.j);
@@ -624,7 +639,8 @@ const yr = new Date().getUTCFullYear();
   console.log('Lock-out, password reset and sign-out');
   for (let i = 0; i < 5; i++) await login(FIN, { password: 'Wrong-Password-1!' });
   r = await login(FIN);
-  ok('five wrong passwords lock the account, even for the right password (429)', r.status === 429, r);
+  const unknownMsg = (await login('nobody2@example.com', { password: 'Wrong-Password-1!' })).j.error;
+  ok('five wrong passwords lock the account, even for the right password, and it answers just like a wrong password (401, same words)', r.status === 401 && r.j.error === unknownMsg, r);
   const fin = (await A(OWNER, 'staff')).j.staff.find((x) => x.email === FIN);
   ok('the owner can see it is locked', !!fin.locked_until, fin);
   r = await A(OWNER, `staff/${fin.id}/update`, { reset_password: true });

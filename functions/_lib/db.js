@@ -20,11 +20,16 @@ export async function createInvoice(db, requestId, lines, note) {
   const total = lines.reduce((s, l) => s + l.amount, 0);
   const id = crypto.randomUUID();
   const number = await nextInvoiceNumber(db);
-  await db.batch([
-    db.prepare('INSERT INTO invoices (id, number, request_id, status, currency, total, lines, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-      .bind(id, number, requestId, 'issued', CURRENCY, total, JSON.stringify(lines), note || null, nowIso()),
-    db.prepare("UPDATE requests SET status = 'awaiting_payment', next_action = 'Waiting for the client to pay', next_action_due = NULL WHERE id = ? AND status IN ('new', 'under_review', 'awaiting_patient', 'awaiting_provider', 'options_presented')").bind(requestId)
-  ]);
+  try {
+    await db.batch([
+      db.prepare('INSERT INTO invoices (id, number, request_id, status, currency, total, lines, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        .bind(id, number, requestId, 'issued', CURRENCY, total, JSON.stringify(lines), note || null, nowIso()),
+      db.prepare("UPDATE requests SET status = 'awaiting_payment', next_action = 'Waiting for the client to pay', next_action_due = NULL WHERE id = ? AND status IN ('new', 'under_review', 'awaiting_patient', 'awaiting_provider', 'options_presented')").bind(requestId)
+    ]);
+  } catch (e) {
+    if (/UNIQUE|constraint/i.test(String(e && e.message))) return { conflict: true }; // someone issued it at the same moment
+    throw e;
+  }
   return { id, number, total };
 }
 
@@ -33,13 +38,13 @@ export async function createInvoice(db, requestId, lines, note) {
 export async function markInvoicePaid(db, invoice, channel, ref, by) {
   if (invoice.status === 'paid') return false;
   const at = nowIso();
-  const r = await db.prepare("UPDATE invoices SET status = 'paid', paid_at = ?, pay_channel = ?, pay_ref = ? WHERE id = ? AND status = 'issued'")
-    .bind(at, channel || null, ref || null, invoice.id).run();
-  if (!r.meta || r.meta.changes === 0) return false;
-  await db.batch([
-    db.prepare('INSERT INTO payments (id, invoice_id, amount, currency, channel, reference, source, received_at, recorded_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+  // One all-or-nothing step: the invoice is marked paid, the payment is written to the ledger and the case moves on,
+  // or none of it happens. A repeated notification finds the invoice already paid and changes nothing.
+  const res = await db.batch([
+    db.prepare("UPDATE invoices SET status = 'paid', paid_at = ?, pay_channel = ?, pay_ref = ? WHERE id = ? AND status = 'issued'").bind(at, channel || null, ref || null, invoice.id),
+    db.prepare('INSERT INTO payments (id, invoice_id, amount, currency, channel, reference, source, received_at, recorded_by) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE changes() > 0')
       .bind(crypto.randomUUID(), invoice.id, invoice.total, CURRENCY, channel || null, ref || null, channel === 'manual' ? 'manual' : 'paystack', at, by || null),
-    db.prepare("UPDATE requests SET status = 'in_progress', next_action = 'Payment received: arrange the service', next_action_due = ? WHERE id = ? AND status = 'awaiting_payment'").bind(at, invoice.request_id)
+    db.prepare("UPDATE requests SET status = 'in_progress', next_action = 'Payment received: arrange the service', next_action_due = ? WHERE id = ? AND status = 'awaiting_payment' AND changes() > 0").bind(at, invoice.request_id)
   ]);
-  return true;
+  return !!(res[0].meta && res[0].meta.changes > 0);
 }

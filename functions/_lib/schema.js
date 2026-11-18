@@ -143,6 +143,19 @@ const MIGRATIONS = [
       `UPDATE staff SET role = 'superadmin' WHERE role = 'owner' AND password_hash IS NOT NULL AND id = (SELECT id FROM staff WHERE role = 'owner' AND password_hash IS NOT NULL ORDER BY created_at LIMIT 1) AND NOT EXISTS (SELECT 1 FROM staff WHERE role = 'superadmin')`
     ]
   }
+  ,
+  {
+    id: '0006_hardening',
+    sql: [
+      // The audit chain now has a sequence number, so two events written at the same moment cannot both claim the same place.
+      `ALTER TABLE activity ADD COLUMN seq INTEGER`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_activity_seq ON activity(seq)`,
+      // A case can have only one live invoice, even if two staff press the button together.
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_one_live ON invoices(request_id) WHERE status != 'void'`,
+      // An authenticator code can be used only once.
+      `ALTER TABLE staff ADD COLUMN totp_last INTEGER NOT NULL DEFAULT 0`
+    ]
+  }
 ];
 
 let ready = null;
@@ -158,7 +171,7 @@ async function migrate(db) {
   for (const m of MIGRATIONS) {
     if (done.has(m.id)) continue;
     for (const s of m.sql) {
-      try { await db.prepare(s).run(); } catch (e) { if (!/duplicate column/i.test(String(e && e.message))) throw e; }
+      try { await db.prepare(s).run(); } catch (e) { if (!/duplicate column|UNIQUE constraint failed/i.test(String(e && e.message))) throw e; }
     }
     if (m.after) await m.after(db);
     await db.prepare('INSERT OR IGNORE INTO _migrations (id, at) VALUES (?, ?)').bind(m.id, new Date().toISOString()).run();

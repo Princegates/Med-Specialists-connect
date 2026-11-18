@@ -105,12 +105,13 @@ async function hotp(secret, counter) {
   const o = h[19] & 15, n = ((h[o] & 127) << 24) | (h[o + 1] << 16) | (h[o + 2] << 8) | h[o + 3];
   return String(n % 1000000).padStart(6, '0');
 }
+// Returns the 30-second step the code belongs to (so the caller can refuse a code that was already used), or 0.
 export async function verifyTotp(secret, code) {
   code = String(code || '').replace(/\s/g, '');
-  if (!/^\d{6}$/.test(code) || !secret) return false;
+  if (!/^\d{6}$/.test(code) || !secret) return 0;
   const step = Math.floor(Date.now() / 30000);
-  for (const d of [-1, 0, 1]) if (safeEqual(await hotp(secret, step + d), code)) return true;
-  return false;
+  for (const d of [-1, 0, 1]) if (safeEqual(await hotp(secret, step + d), code)) return step + d;
+  return 0;
 }
 export const otpauthUri = (secret, email, issuer) => `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(email)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&digits=6&period=30`;
 

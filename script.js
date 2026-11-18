@@ -209,6 +209,7 @@
       apiStep.then(function (res) {
         if (res.invoice) { payload['Invoice number'] = res.invoice.number; payload['Invoice link'] = location.origin + res.invoice.url; }
         if (res.requestId) { payload['Case reference'] = res.ref || res.requestId.slice(0, 8); payload['Billing status'] = res.status; }
+        if (res.teamNotified) return res; // our own system has already emailed the team: do not send a second copy to a third-party service
         return fetch('https://api.web3forms.com/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },

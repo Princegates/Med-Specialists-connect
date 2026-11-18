@@ -40,10 +40,11 @@ async function consumeRecovery(env, staff, code) {
 
 async function login(env, request, b) {
   const email = clean(b.email, 120).toLowerCase(), password = String(b.password || '').slice(0, 200);
-  const bad = () => fail(401, 'Wrong email or password.');
+  const bad = () => fail(401, 'Wrong email or password. If you have tried several times, wait 15 minutes and try again, or ask the owner to reset your password.');
   if (!EMAIL.test(email) || !password) return bad();
   const staff = await env.DB.prepare('SELECT * FROM staff WHERE email = ?').bind(email).first();
-  if (staff && staff.locked_until && staff.locked_until > nowIso()) { await verifyPassword(password, null); return fail(429, 'Too many wrong tries. Please wait 15 minutes, or ask the owner to reset your password.'); }
+  // A locked account answers exactly like a wrong password, so the page does not reveal which emails exist.
+  if (staff && staff.locked_until && staff.locked_until > nowIso()) { await verifyPassword(password, null); return bad(); }
   const good = await verifyPassword(password, staff && staff.password_hash);
   const fail1 = async () => {
     if (staff) {
@@ -58,7 +59,10 @@ async function login(env, request, b) {
     if (!b.code && !b.recovery) return json({ ok: true, mfa: true });
     let pass = false;
     if (b.recovery) pass = await consumeRecovery(env, staff, b.recovery);
-    else { try { pass = await verifyTotp(await decrypt(env, staff.totp_secret), b.code); } catch (e) { pass = false; } }
+    else {
+      // A code works once: the same six digits cannot be used again within their 30 seconds.
+      try { const step = await verifyTotp(await decrypt(env, staff.totp_secret), b.code); if (step && step > (staff.totp_last || 0)) { pass = true; await env.DB.prepare('UPDATE staff SET totp_last = ? WHERE id = ?').bind(step, staff.id).run(); } } catch (e) { pass = false; }
+    }
     if (!pass) return fail1();
   }
   await audit(env, email, 'staff', staff.id, 'login', b.recovery ? 'Signed in with a recovery code' : 'Signed in');
@@ -134,10 +138,10 @@ export async function onRequest(context) {
     if (path === 'mfa/confirm') {
       if (me.totp_enabled) return fail(409, 'Already set up.');
       if (!me.totp_secret) return fail(400, 'Start the set-up first.');
-      let ok = false; try { ok = await verifyTotp(await decrypt(env, me.totp_secret), b.code); } catch (e) { ok = false; }
-      if (!ok) return fail(400, 'That code is not right. Check the time on your phone and try the newest code.');
+      let step = 0; try { step = await verifyTotp(await decrypt(env, me.totp_secret), b.code); } catch (e) { step = 0; }
+      if (!step) return fail(400, 'That code is not right. Check the time on your phone and try the newest code.');
       const codes = newRecoveryCodes();
-      await env.DB.prepare('UPDATE staff SET totp_enabled = 1, recovery_codes = ? WHERE id = ?').bind(JSON.stringify(await Promise.all(codes.map((c) => sha256(c)))), me.id).run();
+      await env.DB.prepare('UPDATE staff SET totp_enabled = 1, totp_last = ?, recovery_codes = ? WHERE id = ?').bind(step, JSON.stringify(await Promise.all(codes.map((c) => sha256(c)))), me.id).run();
       await audit(env, me.email, 'staff', me.id, 'mfa', 'Authenticator app turned on');
       return json({ ok: true, recoveryCodes: codes });
     }

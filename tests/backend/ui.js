@@ -2,7 +2,7 @@
 // Run after console.js against the same local server (or on its own: it sets up what it needs through the API).
 const { chromium } = require('playwright');
 const fs = require('fs');
-const { B, PW, req, adminHdr, sessions, totp, ok, done, mk } = require('./lib.js');
+const { B, PW, req, adminHdr, sessions, totp, nextTotp, ok, done, mk } = require('./lib.js');
 const S = process.env.SHOTS || __dirname + '/';
 const AXE = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 const axe = async (p, label) => {
@@ -24,7 +24,7 @@ const COOKIE = '__Host-msc_session';
     const pg = track(await ctx.newPage());
     await pg.goto(B + '/admin/'); await pg.waitForSelector('#form-login:not([hidden])');
     await pg.fill('#email', email); await pg.fill('#password', password); await pg.click('#form-login button[type=submit]');
-    if (secret) { await pg.waitForSelector('#form-mfa:not([hidden])'); await pg.fill('#code', totp(secret)); await pg.click('#form-mfa button[type=submit]'); }
+    if (secret) { await pg.waitForSelector('#form-mfa:not([hidden])'); await pg.fill('#code', await nextTotp(secret)); await pg.click('#form-mfa button[type=submit]'); }
     await pg.waitForSelector('#view h1'); await pg.waitForTimeout(400);
     return pg;
   }
@@ -66,7 +66,7 @@ const COOKIE = '__Host-msc_session';
   ok('the right password asks for the app code', /authenticator/i.test(await ap.innerText('#title')));
   await ap.fill('#code', '000000'); await ap.click('#form-mfa button[type=submit]'); await ap.waitForSelector('#error:not([hidden])');
   ok('a wrong code is refused', /Wrong/.test(await ap.innerText('#error')));
-  await ap.fill('#code', totp(secret)); await ap.click('#form-mfa button[type=submit]'); await ap.waitForSelector('.c-kpis', { timeout: 8000 });
+  await ap.fill('#code', await nextTotp(secret)); await ap.click('#form-mfa button[type=submit]'); await ap.waitForSelector('.c-kpis', { timeout: 8000 });
   ok('the right code opens the console', /Dashboard/.test(await ap.title()));
   sessions[OWNER] = await cookieOf(oc);
 
@@ -189,6 +189,16 @@ const COOKIE = '__Host-msc_session';
   ok('the request form shows its three steps', await p.evaluate(() => document.querySelectorAll('.wiz-stops li').length === 3 && document.querySelector('#request-form').getAttribute('data-at') === '0'));
   await p.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); await p.waitForTimeout(300);
   await p.screenshot({ path: S + 'ui-site-look.png' });
+
+  console.log('Browser protections');
+  const hh = await fetch(B + '/'); const csp = hh.headers.get('content-security-policy') || '';
+  ok('every page carries a strict Content-Security-Policy (own scripts only, no framing, no plugins)', /script-src 'self'/.test(csp) && !/script-src[^;]*unsafe-inline/.test(csp) && /frame-ancestors 'none'/.test(csp) && /object-src 'none'/.test(csp), csp);
+  ok('and the other protective headers (frames, sniffing, referrer, permissions, HSTS)', hh.headers.get('x-frame-options') === 'DENY' && hh.headers.get('x-content-type-options') === 'nosniff' && /camera=\(\)/.test(hh.headers.get('permissions-policy') || '') && /max-age=/.test(hh.headers.get('strict-transport-security') || ''), [...hh.headers.keys()].join(','));
+  ok('invoice and tracking pages are marked do-not-store', /no-store/.test((await fetch(B + '/invoice')).headers.get('cache-control') || '') && /no-store/.test((await fetch(B + '/track')).headers.get('cache-control') || ''));
+  ok('the admin pages are protected by the same policy', /script-src 'self'/.test((await fetch(B + '/admin/')).headers.get('content-security-policy') || ''));
+  await p.goto(B + '/index.html'); await p.waitForTimeout(1500);
+  await p.goto(B + trackHref); await p.waitForTimeout(800);
+  ok('private pages are never kept on the phone by the service worker', await p.evaluate(async () => { const urls = []; for (const k of await caches.keys()) for (const r of await (await caches.open(k)).keys()) urls.push(r.url); return !urls.some((u) => /\/(invoice|track)/.test(u)); }));
 
   console.log('Menu, founder, vision, specialist finder, network page');
   await p.goto(B + '/index.html'); await p.waitForTimeout(600);
