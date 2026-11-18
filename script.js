@@ -184,6 +184,39 @@
       if (html) status.innerHTML = text; else status.textContent = text;
     }
 
+    // After a care request the whole form is replaced by one clear thank-you panel, so nobody has to scroll to find it.
+    function thankYou(res) {
+      var h = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+      var ref = res.ref ? '<p class="thanks-ref">Your case reference: <strong>' + h(res.ref) + '</strong></p>' : '';
+      var follow = res.track ? '<a class="btn btn-ghost" href="' + res.track + '">Follow your request</a>' : '';
+      var html, kind = 'ok';
+      if (res.emergency) {
+        kind = 'err';
+        html = '<h3 tabindex="-1">If someone is in danger, call 112 now</h3><p>We have flagged your request as urgent and will call you straight away.</p>' + ref +
+          '<div class="thanks-actions"><a class="btn" href="tel:112">Call 112</a>' + follow + '</div>';
+      } else if (res.invoice) {
+        html = '<h3 tabindex="-1">Thank you. Your request has been received.</h3><p>Your invoice <strong>' + h(res.invoice.number) + '</strong> (' + money(res.invoice.total) + ') is ready. Pay it to confirm your request.</p>' + ref +
+          '<div class="thanks-actions"><a class="btn" href="' + res.invoice.url + '" target="_blank" rel="noopener">View and pay your invoice<span class="sr"> (opens in a new tab)</span></a>' + follow + '</div>';
+      } else if (res.billing === 'quote') {
+        html = '<h3 tabindex="-1">Thank you. Your request has been received.</h3><p>We will confirm the cost and send you an estimate before you pay.</p>' + ref + (follow ? '<div class="thanks-actions">' + follow + '</div>' : '');
+      } else {
+        html = '<h3 tabindex="-1">Thank you. Your request has been received.</h3><p>' + h(success.replace(/^Thank you\.\s*/, '')) + '</p>' + ref + (follow ? '<div class="thanks-actions">' + follow + '</div>' : '');
+      }
+      html += '<p class="thanks-again"><button type="button" class="linkish" data-again>Make another request</button></p>';
+      status.className = 'form-status thanks ' + kind; status.innerHTML = html;
+      form.classList.add('done');
+      var reduce = document.documentElement.getAttribute('data-motion') === 'reduced' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+      status.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+      var hd = status.querySelector('h3'); if (hd) hd.focus({ preventScroll: true });
+    }
+    status.addEventListener('click', function (e) {
+      if (!e.target.closest || !e.target.closest('[data-again]')) return;
+      form.classList.remove('done'); say('', '');
+      if (form.wizard) form.wizard.go(0);
+      form.scrollIntoView({ block: 'start' });
+      var first = form.querySelector('select, input:not([type=hidden]):not(.hp)'); if (first) first.focus({ preventScroll: true });
+    });
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (form.wizard && !form.wizard.atLast()) { form.wizard.next(); return; } // Enter pressed before the last step
@@ -225,6 +258,7 @@
         });
       }).then(function (res) {
         var trackNote = res.track ? ' Your case reference is ' + res.ref + '. <a href="' + res.track + '">Follow your request here</a>.' : '';
+        if (form.id === 'request-form') { thankYou(res); form.reset(); return; }
         if (res.emergency) {
           say('<strong>If someone is in danger, call 112 now.</strong> We have flagged your request as urgent and will call you straight away.' + trackNote, 'err', true);
         } else if (res.invoice) {

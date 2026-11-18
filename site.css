@@ -285,6 +285,20 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
           mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1a11 11 0 1 0 0 22 11 11 0 0 0 0-22zm-1.6 15.4-4.3-4.3 1.4-1.4 2.9 2.9 6-6.2 1.4 1.4z'/%3E%3C/svg%3E") center / contain no-repeat; }
 .form-status.err { background: rgba(176, 0, 32, .07); color: var(--err); }
 .form-status a { color: inherit; }
+/* The thank-you panel that replaces the request form once it is sent */
+.wizard.done > :not(.form-status) { display: none; }
+.form-status.thanks { margin: 0; padding: 40px 28px; text-align: center; font-weight: 400; border: 2px solid var(--ok); background: rgba(11, 107, 58, .07); color: var(--ink); }
+.form-status.thanks.err { border-color: var(--err); background: rgba(176, 0, 32, .07); }
+.form-status.thanks::before { position: static; display: block; width: 68px; height: 68px; margin: 0 auto 18px; color: var(--ok); }
+.form-status.thanks.err::before { color: var(--err); }
+.form-status.thanks h3 { margin: 0 0 10px; font: 800 1.6rem/1.25 var(--font-head); color: var(--ink); outline: none; }
+.form-status.thanks p { margin: 0 auto 8px; max-width: 34rem; font-size: 1.05rem; }
+.form-status.thanks .thanks-ref { color: var(--ink-soft); }
+.form-status.thanks .thanks-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 22px; }
+.form-status.thanks .btn { width: auto; margin-top: 0; min-width: 14rem; }
+.form-status.thanks .btn:not(.btn-ghost) { color: var(--on-btn); }
+.form-status.thanks .thanks-again { margin-top: 22px; }
+.linkish { background: none; border: 0; padding: 6px; font: inherit; font-weight: 700; color: var(--btn); text-decoration: underline; cursor: pointer; }
 /* while a form is sending, its button shows a small spinner */
 .btn[disabled]::before { content: ''; flex: none; width: 18px; height: 18px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; }
 
