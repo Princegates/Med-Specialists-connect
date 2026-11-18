@@ -6,7 +6,7 @@ import { createInvoice, nowIso } from '../db.js';
 import { newRef, newToken } from '../ids.js';
 import { bookable } from './providers.js';
 import { emailInvoice } from '../email.js';
-import { audit } from '../audit.js';
+import { audit, logView } from '../audit.js';
 import { json, fail, clean, later } from '../http.js';
 
 // Case statuses are those in the requirements document (section 9.1). Payment, appointment and provider
@@ -52,6 +52,7 @@ export async function detail(x, id) {
     'SELECT r.*, sv.label AS service_label, sv.billing AS service_billing, s.name AS assigned_name, p.name AS provider_name, e.name AS escalated_name FROM requests r LEFT JOIN services sv ON sv.value = r.service LEFT JOIN staff s ON s.id = r.assigned_to LEFT JOIN providers p ON p.id = r.provider_id LEFT JOIN staff e ON e.id = r.escalated_to WHERE r.id = ?'
   ).bind(id).first();
   if (!c) return fail(404, 'Case not found.');
+  await logView(x.env, x.staff, 'case', id);
   const client = c.client_id ? await db.prepare('SELECT id, name, phone, email, area, status FROM clients WHERE id = ?').bind(c.client_id).first() : null;
   const patient = c.patient_id ? await db.prepare('SELECT * FROM patients WHERE id = ?').bind(c.patient_id).first() : null;
   const invoices = (await db.prepare('SELECT id, number, status, total, created_at, paid_at, pay_channel FROM invoices WHERE request_id = ? ORDER BY created_at DESC').bind(id).all()).results;

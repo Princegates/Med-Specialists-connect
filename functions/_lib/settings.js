@@ -31,6 +31,7 @@ export const DEFS = [
   { group: 'email', key: 'email_reply_to', label: 'Reply-to address', type: 'email' },
   { group: 'email', key: 'email_notify_to', label: 'Team notification recipients (comma separated)', type: 'text' },
   { group: 'email', key: 'notify_new_request', label: 'Email the team when a request arrives', type: 'bool', default: 'true' },
+  { group: 'email', key: 'email_include_details', label: 'Put patient details (name, phone, health note) in team emails', type: 'bool', default: 'false', help: 'Off is safer: the email only gives the case reference, service and urgency, and staff open the console for the rest. Email is not a secure place for health information.' },
   { group: 'email', key: 'send_invoice_email', label: 'Email the client their invoice', type: 'bool', default: 'true' },
   { group: 'email', key: 'send_receipt_email', label: 'Email the client a receipt when they pay', type: 'bool', default: 'true' },
   { group: 'email', key: 'email_verified', label: 'Email sending verified by a successful test', type: 'bool', default: 'false', readonly: true },
@@ -39,6 +40,7 @@ export const DEFS = [
   { group: 'payments', key: 'paystack_secret_key', label: 'Paystack secret key', type: 'secret', help: 'Use your test key (sk_test_...) first, then your live key (sk_live_...).' },
   { group: 'security', key: 'mfa_policy', label: 'Who must use an authenticator-app code to sign in', type: 'select', options: ['privileged', 'everyone', 'off'], labels: { privileged: 'Super administrators, owners, supervisors, finance and administrators (recommended)', everyone: 'Every staff member', off: 'Nobody (optional for everyone)' }, default: 'privileged', help: 'Patient information is sensitive, so leave this on. Turning it off needs your password. People who already set up the app are still asked for a code unless they turn it off in My account.' },
   { group: 'security', key: 'session_hours', label: 'Hours before staff must sign in again', type: 'number', default: '12' },
+  { group: 'security', key: 'idle_minutes', label: 'Minutes of inactivity before staff are signed out automatically', type: 'number', default: '20', help: 'Protects patient records on a screen that was left open. Between 5 and 120.' },
   { group: 'payments', key: 'payments_verified', label: 'Payment connection verified by a successful test', type: 'bool', default: 'false', readonly: true }
 ];
 

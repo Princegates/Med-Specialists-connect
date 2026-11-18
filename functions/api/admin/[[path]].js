@@ -1,7 +1,7 @@
 import { ensureSchema } from '../../_lib/schema.js';
 import { resolveStaff } from '../../_lib/admin/auth.js';
 import { mfaRequiredFor } from '../../_lib/auth.js';
-import { getFlags } from '../../_lib/settings.js';
+import { getFlags, getSetting } from '../../_lib/settings.js';
 import { can } from '../../_lib/perms.js';
 import { json, fail, readJson } from '../../_lib/http.js';
 import * as cases from '../../_lib/admin/cases.js';
@@ -23,7 +23,7 @@ import { PROVIDER_TYPES, PROVIDER_STATUSES, CREDENTIAL_TYPES, SERVICE_MODES } fr
 // Every route under /api/admin: GET reads, POST changes. Sign-in comes from Cloudflare Access; what each person
 // may do comes from their role in the Staff list.
 const ROUTES = [
-  ['GET', /^me$/, async (x) => json({ ok: true, me: staffApi.meInfo(x.staff, await mfaRequiredFor(x.env, x.staff)) })],
+  ['GET', /^me$/, async (x) => json({ ok: true, me: staffApi.meInfo(x.staff, await mfaRequiredFor(x.env, x.staff)), idleMinutes: Math.min(Math.max(Number(await getSetting(x.env, 'idle_minutes')) || 20, 5), 120) })],
   ['GET', /^meta$/, async (x) => json({ ok: true, flags: await getFlags(x.env), caseStatuses: CASE_STATUSES, providerTypes: PROVIDER_TYPES, providerStatuses: PROVIDER_STATUSES, credentialTypes: CREDENTIAL_TYPES, taskTypes: TASK_TYPES, serviceModes: SERVICE_MODES, apptStatuses: APPT_STATUSES, outcomes: ['service_delivered','information_given','referred_elsewhere','client_declined','unable_to_help','duplicate','no_response','other'], services: (await services.list(x).then((r) => r.json())).services || [] })],
   ['GET', /^dashboard$/, dash.dashboard],
   ['GET', /^cases$/, cases.list],

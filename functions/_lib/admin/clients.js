@@ -1,7 +1,7 @@
 import { can } from '../perms.js';
 import { normalizePhone } from '../clients.js';
 import { nowIso } from '../db.js';
-import { audit } from '../audit.js';
+import { audit, logView } from '../audit.js';
 import { json, fail, clean } from '../http.js';
 
 const stripHealth = (staff, c) => { if (!can(staff, 'health.view')) delete c.notes; return c; };
@@ -35,6 +35,7 @@ export async function detail(x, id) {
   if (!can(x.staff, 'clients.view')) return fail(403, 'Not allowed.');
   const c = await x.env.DB.prepare('SELECT * FROM clients WHERE id = ?').bind(id).first();
   if (!c) return fail(404, 'Client not found.');
+  await logView(x.env, x.staff, 'client', id);
   const cases = (await x.env.DB.prepare('SELECT r.id, r.ref, r.created_at, r.service, sv.label AS service_label, r.status, r.urgency FROM requests r LEFT JOIN services sv ON sv.value = r.service WHERE r.client_id = ? ORDER BY r.created_at DESC').bind(id).all()).results;
   const invoices = (await x.env.DB.prepare('SELECT i.id, i.number, i.status, i.total, i.created_at, i.paid_at FROM invoices i JOIN requests r ON r.id = i.request_id WHERE r.client_id = ? ORDER BY i.created_at DESC').bind(id).all()).results;
   const timeline = (await x.env.DB.prepare("SELECT at, actor, action, detail FROM activity WHERE entity = 'client' AND entity_id = ? ORDER BY id ASC").bind(id).all()).results;

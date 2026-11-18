@@ -40,3 +40,12 @@ export async function verifyChain(env) {
   }
   return { ok: true, checked };
 }
+
+// Who opened a patient's record. Opening the same record again within ten minutes is not logged twice.
+export async function logView(env, staff, entity, entityId) {
+  try {
+    const since = new Date(Date.now() - 10 * 60000).toISOString();
+    const seen = await env.DB.prepare("SELECT 1 AS x FROM activity WHERE entity = ? AND entity_id = ? AND action = 'viewed' AND actor = ? AND at > ? LIMIT 1").bind(entity, entityId, staff.email, since).first();
+    if (!seen) await audit(env, staff.email, entity, entityId, 'viewed', 'Opened the record');
+  } catch (e) { /* logging never blocks reading */ }
+}

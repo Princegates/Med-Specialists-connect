@@ -24,6 +24,7 @@
     });
   }
   function done() { location.replace('./'); }
+  if (/[?&]idle=1/.test(location.search)) say('You were signed out because the page was not used for a while. This protects patient records. Please sign in again.');
 
   document.querySelectorAll('.pw-show').forEach(function (b) {
     b.addEventListener('click', function () {

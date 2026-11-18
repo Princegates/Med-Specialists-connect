@@ -76,8 +76,11 @@ export async function sessionStaff(env, request) {
   const token = cookieOf(request, COOKIE);
   if (!token || token.length < 40) return null;
   const id = await sha256(token);
-  const row = await env.DB.prepare('SELECT s.*, x.expires_at AS session_expires FROM sessions x JOIN staff s ON s.id = x.staff_id WHERE x.id = ?').bind(id).first();
+  const row = await env.DB.prepare('SELECT s.*, x.expires_at AS session_expires, x.last_seen AS session_seen FROM sessions x JOIN staff s ON s.id = x.staff_id WHERE x.id = ?').bind(id).first();
   if (!row || row.session_expires < nowIso() || !row.active) return null;
+  // Automatic log-off: a session that has been idle too long is ended, so a screen left open cannot show patient records.
+  const idle = Math.min(Math.max(Number(await getSetting(env, 'idle_minutes')) || 20, 5), 120);
+  if (row.session_seen && Date.now() - Date.parse(row.session_seen) > idle * 60000) { await endSession(env, id); return null; }
   await env.DB.prepare('UPDATE sessions SET last_seen = ? WHERE id = ?').bind(nowIso(), id).run();
   return { ...row, session_id: id };
 }

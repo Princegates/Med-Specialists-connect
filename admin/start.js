@@ -54,6 +54,14 @@
   window.addEventListener('hashchange', C.render);
   C.api('me').then(function (r) {
     C.me = r.me;
+    // Automatic log-off after a period with no use, so patient records are not left open on an unattended screen.
+    (function (mins) {
+      var t, ms = (mins || 20) * 60000;
+      function out() { fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(function () {}).then(function () { location.replace('login.html?idle=1'); }); }
+      function reset() { clearTimeout(t); t = setTimeout(out, ms); }
+      ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) { document.addEventListener(ev, reset, { passive: true }); });
+      reset();
+    })(r.idleMinutes);
     $('who').textContent = C.me.name + ' · ' + C.me.roleLabel; $('who-av').replaceChildren(C.avatar(C.me.name));
     // Someone who must change their password or set up their authenticator app can only reach My account until they do.
     C.limited = C.me.mustChange || (C.me.mfaRequired && !C.me.mfaEnabled);
