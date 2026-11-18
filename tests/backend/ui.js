@@ -110,6 +110,7 @@ const COOKIE = '__Host-msc_session';
   const status = await p.innerText('#request-form .form-status');
   ok('the success message shows the invoice, the case reference and a tracking link', /MSC-\d{4}-\d{4}/.test(status) && /MSC-[A-Z0-9]{8}/.test(status) && /Follow your request/.test(status), status);
   ok('the team email carries the new case reference', web3.length === 1 && /^MSC-[A-Z0-9]{8}$/.test(web3[0]['Case reference']), web3[0] && web3[0]['Case reference']);
+  await p.waitForTimeout(1200);
   ok('after sending, the form is replaced by one clear thank-you panel with the invoice button, in view', await p.evaluate(() => { const f = document.getElementById('request-form'), s = f.querySelector('.form-status'), r = s.getBoundingClientRect(); const hidden = [...f.children].filter((c) => c !== s).every((c) => getComputedStyle(c).display === 'none'); return f.classList.contains('done') && hidden && /Your request has been received/.test(s.innerText) && !!s.querySelector('a.btn') && r.top >= 0 && r.bottom <= innerHeight + 2 && r.height > 150; }));
   await axe(p, 'thank-you panel');
   ok('the invoice link opens in a new tab, so the request page stays where it is', (await p.getAttribute('#request-form .form-status a:has-text("View and pay")', 'target')) === '_blank' && /noopener/.test(await p.getAttribute('#request-form .form-status a:has-text("View and pay")', 'rel')));

@@ -104,7 +104,7 @@
   // Web3Forms (https://web3forms.com, free key tied to your email). With no key,
   // the forms fall back to opening the visitor's email app with the message filled in.
   var FORM_ACCESS_KEY = '11912d53-78d8-40a3-8eda-9004e9c63938';
-  var TEAM_EMAIL = 'medspecialistsconnect@gmail.com';
+  var TEAM_EMAIL = 'info@medspecialistconnect.com';
   var WHATSAPP_URL = 'https://wa.me/233243560080';
 
   // Reads the labelled fields of a form as [label, value, name] rows, so emails
