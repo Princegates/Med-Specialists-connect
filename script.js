@@ -493,24 +493,6 @@
     menu.addEventListener('click', function (e) { if (e.target.closest('a')) set(false); });
   });
 
-  var finder = document.getElementById('find-form');
-  if (finder) {
-    finder.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var spec = document.getElementById('find-spec'), area = document.getElementById('find-area'), rf = document.getElementById('request-form');
-      if (!spec.value) { spec.focus(); spec.setAttribute('aria-invalid', 'true'); return; }
-      spec.removeAttribute('aria-invalid');
-      if (rf) {
-        var chosen = spec.selectedOptions[0]; rf.elements.service.value = (chosen && chosen.getAttribute('data-service')) || 'Specialist appointment';
-        rf.elements.message.value = 'Looking for: ' + spec.value + (area.value.trim() ? '. Area: ' + area.value.trim() : '') + '.';
-        if (area.value.trim()) rf.elements.area.value = area.value.trim();
-        if (rf.wizard) { rf.wizard.go(0); rf.wizard.info(); }
-        document.getElementById('request').scrollIntoView({ behavior: motionOk() ? 'smooth' : 'auto' });
-        setTimeout(function () { rf.elements.urgency.focus({ preventScroll: true }); }, 500);
-      }
-    });
-    finder.addEventListener('change', function (e) { if (e.target.id === 'find-spec') e.target.removeAttribute('aria-invalid'); });
-  }
 
   /* ================= The services index and the request steps ================= */
 

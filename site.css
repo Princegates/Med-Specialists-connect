@@ -728,3 +728,8 @@ html[data-motion="reduced"] .ticker span:nth-child(n+9) { display: none; }
 .visit-opt input:checked + span { background: var(--btn); border-color: var(--btn); color: var(--on-btn); }
 .visit-opt input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 3px; }
 @media (max-width: 420px) { .visit-opts { grid-template-columns: minmax(0, 1fr); } }
+
+/* Medical supplies page: a short row of links to its three parts */
+.supply-jump { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 0; padding: 0; list-style: none; }
+.supply-jump a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1.5px solid var(--field); border-radius: var(--r); color: var(--ink); text-decoration: none; font-weight: 600; background: var(--surface); }
+.supply-jump a:hover { border-color: var(--accent-text); color: var(--accent-text); }

@@ -5,3 +5,6 @@
 /docs/*  /  302
 /tests/*  /  302
 /README.md  /  302
+
+# The Medical accessories page is now Medical supplies.
+/accessories  /supplies  301

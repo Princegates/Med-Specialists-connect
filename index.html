@@ -76,8 +76,7 @@
             </ul>
           </div>
           <a href="#patients">Our services</a>
-          <a href="#find">Find a specialist</a>
-          <a href="/accessories">Medical accessories</a>
+          <a href="/supplies">Medical supplies</a>
           <a href="#contact">Contact us</a>
           <a class="btn btn-small" href="#request"><span class="long">Request healthcare assistance</span><span class="short">Request care</span></a>
         </nav>
@@ -278,52 +277,20 @@
         </div>
         <div class="desk">
           <ul class="dir">
-            <li data-shot="0"><span class="pic" aria-hidden="true"><svg><use href="#i-spec"/></svg></span><div><h3><a href="#request" data-service="Specialist appointment">Specialist appointments</a></h3><p>Referred by your doctor, or looking for one? We find an appropriate private specialist and arrange your consultation.</p></div></li>
+            <li data-shot="0"><span class="pic" aria-hidden="true"><svg><use href="#i-spec"/></svg></span><div><h3><a href="#fees">Specialist consultations</a></h3><p>Referred by your doctor, or looking for one? We find an appropriate specialist and arrange your consultation, at home or privately.</p></div></li>
             <li data-shot="1"><span class="pic" aria-hidden="true"><svg><use href="#i-home"/></svg></span><div><h3><a href="#request" data-service="GP consult (home)">Care at home</a></h3><p>Arrangements for a doctor or nurse to see your loved one at home, with the hospital details taken care of.</p></div></li>
-            <li data-shot="2"><span class="pic" aria-hidden="true"><svg><use href="#i-scan"/></svg></span><div><h3><a href="#request" data-service="">Diagnostics</a></h3><p>We coordinate tests and scans with diagnostic centres and help you get the results to the right doctor.</p></div></li>
-            <li data-shot="3"><span class="pic" aria-hidden="true"><svg><use href="#i-doc"/></svg></span><div><h3><a href="#request" data-service="Insurance claims assistance">Insurance assistance</a></h3><p>Help with insurance coordination and claims follow-up so you are not left chasing paperwork.</p></div></li>
+            <li data-shot="2"><span class="pic" aria-hidden="true"><svg><use href="#i-scan"/></svg></span><div><h3><a href="#fees">Health check-ups and lab tests</a></h3><p>On-call laboratory tests and health check-ups for men and women, including kidney function and fertility, with the option of a specialist review of your results.</p></div></li>
+            <li data-shot="3"><span class="pic" aria-hidden="true"><svg><use href="#i-amb"/></svg></span><div><h3><a href="#request" data-service="Dialysis services">On-call dialysis</a></h3><p>Dialysis treatment on call, whenever you need it.</p></div></li>
             <li data-shot="4"><span class="pic" aria-hidden="true"><svg><use href="#i-help"/></svg></span><div><h3><a href="#request" data-service="Medical advice on where to go">Advice on where to go</a></h3><p>Not sure which specialist or facility you need? Call us and we will point you in the right direction.</p></div></li>
-            <li data-shot="5"><span class="pic" aria-hidden="true"><svg><use href="#i-amb"/></svg></span><div><h3><a href="#request" data-service="Ambulance coordination">Ambulance coordination</a></h3><p>We help arrange ambulance transport between home and hospital when you need it.</p></div></li>
           </ul>
           <figure class="desk-view">
             <img class="on" src="assets/photos/card-specialist.webp" alt="An African doctor in glasses and a tie smiling during a consultation" width="371" height="264" loading="lazy">
             <img src="assets/photos/card-home-care.webp" alt="An African nurse smiling as she checks the blood pressure of an elderly African man at home" width="371" height="264" loading="lazy">
             <img src="assets/photos/card-diagnostics.webp" alt="An African doctor reviewing brain scans on a monitor" width="371" height="264" loading="lazy">
-            <img src="assets/photos/card-insurance.webp" alt="A smiling African woman in a navy blazer talking on her phone at a desk with a laptop and paperwork" width="1024" height="768" loading="lazy">
+            <img src="assets/photos/dialysis-unit.webp" alt="An African nurse in blue scrubs and gloves smiling as she adjusts a dialysis machine beside an African man resting in a reclining chair" width="1024" height="768" loading="lazy">
             <img src="assets/photos/card-concierge.webp" alt="A smiling African woman in magenta scrubs wearing a headset at a clinic reception desk" width="1024" height="768" loading="lazy">
-            <img src="assets/photos/card-ambulance.webp" alt="A smiling African paramedic in a green uniform standing beside the open doors of an ambulance" width="1024" height="768" loading="lazy">
           </figure>
         </div>
-      </div>
-    </section>
-
-    <!-- FIND A SPECIALIST -->
-    <section class="section" id="find" aria-labelledby="find-title">
-      <div class="wrap two-col">
-        <div>
-          <h2 id="find-title">Find a specialist</h2>
-          <p class="sub">Tell us the kind of specialist you need and where you are. We match you with an appropriate private specialist, confirm the cost with you and arrange the visit.</p>
-          <p class="note">We only suggest specialists whose registration we have checked and whose credentials are up to date.</p>
-        </div>
-        <form class="form finder" id="find-form" novalidate>
-          <label for="find-spec">Which specialist?</label>
-          <select id="find-spec">
-            <option value="">Choose a specialty</option>
-            <option data-service="GP consult (home)">General practitioner (GP)</option>
-            <option data-service="Physician specialist (private or home)">Physician specialist (internal medicine)</option>
-            <option data-service="Cardiac specialist consult (home)">Cardiologist (heart)</option>
-            <option data-service="Urologist consult (private or home)">Urologist</option>
-            <option data-service="Nephrologist service (private or home)">Nephrologist (kidneys)</option>
-            <option data-service="Hematologist consult (private or home)">Hematologist (blood)</option>
-            <option data-service="Gynecologist consult (private or home)">Gynecologist (women&rsquo;s health)</option>
-            <option data-service="Psychiatrist consult (private or home)">Psychiatrist (mental health)</option>
-            <option data-service="Medical advice on where to go">Not sure, please advise me</option>
-          </select>
-          <label for="find-area">Your area or city <span class="opt">(optional)</span></label>
-          <input id="find-area" type="text" autocomplete="address-level2" placeholder="For example: Spintex, Accra">
-          <button class="btn" type="submit">Find me a specialist</button>
-          <p class="hint">This starts your request. Nothing is sent until you choose Send request.</p>
-        </form>
       </div>
     </section>
 
@@ -488,15 +455,15 @@
       </div>
     </section>
 
-    <!-- MEDICAL ACCESSORIES -->
+    <!-- MEDICAL SUPPLIES -->
     <section class="section for-hospitals" id="products" aria-labelledby="products-title">
       <div class="wrap">
         <div class="section-head">
           <p class="line-tag">For hospitals and clinics</p>
-          <h2 id="products-title">Medical accessories: consumables and equipment.</h2>
-          <p class="sub">Specialist cardiac and vascular products, and the equipment for specialized units. See the full range, or tell us what your unit needs and we will quote.</p>
+          <h2 id="products-title">Medical supplies: consumables, accessories and equipment.</h2>
+          <p class="sub">Medical consumables, accessories and equipment for hospitals, clinics and specialized units. See the full range, or tell us what your unit needs and we will quote.</p>
         </div>
-        <div class="cta-row"><a class="btn" href="/accessories">See medical accessories</a><a class="btn btn-ghost" href="/accessories#quote">Request a quotation</a></div>
+        <div class="cta-row"><a class="btn" href="/supplies">See medical supplies</a><a class="btn btn-ghost" href="/supplies#quote">Request a quotation</a></div>
       </div>
     </section>
 
@@ -693,8 +660,7 @@
           <li><a href="#vision">Our vision and mission</a></li>
           <li><a href="/network">Our healthcare network</a></li>
           <li><a href="#patients">Our services</a></li>
-          <li><a href="#find">Find a specialist</a></li>
-          <li><a href="/accessories">Medical accessories</a></li>
+          <li><a href="/supplies">Medical supplies</a></li>
           <li><a href="#request">Request healthcare assistance</a></li>
           <li><a href="#refer">For doctors</a></li>
           <li><a href="#institutions">For hospitals</a></li>
@@ -759,8 +725,7 @@
   <dialog class="sheet" id="more" aria-labelledby="more-title">
     <h2 id="more-title">More</h2>
     <ul class="sheet-links">
-      <li><a href="#find">Find a specialist</a></li>
-      <li><a href="/accessories">Medical accessories</a></li>
+      <li><a href="/supplies">Medical supplies</a></li>
       <li><a href="#about">Our company</a></li>
       <li><a href="#founder">Founder&rsquo;s message</a></li>
       <li><a href="#vision">Our vision and mission</a></li>
