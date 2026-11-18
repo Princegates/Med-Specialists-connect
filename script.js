@@ -340,18 +340,18 @@
       return svcLoad;
     }
     function labelOf(key) { return svcMap && svcMap[key] ? svcMap[key].label : key; }
+    // Shows what the chosen service includes. Prices are never shown here: they appear only on the invoice.
     function showInfo() {
       if (!info) return;
       loadServices().then(function (map) {
         var s = map[rform.elements.service.value];
         info.replaceChildren();
-        if (!s || !window.PackageDetails) { info.hidden = true; return; }
+        // A priced service with no list of tests has nothing to explain, so nothing is shown.
+        if (!s || !window.PackageDetails || (!s.details && s.billing === 'fixed')) { info.hidden = true; return; }
         var h = document.createElement('h3'); h.textContent = s.label;
-        var p = document.createElement('p'); p.className = 'svc-price';
-        if (s.price) { p.append(document.createTextNode(window.PackageDetails.money(s.price))); }
-        else { p.textContent = s.billing === 'none' ? 'No charge' : 'We confirm the price with you before you pay.'; }
-        info.append(h, p);
-        if (s.details) info.append(window.PackageDetails.render(s.details, { labelOf: labelOf, packagePrice: s.price, showPrices: true }));
+        info.append(h);
+        if (s.details) info.append(window.PackageDetails.render(s.details, { labelOf: labelOf }));
+        else { var p = document.createElement('p'); p.className = 'svc-price'; p.textContent = s.billing === 'none' ? 'No charge.' : 'We confirm the price with you before you pay.'; info.append(p); }
         info.hidden = false;
       });
     }
