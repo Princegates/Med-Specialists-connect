@@ -232,6 +232,11 @@ const COOKIE = '__Host-msc_session';
   ok('the fertility assessment lists its hormone tests and the doctor consultation', /AMH/.test(await p.innerText('#svc-info')) && /Fertility-focused doctor consultation/.test(await p.innerText('#svc-info')) && /Tests included \(7\)/.test(await p.innerText('#svc-info')));
   await p.click('#fees a[data-service="On-call kidney or renal function test"]'); await p.waitForTimeout(900);
   ok('the Request button on the price list also shows the details', /Tests included \(8\)/.test(await p.innerText('#svc-info')) && /Urine albumin to creatinine ratio/.test(await p.innerText('#svc-info')));
+  const renalInfo = await p.innerText('#svc-info');
+  ok('the renal package shows every test with its price, the clinic total and the on-call price', /Potassium[\s\S]*GH₵140/.test(renalInfo) && /BUE and creatinine[\s\S]*GH₵180/.test(renalInfo) && /Full blood count[\s\S]*GH₵110/.test(renalInfo) && /GH₵910/.test(renalInfo) && /On-call package price for all 8 tests\s*GH₵1,274/.test(renalInfo), renalInfo.slice(-260));
+  await p.waitForTimeout(700);
+  await axe(p, 'renal package with prices');
+  await p.screenshot({ path: S + 'ui-site-renal.png' });
 
   await p.evaluate(() => document.querySelector('#fees').scrollIntoView({ behavior: 'instant' }));
   const incBtn = p.locator('#fees tr:has(a[data-service="On-call women\'s executive health check"]) .inc-btn');

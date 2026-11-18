@@ -31,3 +31,10 @@
 .inc-btn { border: 0; background: none; padding: 0; color: var(--accent-text, var(--accent, #c8003f)); font: 600 .92rem inherit; font-family: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .fee-table .inc-row > td { padding: 6px 26px 24px; background: var(--stone, var(--pink-tint, #f7f7f7)); border-top: 0 !important; }
 @media (max-width: 760px) { .pkg-tests { grid-template-columns: minmax(0, 1fr); } .fee-table .inc-row > td { padding: 6px 12px 20px; } .pkg-who { grid-template-columns: minmax(0, 1fr); gap: 2px; } .pkg-who dd { margin-bottom: 8px; } }
+
+.pkg-tests.pkg-priced { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.pkg-tests.pkg-priced li { align-items: flex-start; }
+.pkg-price { margin-left: auto; flex: none; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pkg-total { margin: 0; display: flex; justify-content: space-between; gap: 16px; padding-top: 10px; border-top: 1px solid var(--line, var(--pink-line, #ddd)); }
+.pkg-total strong { font-variant-numeric: tabular-nums; }
+.pkg-total-main { padding-top: 6px; border-top: 0; font-weight: 700; font-size: 1.08rem; }

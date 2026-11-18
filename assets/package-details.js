@@ -20,9 +20,19 @@
       if (t.note) txt.append(el('small', null, t.note));
       li.append(txt);
       if (t.added) li.append(el('span', 'pkg-new', 'New'));
+      if (t.price) li.append(el('span', 'pkg-price', money(t.price)));
       ul.append(li);
     });
+    if (d.tests.some(function (t) { return t.price; })) ul.className += ' pkg-priced';
     box.append(ul);
+    // Individual prices are the clinic's; say how they relate to the package price.
+    if (d.priceBasis === 'clinic') {
+      var sum = d.tests.reduce(function (n, t) { return n + (t.price || 0); }, 0);
+      var line = el('p', 'pkg-total');
+      line.append(el('span', null, 'Clinic price of the tests above, added up'), el('strong', null, money(sum)));
+      box.append(line);
+      if (opts.packagePrice) { var pk = el('p', 'pkg-total pkg-total-main'); pk.append(el('span', null, 'On-call package price for all ' + d.tests.length + ' tests'), el('strong', null, money(opts.packagePrice))); box.append(pk); }
+    }
     if (d.footnote) box.append(el('p', 'pkg-foot', d.footnote));
 
     if (d.also && d.also.length) {

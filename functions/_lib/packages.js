@@ -22,15 +22,17 @@ const WOMEN_WHO = [
 export const DETAILS = {
   'On-call kidney or renal function test': {
     summary: 'Laboratory tests used to assess kidney function and electrolyte balance.',
+    // Prices on the clinic's flyer, in pesewas (GH\u20B5 1 = 100). They add up to GH\u20B5910; the on-call package price is set in the services list.
+    priceBasis: 'clinic',
     tests: [
-      { name: 'BUE and creatinine', note: 'Measures waste products to assess kidney function.' },
-      { name: 'Sodium', note: 'Checks the sodium level in the blood.' },
-      { name: 'Potassium', note: 'Checks the potassium level in the blood.' },
-      { name: 'Chloride', note: 'Checks the chloride level in the blood.' },
-      { name: 'Bicarbonate', note: 'Helps assess acid-base balance.' },
-      { name: 'Urine albumin to creatinine ratio (UACR)', note: 'Detects early signs of kidney damage.' },
-      { name: 'Urine protein to creatinine ratio (UPCR)', note: 'Measures protein loss in the urine.' },
-      { name: 'Full blood count', note: 'Checks blood cells and helps evaluate overall health.' }
+      { name: 'BUE and creatinine', note: 'Measures waste products to assess kidney function.', price: 18000 },
+      { name: 'Sodium', note: 'Checks the sodium level in the blood.', price: 4000 },
+      { name: 'Potassium', note: 'Checks the potassium level in the blood.', price: 14000 },
+      { name: 'Chloride', note: 'Checks the chloride level in the blood.', price: 4000 },
+      { name: 'Bicarbonate', note: 'Helps assess acid-base balance.', price: 4000 },
+      { name: 'Urine albumin to creatinine ratio (UACR)', note: 'Detects early signs of kidney damage.', price: 18000 },
+      { name: 'Urine protein to creatinine ratio (UPCR)', note: 'Measures protein loss in the urine.', price: 18000 },
+      { name: 'Full blood count', note: 'Checks blood cells and helps evaluate overall health.', price: 11000 }
     ]
   },
 
@@ -109,7 +111,7 @@ export function detailsFor(key) {
   for (const k of chain) for (const a of DETAILS[k].alsoIncludes || []) if (!also.includes(a)) also.push(a);
   const base = d.base ? { key: d.base } : null;
   return {
-    summary: d.summary, tests, also, footnote: d.footnote || null, who: d.who || null, important: d.important || null, notes: d.notes || null,
+    summary: d.summary, priceBasis: d.priceBasis || null, tests, also, footnote: d.footnote || null, who: d.who || null, important: d.important || null, notes: d.notes || null,
     before: d.before || null, process: d.process || null, base
   };
 }
