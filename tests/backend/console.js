@@ -620,6 +620,15 @@ const yr = new Date().getUTCFullYear();
   r = await req('/api/invoice?id=' + labInv.id);
   ok('the invoice page data lists the tests the client is paying for', r.status === 200 && r.j.included.tests.length === 7 && r.j.included.tests[0].name === 'Full blood count (FBC)', r.j.included && r.j.included.tests.length);
 
+  console.log('The home-service package note on the invoice');
+  r = await req('/api/request', { method: 'POST', body: mk({ phone: '0201112288', name: 'Home Client', service: 'Urologist consult (private or home)' }) });
+  const homeInv = r.j.invoice;
+  r = await req('/api/invoice?id=' + homeInv.id);
+  ok('a private or home service invoice carries the package note', r.status === 200 && /licensed medical team/.test(r.j.package.intro) && r.j.package.items[0] === 'A lab or nurse technician to take blood samples, as may be required.', r.j.package);
+  ok('and its line is just the service name', r.j.invoice.lines[0].description === 'Urologist consult (private or home)', r.j.invoice.lines);
+  r = await req('/api/invoice?id=' + labInv.id);
+  ok('a laboratory package invoice has no home-service note (it lists its tests instead)', r.j.package === null && r.j.included.tests.length === 7);
+
   console.log('Tamper-evident audit log');
   r = await A(COMP, 'audit/verify');
   ok('the audit chain checks out', r.status === 200 && r.j.ok === true && r.j.checked > 30, r.j);

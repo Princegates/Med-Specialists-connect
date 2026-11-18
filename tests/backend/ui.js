@@ -113,6 +113,7 @@ const COOKIE = '__Host-msc_session';
   ok('the invoice link opens in a new tab, so the request page stays where it is', (await p.getAttribute('#request-form .form-status a:has-text("View and pay")', 'target')) === '_blank' && /noopener/.test(await p.getAttribute('#request-form .form-status a:has-text("View and pay")', 'rel')));
   const [invPage] = await Promise.all([ctx.waitForEvent('page'), p.click('#request-form .form-status a:has-text("View and pay")')]);
   await invPage.waitForSelector('#invoice:not([hidden])');
+  ok('a home service invoice shows the licensed-team package note', /provided by our licensed medical team/.test(await invPage.innerText('#package')) && /lab or nurse technician to take blood samples, as may be required/.test(await invPage.innerText('#package')) && (await invPage.isVisible('#package')));
   ok('the invoice opens in the new tab with its number and total', /MSC-\d{4}-\d{4}/.test(await invPage.innerText('#number')) && /GH₵/.test(await invPage.innerText('#total')));
   await invPage.close();
   ok('and the request page is still showing its confirmation', /Thank you/.test(await p.innerText('#request-form .form-status')) && p.url().includes('/'));

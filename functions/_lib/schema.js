@@ -189,6 +189,18 @@ const MIGRATIONS = [
       await db.prepare("UPDATE services SET lines = ? WHERE value = 'Ambulance coordination' AND lines = ?").bind(JSON.stringify(SERVICES['Ambulance coordination'].lines), '[{"description":"Coordination fee","amount":10000},{"description":"Ambulance transport (provider charge)","amount":0}]').run();
     }
   }
+  ,
+  {
+    id: '0008_invoice_lines',
+    sql: [],
+    after: async (db) => {
+      const home = { 'GP consult (home)': 800, 'Cardiac specialist consult (home)': 2500, 'Urologist consult (private or home)': 2000, 'Nephrologist service (private or home)': 2000, 'Hematologist consult (private or home)': 2000, 'Gynecologist consult (private or home)': 2000, 'Physician specialist (private or home)': 1500, 'Psychiatrist consult (private or home)': 3000 };
+      for (const [value, cedis] of Object.entries(home)) {
+        const was = JSON.stringify([{ description: `${value}, includes a lab or nurse technician for blood samples if needed`.slice(0, 120), amount: cedis * 100 }]);
+        await db.prepare('UPDATE services SET lines = ? WHERE value = ? AND lines = ?').bind(JSON.stringify([{ description: value, amount: cedis * 100 }]), value, was).run();
+      }
+    }
+  }
 ];
 
 let ready = null;

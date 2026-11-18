@@ -38,6 +38,10 @@
 
     show($('pay'), d.payable); show($('payhelp'), d.payable);
 
+    // What comes with a private or home service.
+    var pk = $('package'), pl = $('package-list'); pl.textContent = '';
+    if (d.package) { $('package-intro').textContent = d.package.intro; d.package.items.forEach(function (t) { var li = document.createElement('li'); li.textContent = t; pl.appendChild(li); }); show(pk, true); } else show(pk, false);
+
     // What the client has chosen, test by test.
     var inc = $('included'), body = $('included-body'); body.textContent = '';
     if (d.included && window.PackageDetails) { body.appendChild(window.PackageDetails.render(d.included, { labelOf: function (k) { return k; }, packagePrice: inv.total, showPrices: true })); show(inc, true); } else show(inc, false);

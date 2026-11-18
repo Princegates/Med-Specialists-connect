@@ -115,3 +115,15 @@ export function detailsFor(key) {
     before: d.before || null, process: d.process || null, base
   };
 }
+
+// What comes with a private or home service, shown on the invoice (supplied by the business).
+const HOME_PACKAGE = {
+  intro: 'This private or home service is provided by our licensed medical team. It comes with the following package:',
+  items: ['A lab or nurse technician to take blood samples, as may be required.']
+};
+const HOME_SERVICES = new Set([
+  'GP consult (home)', 'Cardiac specialist consult (home)', 'Urologist consult (private or home)', 'Nephrologist service (private or home)',
+  'Hematologist consult (private or home)', 'Gynecologist consult (private or home)', 'Physician specialist (private or home)',
+  'Psychiatrist consult (private or home)', 'Dialysis services'
+]);
+export const packageFor = (service) => (HOME_SERVICES.has(service) ? HOME_PACKAGE : null);

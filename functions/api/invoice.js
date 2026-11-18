@@ -1,7 +1,7 @@
 import { getFlags, getSetting, getSecret } from '../_lib/settings.js';
 import { ensureSchema } from '../_lib/schema.js';
 import { json, fail } from '../_lib/http.js';
-import { detailsFor } from '../_lib/packages.js';
+import { detailsFor, packageFor } from '../_lib/packages.js';
 
 const mask = (p) => { const d = String(p).replace(/\D/g, ''); return d.length > 6 ? d.slice(0, 3) + ' *** ' + d.slice(-3) : '***'; };
 
@@ -31,6 +31,7 @@ export async function onRequestGet({ request, env }) {
       email: await getSetting(env, 'business_email'), address: await getSetting(env, 'business_address'), note: await getSetting(env, 'invoice_note')
     },
     included: detailsFor(row.service),
+    package: packageFor(row.service),
     payable: f.pricesConfirmed && !!(await getSecret(env, 'paystack_secret_key')) && row.status === 'issued' && row.total > 0,
     testMode: !f.pricesConfirmed
   });

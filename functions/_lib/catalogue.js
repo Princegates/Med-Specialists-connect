@@ -15,8 +15,7 @@ export const CURRENCY = 'GHS';
 export const SYMBOL = 'GH₵';
 
 const GHS = (cedis) => Math.round(cedis * 100);
-const HOME_NOTE = 'includes a lab or nurse technician for blood samples if needed';
-const home = (label, cedis) => ({ label, billing: 'fixed', category: 'Home and private consultations', lines: [{ description: `${label}, ${HOME_NOTE}`.slice(0, 120), amount: GHS(cedis) }] });
+const home = (label, cedis) => ({ label, billing: 'fixed', category: 'Home and private consultations', lines: [{ description: label, amount: GHS(cedis) }] });
 const lab = (label, cedis) => ({ label, billing: 'fixed', category: 'Laboratory services', lines: [{ description: label, amount: GHS(cedis) }] });
 
 export const SERVICES = {
