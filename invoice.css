@@ -37,7 +37,6 @@
 .inv-included h2 { margin: 0 0 12px; font-size: 1.25rem; }
 @media print { .inv-included .pkg-more { display: block; } .inv-included .pkg-more > :not(summary) { display: block; } }
 
-.inv-package { margin-top: 20px; padding: 14px 16px; border-left: 4px solid #c8004a; background: #f7f7f9; border-radius: 4px; }
+.inv-package { margin-top: 20px; padding: 14px 16px; border-left: 4px solid #c8004a; background: #f7f7f9; color: #1d1a1c; border-radius: 4px; }
 .inv-package p { margin: 0 0 6px; font-weight: 600; }
 .inv-package ul { margin: 0; padding-left: 22px; }
-@media (prefers-color-scheme: dark) { .inv-package { background: #1d1a1c; } }

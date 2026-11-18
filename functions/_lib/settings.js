@@ -15,7 +15,7 @@ export const DEFS = [
   { group: 'business', key: 'business_phone', label: 'Phone numbers shown on invoices', type: 'text', default: '0243 560 080 · 0556 924 777' },
   { group: 'business', key: 'business_email', label: 'Business email shown on invoices', type: 'email', default: 'medspecialistsconnect@gmail.com' },
   { group: 'business', key: 'business_address', label: 'Address shown on invoices', type: 'text', default: '6 Worship Curve, Spintex Road' },
-  { group: 'business', key: 'invoice_note', label: 'Note printed on every invoice', type: 'textarea', default: 'Charges by doctors, hospitals and laboratories, where they apply, are shown as separate lines.' },
+  { group: 'business', key: 'invoice_note', label: 'Note printed on every invoice', type: 'textarea', default: '' },
   { group: 'business', key: 'site_url', label: 'Website address', type: 'text', default: 'https://www.medspecialistconnect.com', help: 'Used in emails and for the return from payment.' },
 
   { group: 'billing', key: 'billing_enabled', label: 'Online requests, invoices and payment are switched on', type: 'bool', default: 'false', help: 'When off, the website only emails requests to the team.' },
