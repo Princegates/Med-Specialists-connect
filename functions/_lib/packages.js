@@ -128,6 +128,16 @@ const HOME_SERVICES = new Set([
 ]);
 export const packageFor = (service) => (HOME_SERVICES.has(service) ? HOME_PACKAGE : null);
 
+// A private or home service is billed as one fee but shown as three lines: 70% the service, 20% nursing care, 10% the
+// laboratory technician. The total does not change. Example: 2,000 becomes 1,400 + 400 + 200.
+export const NURSING_SHARE = 0.2, LAB_TECH_SHARE = 0.1;
+export function splitPackageLines(service, lines) {
+  if (!HOME_SERVICES.has(service) || !Array.isArray(lines) || lines.length !== 1) return lines;
+  const total = lines[0].amount, nursing = Math.round(total * NURSING_SHARE), lab = Math.round(total * LAB_TECH_SHARE);
+  if (!(total > 0) || nursing <= 0 || lab <= 0) return lines;
+  return [{ ...lines[0], amount: total - nursing - lab }, { description: 'Nursing care', amount: nursing }, { description: 'Laboratory technician', amount: lab }];
+}
+
 // Where the consultation happens. 'choose' = the patient must say private or home; 'home' = home visit only.
 const VISIT_CHOOSE = new Set(['Urologist consult (private or home)', 'Nephrologist service (private or home)', 'Hematologist consult (private or home)', 'Gynecologist consult (private or home)', 'Physician specialist (private or home)', 'Psychiatrist consult (private or home)']);
 const VISIT_HOME = new Set(['GP consult (home)', 'Cardiac specialist consult (home)']);

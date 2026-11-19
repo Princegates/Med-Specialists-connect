@@ -7,7 +7,7 @@ import { newRef, newToken } from '../_lib/ids.js';
 import { emailInvoice, emailTeamNewRequest, emailReady } from '../_lib/email.js';
 import { audit } from '../_lib/audit.js';
 import { json, fail, readJson, clean, later } from '../_lib/http.js';
-import { visitMode, lineLabel, VISIT_LABEL } from '../_lib/packages.js';
+import { visitMode, lineLabel, VISIT_LABEL, splitPackageLines } from '../_lib/packages.js';
 
 const OPEN = "('closed', 'completed', 'cancelled')";
 
@@ -88,7 +88,7 @@ export async function onRequestPost(context) {
 
   let invoice = null;
   if (!emergency && def.billing === 'fixed' && f.pricesConfirmed && def.lines.length) {
-    const made = await createInvoice(env.DB, id, def.lines.map((l) => ({ ...l, description: lineLabel(l.description, visit) })), null);
+    const made = await createInvoice(env.DB, id, splitPackageLines(service, def.lines.map((l) => ({ ...l, description: lineLabel(l.description, visit) }))), null);
     if (!made.conflict) {
       invoice = { id: made.id, number: made.number, total: made.total, url: `/invoice?id=${made.id}` };
       await audit(env, 'system', 'invoice', made.id, 'issued', made.number);

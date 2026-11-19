@@ -643,6 +643,7 @@ const yr = new Date().getUTCFullYear();
   const privCase = r.j.requestId;
   r = await req('/api/invoice?id=' + (await A(OWNER, `cases/${privCase}`)).j.invoices[0].id);
   ok('the invoice line says (private)', r.j.invoice.lines[0].description === 'Psychiatrist consult (private)', r.j.invoice.lines);
+  { const ln = r.j.invoice.lines; ok('a private or home fee is shown as service 70%, nursing care 20%, laboratory technician 10%, with the same total', ln.length === 3 && ln[0].amount === 210000 && ln[1].description === 'Nursing care' && ln[1].amount === 60000 && ln[2].description === 'Laboratory technician' && ln[2].amount === 30000 && r.j.invoice.total === 300000, ln); }
   r = await A(OWNER, `cases/${privCase}`);
   ok('the case records a private consultation for the team', r.j.case.visit_type === 'private', r.j.case.visit_type);
   const visitMail = await waitMail((m) => m.provider === 'resend' && /New request/.test(m.body.subject) && /Visit: Private consultation/.test(m.body.text));
