@@ -440,6 +440,7 @@ const COOKIE = '__Host-msc_session';
   ok('the owner sees every section', ['Dashboard', 'Cases', 'Tasks', 'Calendar', 'Clients', 'Doctors and providers', 'Invoices', 'Accounts', 'Reports', 'Services and prices', 'Settings', 'Staff', 'Audit log'].every((t) => nav.includes(t)), nav);
   ok('the dashboard greets the person and shows what needs attention and a go-live checklist', /Good (morning|afternoon|evening), The/.test(await ap.innerText('#view')) && /possible emergenc/.test(await ap.innerText('#view')) && /Go-live checklist/.test(await ap.innerText('#view')), (await ap.innerText('#view')).slice(0, 300));
   await axe(ap, 'dashboard');
+  ok('the money cards keep large amounts inside the card, even a very large one', await ap.evaluate(() => { const n = document.querySelector('.c-kpi-n'); const big = [...document.querySelectorAll('.c-kpi-n')].find((e) => /GH/.test(e.textContent)); if (!big) return false; big.textContent = 'GH\u20B51,234,567.00'; return [...document.querySelectorAll('.c-kpi')].every((k) => { const t = k.querySelector('.c-kpi-n'); return t.scrollWidth <= k.querySelector('.c-kpi-t').clientWidth + 1; }); }));
   await ap.screenshot({ path: S + 'ui-console-dashboard.png' });
 
   await ap.goto(B + '/admin/#/cases'); await ap.waitForSelector('.c-table tbody tr');

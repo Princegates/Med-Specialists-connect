@@ -67,7 +67,7 @@
     });
   });
   function kpi(label, value, icon, tone) {
-    return el('div', { class: 'c-kpi' + (tone ? ' ' + tone : '') }, el('span', { class: 'c-kpi-ic' }, C.icon(icon)), el('div', {}, el('div', { class: 'c-kpi-n', text: String(value) }), el('div', { class: 'c-kpi-l', text: label })));
+    return el('div', { class: 'c-kpi' + (tone ? ' ' + tone : '') }, el('span', { class: 'c-kpi-ic' }, C.icon(icon)), el('div', { class: 'c-kpi-t' }, el('div', { class: 'c-kpi-n', text: String(value) }), el('div', { class: 'c-kpi-l', text: label })));
   }
   C.kpi = kpi;
 })();
