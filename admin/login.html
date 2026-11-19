@@ -9,7 +9,7 @@
   <link rel="preload" href="../assets/fonts/josefin-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../assets/fonts/nunito-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../styles.css?v=8">
-  <link rel="stylesheet" href="login.css?v=8">
+  <link rel="stylesheet" href="login.css?v=9">
   <script src="/assets/boot.js"></script>
 </head>
 <body class="login-body">
@@ -40,9 +40,13 @@
         </form>
 
         <form id="form-mfa" novalidate hidden>
-          <label for="code">6-digit code from your authenticator app</label>
-          <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required>
-          <button class="btn" type="submit">Verify and sign in</button>
+          <div id="mfa-code-part">
+            <label for="code">6-digit code from your authenticator app</label>
+            <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="7">
+            <button class="btn" type="submit">Verify and sign in</button>
+          </div>
+          <button class="btn btn-alt" type="button" id="use-passkey" hidden>Use my phone or a passkey</button>
+          <p class="login-hint" id="passkey-hint" hidden>Your computer will ask you to approve on this device, or to scan a code with your phone&rsquo;s camera. Then confirm with your face, fingerprint or screen lock.</p>
           <button class="link" type="button" id="use-recovery">Lost your phone? Use a recovery code</button>
         </form>
 
@@ -71,6 +75,6 @@
       </div>
     </main>
   </div>
-  <script src="login.js?v=9"></script>
+  <script src="login.js?v=10"></script>
 </body>
 </html>

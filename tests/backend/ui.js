@@ -548,6 +548,66 @@ const COOKIE = '__Host-msc_session';
   }
   await mp.screenshot({ path: S + 'ui-console-mobile.png' });
 
+  console.log('Phone or passkey sign-in');
+  {
+    const L = 'http://localhost:8788';
+    const pc = await b.newContext(); const pp = track(await pc.newPage());
+    const cdp = await pc.newCDPSession(pp);
+    await cdp.send('WebAuthn.enable');
+    await cdp.send('WebAuthn.addVirtualAuthenticator', { options: { protocol: 'ctap2', transport: 'internal', hasResidentKey: true, hasUserVerification: true, isUserVerified: true, automaticPresenceSimulation: true } });
+    await pp.goto(L + '/admin/'); await pp.waitForSelector('#form-login:not([hidden])');
+    await pp.fill('#email', OWNER); await pp.fill('#password', PW); await pp.click('#form-login button[type=submit]');
+    await pp.waitForSelector('#form-mfa:not([hidden])');
+    ok('a person with only an authenticator app is not offered a passkey yet', !(await pp.isVisible('#use-passkey')) && (await pp.isVisible('#code')));
+    await pp.fill('#code', await nextTotp(secret)); await pp.click('#form-mfa button[type=submit]'); await pp.waitForSelector('#view h1');
+    await pp.goto(L + '/admin/#/account'); await pp.waitForSelector('text=Phone or passkey sign-in'); await pp.waitForTimeout(500);
+    ok('My account has a phone or passkey section', await pp.isVisible('button:has-text("Add a phone or passkey")'));
+    await axe(pp, 'passkey section');
+    await pp.fill('input[placeholder^="For example"]', 'Test phone');
+    await pp.click('button:has-text("Add a phone or passkey")'); await pp.waitForSelector('text=Test phone', { timeout: 10000 }); await pp.waitForTimeout(500);
+    ok('a passkey can be added from a phone or device and is listed by name', /Test phone/.test(await pp.innerText('#view')));
+    await pp.evaluate(() => fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }));
+    await pp.goto(L + '/admin/'); await pp.waitForSelector('#form-login:not([hidden])');
+    await pp.fill('#email', OWNER); await pp.fill('#password', PW); await pp.click('#form-login button[type=submit]');
+    await pp.waitForSelector('#form-mfa:not([hidden])'); await pp.waitForSelector('#use-passkey:not([hidden])');
+    ok('after the password the sign-in page offers the phone or passkey', await pp.isVisible('#use-passkey'));
+    await pp.click('#use-passkey'); await pp.waitForSelector('#view h1', { timeout: 10000 });
+    ok('approving on the phone signs the person in, without typing a code', /admin/.test(pp.url()) && (await pp.locator('#c-nav a').count()) > 5);
+    await pp.evaluate(() => fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }));
+    await pp.goto(L + '/admin/'); await pp.waitForSelector('#form-login:not([hidden])');
+    await pp.fill('#email', OWNER); await pp.fill('#password', 'Wrong-Password-99'); await pp.click('#form-login button[type=submit]');
+    await pp.waitForSelector('#error:not([hidden])');
+    ok('a passkey does not replace the password: a wrong password still stops the sign-in', !(await pp.isVisible('#form-mfa')) && /Wrong email or password/.test(await pp.innerText('#error')));
+    await pc.close();
+  }
+
+  console.log('Deleting a spam case from the console');
+  {
+    const sp = await req('/api/request', { method: 'POST', body: mk({ phone: '0201239977', name: 'Spam Browser', service: 'Medical advice on where to go', message: 'buy pills' }) });
+    const dp = await (await b.newContext({ viewport: { width: 1200, height: 900 } })).newPage();
+    track(dp);
+    await dp.goto(B + '/admin/'); await dp.waitForSelector('#form-login:not([hidden])');
+    await dp.fill('#email', OWNER); await dp.fill('#password', PW); await dp.click('#form-login button[type=submit]');
+    await dp.waitForSelector('#form-mfa:not([hidden])'); await dp.fill('#code', await nextTotp(secret)); await dp.click('#form-mfa button[type=submit]'); await dp.waitForSelector('#view h1');
+    await dp.goto(B + '/admin/#/cases'); await dp.waitForSelector('.c-table tbody tr'); await dp.selectOption('.c-filters select >> nth=0', ''); await dp.waitForTimeout(600);
+    await dp.fill('.c-filters input[type=search]', 'Spam Browser'); await dp.waitForTimeout(900);
+    ok('the owner sees a checkbox on each case and a Delete selected button', (await dp.locator('.c-table tbody input[type=checkbox]').count()) >= 1 && (await dp.isVisible('button:has-text("Delete selected")')));
+    await dp.check('.c-table tbody input[type=checkbox] >> nth=0');
+    ok('choosing a case shows how many are selected', /Delete selected \(1\)/.test(await dp.innerText('#view')));
+    await dp.click('button:has-text("Delete selected")'); await dp.waitForSelector('dialog[open]');
+    ok('deleting asks for a reason and warns it cannot be undone', /cannot be undone/.test(await dp.innerText('dialog')) && (await dp.inputValue('dialog input[type=text]')).length > 0);
+    await axe(dp, 'delete dialog');
+    await dp.click('dialog button[type=submit]'); await dp.waitForTimeout(1200);
+    ok('after deleting, the case is gone from the list', (await dp.locator('.c-table').count()) === 0 || !/Spam Browser/.test(await dp.innerText('#view')));
+    await dp.goto(B + '/admin/#/cases/' + sp.j.requestId); await dp.waitForTimeout(900);
+    ok('opening the deleted case finds nothing', !/Delete this case/.test(await dp.innerText('#view')));
+    const sp2 = await req('/api/request', { method: 'POST', body: mk({ phone: '0201239978', name: 'Spam Detail', service: 'Medical advice on where to go' }) });
+    await dp.goto(B + '/admin/#/cases/' + sp2.j.requestId); await dp.waitForSelector('button:has-text("Delete this case")');
+    ok('a case page has a Delete this case button for the owner', await dp.isVisible('button:has-text("Delete this case")'));
+    await dp.click('button:has-text("Delete this case")'); await dp.waitForSelector('dialog[open]'); await dp.click('dialog button[type=submit]'); await dp.waitForTimeout(1200);
+    ok('deleting from the case page returns to the case list', /#\/cases$/.test(dp.url()), dp.url());
+  }
+
   console.log('Not signed in');
   const anon = await b.newContext(); const anp = await anon.newPage(); await anp.goto(B + '/admin/#/cases'); await anp.waitForSelector('#form-login:not([hidden])');
   ok('without a session the console sends you to the login page and shows no data', /login/.test(anp.url()) && (await anp.locator('.c-table').count()) === 0);

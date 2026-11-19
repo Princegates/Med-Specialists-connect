@@ -206,6 +206,15 @@ const MIGRATIONS = [
     id: '0009_visit_type',
     // Where a consultation takes place: at the patient's home or privately (at a clinic).
     sql: [`ALTER TABLE requests ADD COLUMN visit_type TEXT`]
+  },
+  {
+    id: '0010_passkeys',
+    // Passkeys: sign in with a phone's face, fingerprint or screen lock. Challenges are one-use and expire in five minutes.
+    sql: [
+      `CREATE TABLE IF NOT EXISTS passkeys (id TEXT PRIMARY KEY, staff_id TEXT NOT NULL, public_key TEXT NOT NULL, sign_count INTEGER NOT NULL DEFAULT 0, name TEXT, created_at TEXT NOT NULL, last_used TEXT)`,
+      `CREATE INDEX IF NOT EXISTS idx_passkeys_staff ON passkeys(staff_id)`,
+      `CREATE TABLE IF NOT EXISTS webauthn_challenges (id TEXT PRIMARY KEY, challenge TEXT NOT NULL, staff_id TEXT NOT NULL, kind TEXT NOT NULL, expires_at TEXT NOT NULL)`
+    ]
   }
 ];
 

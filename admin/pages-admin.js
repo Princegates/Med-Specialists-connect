@@ -105,7 +105,7 @@
   C.route('account', 'My account', null, function () {
     var me = C.me, v = el('div', {}, C.h('My account', 1), el('p', { class: 'c-note', text: me.name + ' · ' + me.email + ' · ' + me.roleLabel }));
     if (me.mustChange) v.append(el('p', { class: 'c-alert', role: 'alert', text: 'Please choose your own password now. The one you were given was only for your first sign-in.' }));
-    else if (me.mfaRequired && !me.mfaEnabled) v.append(el('p', { class: 'c-alert', role: 'alert', text: 'Your role needs an authenticator app. Set it up below to continue.' }));
+    else if (me.mfaRequired && !me.mfaEnabled) v.append(el('p', { class: 'c-alert', role: 'alert', text: 'Your role needs a second step. Set up an authenticator app or a passkey below to continue.' }));
 
     var cur = C.input('password', '', { autocomplete: 'current-password', required: true }), nxt = C.input('password', '', { autocomplete: 'new-password', required: true }), again = C.input('password', '', { autocomplete: 'new-password', required: true });
     v.append(C.section('Change password', el('form', { class: 'c-form', on: { submit: function (e) {
@@ -119,9 +119,9 @@
         el('ul', { class: 'c-codes' }, codes.map(function (c) { return el('li', {}, el('code', { text: c })); })),
         el('button', { class: 'btn btn-small', type: 'button', text: 'I have saved them', on: { click: function () { C.api('me').then(function (r) { C.me = r.me; location.hash = '#/dashboard'; location.reload(); }); } } }));
     }
-    if (me.mfaEnabled) {
+    if (me.totpEnabled) {
       box.append(el('p', {}, C.tag('On', 'good'), ' You will be asked for a code from your phone each time you sign in.'));
-      if (!me.mfaRequired) {
+      if (!me.mfaRequired || me.passkeyCount > 0) {
         var pw = C.input('password', '', { autocomplete: 'current-password' });
         box.append(C.field('Password (to turn it off)', pw), el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Turn off', on: { click: function () { authPost('mfa/disable', { password: pw.value }).then(function () { C.say('Turned off.'); location.reload(); }).catch(C.fail); } } }));
       } else box.append(el('p', { class: 'c-hint', text: 'Your role must use this, so it cannot be turned off. If you lose your phone, use a recovery code, or ask the owner to reset it.' }));
@@ -140,6 +140,40 @@
         } } }));
     }
     v.append(box);
+
+    // Phone or passkey: face, fingerprint or screen lock on a phone, or a code scanned with the phone's camera.
+    var b64 = {
+      enc: function (buf) { var b = new Uint8Array(buf), t = ''; for (var i = 0; i < b.length; i++) t += String.fromCharCode(b[i]); return btoa(t).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); },
+      dec: function (str) { var t = String(str).replace(/-/g, '+').replace(/_/g, '/'); t += '==='.slice((t.length + 3) % 4); var bin = atob(t), out = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out.buffer; }
+    };
+    var pk = C.section('Phone or passkey sign-in');
+    function drawKeys() {
+      authPost('passkey/list').then(function (r) {
+        pk.replaceChildren(el('h2', { text: 'Phone or passkey sign-in' }));
+        if (!window.PublicKeyCredential) { pk.append(el('p', { class: 'c-note', text: 'This browser cannot use passkeys. Try a recent version of Chrome, Edge, Safari or Firefox.' })); return; }
+        pk.append(el('p', { class: 'c-note', text: 'Sign in with your phone: confirm with your face, fingerprint or screen lock. On a computer, your browser offers a code to scan with the phone\u2019s camera. Nothing about your face or fingerprint ever leaves your phone.' }));
+        if (r.passkeys.length) {
+          pk.append(el('ul', { class: 'c-list' }, r.passkeys.map(function (k) {
+            var pw = C.input('password', '', { autocomplete: 'current-password', 'aria-label': 'Password to remove ' + k.name });
+            return el('li', {}, el('strong', { text: k.name }), ' \u00b7 added ' + C.dateTime(k.created_at) + (k.last_used ? ' \u00b7 last used ' + C.dateTime(k.last_used) : ''), ' ', pw,
+              el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Remove', on: { click: function () { authPost('passkey/remove', { id: k.id, password: pw.value }).then(function () { C.say('Passkey removed.'); return C.api('me').then(function (m) { C.me = m.me; location.reload(); }); }).catch(C.fail); } } }));
+          })));
+        }
+        var nm = C.input('text', '', { maxlength: 60, placeholder: 'For example: My iPhone' });
+        pk.append(C.field('Name for this phone or device', nm), el('button', { class: 'btn btn-small', type: 'button', text: 'Add a phone or passkey', on: { click: function () {
+          authPost('passkey/begin').then(function (o) {
+            var p = o.publicKey;
+            return navigator.credentials.create({ publicKey: { challenge: b64.dec(p.challenge), rp: p.rp, user: { id: b64.dec(p.user.id), name: p.user.name, displayName: p.user.displayName }, pubKeyCredParams: p.pubKeyCredParams, timeout: p.timeout,
+              attestation: p.attestation, authenticatorSelection: p.authenticatorSelection, excludeCredentials: (p.excludeCredentials || []).map(function (c) { return { type: c.type, id: b64.dec(c.id) }; }) } }).then(function (cred) {
+              return authPost('passkey/finish', { challengeId: o.challengeId, name: nm.value, credential: { id: cred.id, response: { clientDataJSON: b64.enc(cred.response.clientDataJSON), attestationObject: b64.enc(cred.response.attestationObject) } } });
+            });
+          }).then(function () { C.say('Passkey added.'); return C.api('me').then(function (m) { C.me = m.me; location.reload(); }); })
+            .catch(function (e) { C.say(e && e.name === 'NotAllowedError' ? 'That was cancelled or timed out. Please try again.' : (e.message || 'Could not add the passkey.'), true); });
+        } } }));
+      }).catch(C.fail);
+    }
+    drawKeys();
+    v.append(pk);
     return v;
   });
 
@@ -154,7 +188,7 @@
         var isNew = !s; s = s || { role: 'coordinator', active: 1 };
         var tools = isNew ? null : el('div', { class: 'c-actions left' },
           el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Reset password', on: { click: function () { C.api('staff/' + s.id + '/update', { reset_password: true }).then(function (res) { tempDialog(s.name, res.tempPassword); }).catch(C.fail); } } }),
-          s.totp_enabled ? el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Reset authenticator', on: { click: function () { C.api('staff/' + s.id + '/update', { reset_mfa: true }).then(function () { C.say('Authenticator reset. They set it up again at next sign-in.'); C.render(); }).catch(C.fail); } } }) : null);
+          s.mfa_on ? el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Reset authenticator and passkeys', on: { click: function () { C.api('staff/' + s.id + '/update', { reset_mfa: true }).then(function () { C.say('Authenticator and passkeys reset. They set them up again at next sign-in.'); C.render(); }).catch(C.fail); } } }) : null);
         var f = { name: C.input('text', s.name || '', { required: true }), email: C.input('email', s.email || '', { required: true, disabled: !isNew }), role: C.select(roleOptions, s.role) }, act = C.check('Can sign in', !!s.active);
         C.dialog({ title: isNew ? 'Add a staff member' : 'Edit ' + s.name, intro: isNew ? 'You will be shown a one-time password. Give it to them in person or by phone. They choose their own when they first sign in.' : '',
           body: el('div', {}, C.field('Name', f.name), C.field('Email', f.email), C.field('Role', f.role), isNew ? null : act.box, tools),
@@ -162,7 +196,7 @@
       }
       return el('div', {}, C.h('Staff', 1), el('p', { class: 'c-note', text: 'Each role sees only what it needs. Coordinators see health details; finance sees money; administrators see settings.' }),
         C.table(['Name', 'Email', 'Role', 'Last seen', 'Two-step', 'Status', ''], r.staff.map(function (s) {
-          return [s.name, s.email, r.roles[s.role] || s.role, s.last_seen ? C.dateTime(s.last_seen) : 'Never', s.totp_enabled ? C.tag('On', 'good') : C.tag('Off'), s.active ? C.tag('Active', 'good') : C.tag('Switched off', 'warn'), el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Edit', on: { click: function () { staffDialog(s); } } })];
+          return [s.name, s.email, r.roles[s.role] || s.role, s.last_seen ? C.dateTime(s.last_seen) : 'Never', s.mfa_on ? C.tag('On', 'good') : C.tag('Off'), s.active ? C.tag('Active', 'good') : C.tag('Switched off', 'warn'), el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Edit', on: { click: function () { staffDialog(s); } } })];
         })), el('button', { class: 'btn btn-small', type: 'button', text: 'Add a staff member', on: { click: function () { staffDialog(null); } } }));
     });
   });

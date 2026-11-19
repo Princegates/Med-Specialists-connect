@@ -8,7 +8,7 @@ const TOP = ['superadmin', 'owner'];
 
 export async function listFull(x) {
   if (!can(x.staff, 'staff.edit')) return fail(403, 'Not allowed.');
-  const { results } = await x.env.DB.prepare('SELECT id, email, name, role, active, created_at, last_seen, totp_enabled, must_change, locked_until FROM staff ORDER BY created_at').all();
+  const { results } = await x.env.DB.prepare('SELECT id, email, name, role, active, created_at, last_seen, totp_enabled, (totp_enabled = 1 OR EXISTS (SELECT 1 FROM passkeys p WHERE p.staff_id = staff.id)) AS mfa_on, must_change, locked_until FROM staff ORDER BY created_at').all();
   return json({ ok: true, staff: results, roles: ROLES });
 }
 
@@ -61,10 +61,11 @@ export async function update(x, id) {
   }
   if (b.reset_mfa) {
     await x.env.DB.prepare('UPDATE staff SET totp_enabled = 0, totp_secret = NULL, recovery_codes = NULL WHERE id = ?').bind(id).run();
+    await x.env.DB.prepare('DELETE FROM passkeys WHERE staff_id = ?').bind(id).run();
     await endAllSessions(x.env, id);
-    await audit(x.env, x.staff.email, 'staff', id, 'mfa_reset', `Authenticator reset for ${s.email}`);
+    await audit(x.env, x.staff.email, 'staff', id, 'mfa_reset', `Authenticator and passkeys reset for ${s.email}`);
   }
   return json(out);
 }
 
-export const meInfo = (staff, mfaRequired) => ({ id: staff.id, email: staff.email, name: staff.name, role: staff.role, roleLabel: ROLES[staff.role], perms: permsFor(staff.role), mfaEnabled: !!staff.totp_enabled, mfaRequired: !!mfaRequired, mustChange: !!staff.must_change });
+export const meInfo = (staff, mfaRequired) => ({ id: staff.id, email: staff.email, name: staff.name, role: staff.role, roleLabel: ROLES[staff.role], perms: permsFor(staff.role), mfaEnabled: !!staff.totp_enabled || (staff.passkey_count || 0) > 0, totpEnabled: !!staff.totp_enabled, passkeyCount: staff.passkey_count || 0, mfaRequired: !!mfaRequired, mustChange: !!staff.must_change });

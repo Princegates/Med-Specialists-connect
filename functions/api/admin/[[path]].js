@@ -28,6 +28,7 @@ const ROUTES = [
   ['GET', /^dashboard$/, dash.dashboard],
   ['GET', /^cases$/, cases.list],
   ['POST', /^cases$/, cases.create],
+  ['POST', /^cases\/delete$/, cases.remove],
   ['GET', /^cases\/([\w-]+)$/, (x, m) => cases.detail(x, m[1])],
   ['POST', /^cases\/([\w-]+)\/update$/, (x, m) => cases.update(x, m[1])],
   ['POST', /^cases\/([\w-]+)\/note$/, (x, m) => cases.addNote(x, m[1])],

@@ -6,8 +6,9 @@ import { nowIso } from '../../_lib/db.js';
 import { json, fail, readJson, clean } from '../../_lib/http.js';
 import {
   hashPassword, verifyPassword, passwordProblem, startSession, sessionStaff, endSession, endAllSessions, clearCookie, safeEqual, sha256,
-  newTotpSecret, verifyTotp, otpauthUri, newRecoveryCodes, mfaRequiredFor
+  newTotpSecret, verifyTotp, otpauthUri, newRecoveryCodes, mfaRequiredFor, hasSecondStep
 } from '../../_lib/auth.js';
+import { b64u, rpIdOf, verifyRegistration, verifyAssertion } from '../../_lib/webauthn.js';
 import { meInfo } from '../../_lib/admin/staff.js';
 
 // Sign-in for the staff console. Wrong email and wrong password give the same answer, and an account locks for
@@ -24,7 +25,7 @@ const withCookie = (cookie, data, status = 200) => json(data, status, { 'Set-Coo
 async function enter(env, request, staff, extra = {}) {
   const s = await startSession(env, staff, request);
   await env.DB.prepare('UPDATE staff SET failed_logins = 0, locked_until = NULL, last_seen = ? WHERE id = ?').bind(nowIso(), staff.id).run();
-  const fresh = await env.DB.prepare('SELECT * FROM staff WHERE id = ?').bind(staff.id).first();
+  const fresh = await env.DB.prepare('SELECT *, (SELECT COUNT(*) FROM passkeys WHERE staff_id = staff.id) AS passkey_count FROM staff WHERE id = ?').bind(staff.id).first();
   return withCookie(s.cookie, { ok: true, me: meInfo(fresh, await mfaRequiredFor(env, fresh)), ...extra });
 }
 
@@ -36,6 +37,27 @@ async function consumeRecovery(env, staff, code) {
   list.splice(i, 1);
   await env.DB.prepare('UPDATE staff SET recovery_codes = ? WHERE id = ?').bind(JSON.stringify(list), staff.id).run();
   return true;
+}
+
+
+// ---- passkeys: a challenge is made, kept for five minutes, and can be used once.
+async function newChallenge(env, staffId, kind) {
+  const id = b64u.enc(crypto.getRandomValues(new Uint8Array(18))), challenge = b64u.enc(crypto.getRandomValues(new Uint8Array(32)));
+  await env.DB.prepare('DELETE FROM webauthn_challenges WHERE expires_at < ?').bind(nowIso()).run();
+  await env.DB.prepare('INSERT INTO webauthn_challenges (id, challenge, staff_id, kind, expires_at) VALUES (?, ?, ?, ?, ?)').bind(id, challenge, staffId, kind, new Date(Date.now() + 5 * 60000).toISOString()).run();
+  return { id, challenge };
+}
+async function takeChallenge(env, id, staffId, kind) {
+  const row = await env.DB.prepare('SELECT * FROM webauthn_challenges WHERE id = ?').bind(String(id || '')).first();
+  if (!row) return null;
+  await env.DB.prepare('DELETE FROM webauthn_challenges WHERE id = ?').bind(row.id).run();
+  return row.staff_id === staffId && row.kind === kind && row.expires_at > nowIso() ? row.challenge : null;
+}
+async function passkeyLoginOptions(env, request, staff) {
+  const keys = (await env.DB.prepare('SELECT id FROM passkeys WHERE staff_id = ?').bind(staff.id).all()).results;
+  if (!keys.length) return null;
+  const c = await newChallenge(env, staff.id, 'login');
+  return { challengeId: c.id, publicKey: { challenge: c.challenge, rpId: rpIdOf(request.url), timeout: 120000, userVerification: 'required', allowCredentials: keys.map((k) => ({ type: 'public-key', id: k.id })) } };
 }
 
 async function login(env, request, b) {
@@ -55,17 +77,29 @@ async function login(env, request, b) {
     return bad();
   };
   if (!good || !staff || !staff.active) return fail1();
-  if (staff.totp_enabled) {
-    if (!b.code && !b.recovery) return json({ ok: true, mfa: true });
+  const keyCount = (await env.DB.prepare('SELECT COUNT(*) AS c FROM passkeys WHERE staff_id = ?').bind(staff.id).first()).c;
+  if (staff.totp_enabled || keyCount > 0) {
+    if (!b.code && !b.recovery && !b.passkey) return json({ ok: true, mfa: true, totp: !!staff.totp_enabled, passkey: await passkeyLoginOptions(env, request, staff) });
     let pass = false;
-    if (b.recovery) pass = await consumeRecovery(env, staff, b.recovery);
+    if (b.passkey) {
+      try {
+        const cred = b.passkey.credential || {}, url = new URL(request.url);
+        const challenge = await takeChallenge(env, b.passkey.challengeId, staff.id, 'login');
+        const key = await env.DB.prepare('SELECT * FROM passkeys WHERE id = ? AND staff_id = ?').bind(String(cred.id || ''), staff.id).first();
+        if (challenge && key) {
+          const count = await verifyAssertion({ credential: cred, challenge, origin: url.origin, rpId: rpIdOf(request.url), publicKey: key.public_key, signCount: key.sign_count });
+          await env.DB.prepare('UPDATE passkeys SET sign_count = ?, last_used = ? WHERE id = ?').bind(count, nowIso(), key.id).run();
+          pass = true;
+        }
+      } catch (e) { pass = false; }
+    } else if (b.recovery) pass = await consumeRecovery(env, staff, b.recovery);
     else {
       // A code works once: the same six digits cannot be used again within their 30 seconds.
       try { const step = await verifyTotp(await decrypt(env, staff.totp_secret), b.code); if (step && step > (staff.totp_last || 0)) { pass = true; await env.DB.prepare('UPDATE staff SET totp_last = ? WHERE id = ?').bind(step, staff.id).run(); } } catch (e) { pass = false; }
     }
     if (!pass) return fail1();
   }
-  await audit(env, email, 'staff', staff.id, 'login', b.recovery ? 'Signed in with a recovery code' : 'Signed in');
+  await audit(env, email, 'staff', staff.id, 'login', b.recovery ? 'Signed in with a recovery code' : b.passkey ? 'Signed in with a passkey' : 'Signed in');
   return enter(env, request, staff);
 }
 
@@ -146,10 +180,45 @@ export async function onRequest(context) {
       return json({ ok: true, recoveryCodes: codes });
     }
     if (path === 'mfa/disable') {
-      if (await mfaRequiredFor(env, me)) return fail(400, 'Your role must use an authenticator app, so it cannot be turned off.');
+      if ((await mfaRequiredFor(env, me)) && !me.passkey_count) return fail(400, 'Your role must use an authenticator app or a passkey, so it cannot be turned off.');
       if (!(await verifyPassword(String(b.password || ''), me.password_hash))) return fail(403, 'Your password is not right.');
       await env.DB.prepare('UPDATE staff SET totp_enabled = 0, totp_secret = NULL, recovery_codes = NULL WHERE id = ?').bind(me.id).run();
       await audit(env, me.email, 'staff', me.id, 'mfa', 'Authenticator app turned off');
+      return json({ ok: true });
+    }
+
+    if (path === 'passkey/list') {
+      const keys = (await env.DB.prepare('SELECT id, name, created_at, last_used FROM passkeys WHERE staff_id = ? ORDER BY created_at').bind(me.id).all()).results;
+      return json({ ok: true, passkeys: keys });
+    }
+    if (path === 'passkey/begin') {
+      const have = (await env.DB.prepare('SELECT id FROM passkeys WHERE staff_id = ?').bind(me.id).all()).results;
+      if (have.length >= 8) return fail(400, 'You can have up to 8 passkeys. Remove one first.');
+      const c = await newChallenge(env, me.id, 'register');
+      return json({ ok: true, challengeId: c.id, publicKey: {
+        challenge: c.challenge, rp: { name: 'MEDs Specialists Connect', id: rpIdOf(request.url) },
+        user: { id: b64u.enc(new TextEncoder().encode(me.id)), name: me.email, displayName: me.name },
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }], timeout: 120000, attestation: 'none',
+        authenticatorSelection: { residentKey: 'preferred', userVerification: 'required' },
+        excludeCredentials: have.map((k) => ({ type: 'public-key', id: k.id }))
+      } });
+    }
+    if (path === 'passkey/finish') {
+      const challenge = await takeChallenge(env, b.challengeId, me.id, 'register');
+      if (!challenge) return fail(400, 'That took too long. Please start again.');
+      let made;
+      try { made = await verifyRegistration({ credential: b.credential || {}, challenge, origin: url.origin, rpId: rpIdOf(request.url) }); } catch (e) { return fail(400, 'That passkey could not be verified. Please try again.'); }
+      if (await env.DB.prepare('SELECT 1 AS x FROM passkeys WHERE id = ?').bind(made.id).first()) return fail(409, 'That passkey is already registered.');
+      await env.DB.prepare('INSERT INTO passkeys (id, staff_id, public_key, sign_count, name, created_at) VALUES (?, ?, ?, ?, ?, ?)').bind(made.id, me.id, made.publicKey, made.signCount, clean(b.name, 60) || 'My phone', nowIso()).run();
+      await audit(env, me.email, 'staff', me.id, 'mfa', 'Passkey added');
+      return json({ ok: true });
+    }
+    if (path === 'passkey/remove') {
+      if (!(await verifyPassword(String(b.password || ''), me.password_hash))) return fail(403, 'Your password is not right.');
+      const left = (me.passkey_count || 0) - 1;
+      if (left <= 0 && !me.totp_enabled && (await mfaRequiredFor(env, me))) return fail(400, 'Your role needs a second step. Add an authenticator app or another passkey first.');
+      await env.DB.prepare('DELETE FROM passkeys WHERE id = ? AND staff_id = ?').bind(String(b.id || ''), me.id).run();
+      await audit(env, me.email, 'staff', me.id, 'mfa', 'Passkey removed');
       return json({ ok: true });
     }
     return fail(404, 'Not found.');

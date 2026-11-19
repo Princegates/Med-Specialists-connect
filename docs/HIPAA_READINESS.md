@@ -25,7 +25,7 @@ Ghanaian and (if you serve US clients) US health-privacy law review it before yo
 | Encryption at rest (164.312(a)(2)(iv)) | Partly | The database is encrypted at rest by Cloudflare. Secrets are additionally encrypted by the application. Free-text health notes are not individually encrypted yet. |
 | Audit controls (164.312(b)) | **Strengthened** | Every change is logged in a tamper-evident chain. **New:** every time a staff member opens a case or client record, who and when is logged (once per ten minutes per record). |
 | Integrity (164.312(c)) | Done | The audit chain detects edits and missing entries; payments are verified, never trusted from the browser. |
-| Person or entity authentication (164.312(d)) | Done | Password plus authenticator app (required for powerful roles, can be required for everyone), lock-out, one-use codes. |
+| Person or entity authentication (164.312(d)) | Done | Password plus a second step: an authenticator app or a **passkey** (a phone's face, fingerprint or screen lock, or a code scanned with the phone's camera). Required for powerful roles, can be required for everyone. Lock-out, one-use codes. |
 | Transmission security (164.312(e)) | Done | HTTPS everywhere with HSTS; strict content policy; no third-party scripts. |
 
 ## Privacy Rule features (164.500 to 164.534) and the platform

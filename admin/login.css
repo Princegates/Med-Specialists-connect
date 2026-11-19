@@ -30,3 +30,6 @@
   .login-brand { display: none; }
   .login-logo { display: block; }
 }
+
+.btn-alt { margin-top: 12px; background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+.login-hint { margin: 10px 0 0; font-size: .92rem; color: var(--ink-soft); }

@@ -16,7 +16,7 @@ export const ROLES = {
 const GRANTS = {
   superadmin: '*',
   owner: '*',
-  supervisor: ['dashboard', 'cases.view', 'cases.edit', 'cases.assign', 'cases.close', 'health.view', 'clients.view', 'clients.edit', 'clients.export', 'providers.view', 'billing.view', 'billing.create', 'accounts.view', 'services.view', 'tasks.view', 'tasks.edit', 'audit.view', 'reports.view'],
+  supervisor: ['dashboard', 'cases.view', 'cases.edit', 'cases.delete', 'cases.assign', 'cases.close', 'health.view', 'clients.view', 'clients.edit', 'clients.export', 'providers.view', 'billing.view', 'billing.create', 'accounts.view', 'services.view', 'tasks.view', 'tasks.edit', 'audit.view', 'reports.view'],
   coordinator: ['dashboard', 'cases.view', 'cases.edit', 'cases.close', 'health.view', 'clients.view', 'clients.edit', 'providers.view', 'billing.view', 'billing.create', 'services.view', 'tasks.view', 'tasks.edit'],
   finance: ['dashboard', 'cases.view', 'clients.view', 'billing.view', 'billing.create', 'billing.manage', 'accounts.view', 'accounts.export', 'services.view', 'services.edit', 'reports.view'],
   network: ['dashboard', 'providers.view', 'providers.edit', 'providers.verify', 'services.view', 'tasks.view'],

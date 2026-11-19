@@ -328,3 +328,48 @@ export async function issueInvoice(x, id) {
   later(x.context, emailInvoice(x.env, made.id));
   return json({ ok: true, invoice: { id: made.id, number: made.number, total: made.total, url: `/invoice?id=${made.id}` } });
 }
+
+// Permanently deletes cases, for spam and fake requests. A case with a payment is never deleted (it is a financial
+// record). Unpaid invoices, appointments, tasks and messages of the case go with it. If it was the client's only case,
+// the client and patient details can go too. The audit log keeps a line saying who deleted what and why.
+export async function remove(x) {
+  if (!can(x.staff, 'cases.delete')) return fail(403, 'Not allowed.');
+  const ids = [...new Set((Array.isArray(x.body.ids) ? x.body.ids : []).map((i) => String(i)).filter((i) => /^[\w-]{1,64}$/.test(i)))].slice(0, 100);
+  if (!ids.length) return fail(400, 'Choose at least one case.');
+  const reason = clean(x.body.reason, 200);
+  if (!reason) return fail(400, 'Please say why (for example: spam).');
+  const alsoClient = x.body.remove_client !== false;
+  const db = x.env.DB, deleted = [], kept = [];
+  for (const id of ids) {
+    const c = await db.prepare('SELECT id, ref, client_id FROM requests WHERE id = ?').bind(id).first();
+    if (!c) continue;
+    const paid = await db.prepare("SELECT (SELECT COUNT(*) FROM invoices WHERE request_id = ?1 AND status = 'paid') + (SELECT COUNT(*) FROM payments p JOIN invoices i ON i.id = p.invoice_id WHERE i.request_id = ?1) AS n").bind(id).first();
+    if (paid.n > 0) { kept.push({ id, ref: c.ref, why: 'It has a payment, so it is a financial record and cannot be deleted.' }); continue; }
+    const invs = (await db.prepare('SELECT number FROM invoices WHERE request_id = ?').bind(id).all()).results.map((i) => i.number);
+    await db.batch([
+      db.prepare('DELETE FROM invoices WHERE request_id = ?').bind(id),
+      db.prepare('DELETE FROM appointments WHERE request_id = ?').bind(id),
+      db.prepare('DELETE FROM assignments WHERE request_id = ?').bind(id),
+      db.prepare('DELETE FROM tasks WHERE request_id = ?').bind(id),
+      db.prepare('DELETE FROM communications WHERE request_id = ?').bind(id),
+      db.prepare('DELETE FROM requests WHERE id = ?').bind(id)
+    ]);
+    let clientGone = false;
+    if (alsoClient && c.client_id) {
+      const left = await db.prepare('SELECT COUNT(*) AS n FROM requests WHERE client_id = ?').bind(c.client_id).first();
+      if (left.n === 0) {
+        await db.batch([
+          db.prepare('DELETE FROM consents WHERE client_id = ?').bind(c.client_id),
+          db.prepare('DELETE FROM communications WHERE client_id = ?').bind(c.client_id),
+          db.prepare('DELETE FROM patients WHERE client_id = ?').bind(c.client_id),
+          db.prepare('DELETE FROM clients WHERE id = ?').bind(c.client_id)
+        ]);
+        clientGone = true;
+        await audit(x.env, x.staff.email, 'client', c.client_id, 'deleted', `Removed with case ${c.ref || id} (${reason})`);
+      }
+    }
+    await audit(x.env, x.staff.email, 'case', id, 'deleted', `Deleted ${c.ref || id}: ${reason}${invs.length ? '. Unpaid invoice removed: ' + invs.join(', ') : ''}${clientGone ? '. Client details removed too' : ''}`);
+    deleted.push(id);
+  }
+  return json({ ok: true, deleted, kept });
+}

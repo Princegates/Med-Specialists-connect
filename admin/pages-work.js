@@ -91,11 +91,15 @@
           })));
           return;
         }
-        body.replaceChildren(C.table(['Received', 'Case', 'Client', 'Status', 'Next action', 'Assigned to', 'Invoice'], r.cases.map(function (c) {
+        var canDel = C.can('cases.delete'), picked = {}, delBtn = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Delete selected', disabled: true, on: { click: function () {
+          var ids = Object.keys(picked); deleteCasesDialog(ids, ids.length + ' case' + (ids.length === 1 ? '' : 's'), load); } } });
+        function pick(c) { var box = el('input', { type: 'checkbox', 'aria-label': 'Select ' + (c.ref || c.name), on: { change: function () { if (this.checked) picked[c.id] = 1; else delete picked[c.id]; var n = Object.keys(picked).length; delBtn.disabled = !n; delBtn.textContent = n ? 'Delete selected (' + n + ')' : 'Delete selected'; } } }); return box; }
+        body.replaceChildren(canDel ? el('div', { class: 'c-actions left' }, delBtn) : '', C.table((canDel ? ['Select'] : []).concat(['Received', 'Case', 'Client', 'Status', 'Next action', 'Assigned to', 'Invoice']), r.cases.map(function (c) {
           var row = [C.dateTime(c.created_at), el('div', {}, C.link(c.service_label || c.service, '#/cases/' + c.id), el('div', { class: 'c-sub', text: c.ref || '' })), el('div', {}, c.name, el('div', { class: 'c-sub', text: [c.phone, c.area].filter(Boolean).join(' · ') })),
             el('div', {}, statusTag(c.status), c.priority === 'emergency' ? C.tag('Emergency', 'warn') : /^Urgent/.test(c.urgency || '') || c.priority === 'high' ? C.tag('Urgent', 'warn') : null),
             el('div', {}, c.next_action || '', c.next_action_due ? el('div', { class: 'c-sub' + (overdue(c) ? ' c-late' : ''), text: (overdue(c) ? 'Overdue · ' : 'Due ') + C.dateTime(c.next_action_due) }) : null), c.assigned_name || '',
             c.invoice_id ? el('div', {}, c.invoice_number, ' ', C.tag(c.invoice_status === 'paid' ? 'Paid' : 'Due', c.invoice_status === 'paid' ? 'good' : '')) : ''];
+          if (canDel) row.unshift(pick(c));
           row.cls = c.priority === 'emergency' || /^Urgent/.test(c.urgency || '') ? 'urgent' : ''; return row;
         }), 'No cases match.'));
       }).catch(C.fail);
@@ -123,12 +127,25 @@
     return function (id) { return id ? caseDetail(id) : listFn(); };
   })(C.routes.cases.fn) });
 
+  // Permanent deletion of cases (spam and fake requests). Owners and supervisors only.
+  function deleteCasesDialog(ids, label, after) {
+    var why = C.input('text', 'Spam or fake request', { maxlength: 200, required: true }), both = C.check('Also remove the client and patient details if these were their only cases', true);
+    C.dialog({ title: 'Delete ' + label + '?', submit: 'Delete permanently',
+      intro: 'This cannot be undone. Cases that have a payment are never deleted. Unpaid invoices, appointments, tasks and messages of the case go with it. The audit log keeps a note of who deleted what and why.',
+      body: el('div', {}, C.field('Reason', why), both.box),
+      onSubmit: function () { return C.api('cases/delete', { ids: ids, reason: why.value, remove_client: both.input.checked }).then(function (r) {
+        C.say(r.deleted.length + ' deleted.' + (r.kept.length ? ' ' + r.kept.length + ' kept: ' + r.kept[0].why : ''), r.deleted.length === 0);
+        after(r);
+      }); } });
+  }
+
   function caseDetail(id) {
     return Promise.all([C.api('cases/' + id), C.api('staff-lite'), C.can('providers.view') ? C.api('providers') : Promise.resolve({ providers: [] })]).then(function (r) {
       var d = r[0], c = d.case, staff = r[1].staff, providers = r[2].providers.filter(function (p) { return p.effective === 'active' || p.effective === 'expiring_soon'; });
       var svc = (C.meta.services || []).filter(function (s) { return s.value === c.service; })[0];
       var v = el('div', {}, el('p', {}, C.link('← All cases', '#/cases')), C.h(c.service_label || c.service, 1),
         el('p', {}, statusTag(c.status), ' ', c.priority === 'emergency' ? C.tag('Emergency', 'warn') : /^Urgent/.test(c.urgency || '') || c.priority === 'high' ? C.tag('Urgent', 'warn') : null, ' ', el('span', { class: 'c-sub', text: (c.ref || '') + ' · received ' + C.dateTime(c.created_at) })));
+      if (C.can('cases.delete')) v.append(el('p', {}, el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Delete this case', on: { click: function () { deleteCasesDialog([c.id], 'case ' + (c.ref || ''), function () { location.hash = '#/cases'; }); } } })));
       if (c.status === 'safety_escalation') v.append(el('p', { class: 'c-alert', role: 'alert', text: 'Possible emergency. Call the client now and, if there is any danger, direct them to call 112 or go to the nearest hospital. Record what you did below.' }));
 
       var details = el('dl', { class: 'c-dl' });
