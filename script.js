@@ -435,13 +435,42 @@
 
     // The big buttons at the top of the page pick the service, then take the person to the urgency question.
     var pickStatus = document.createElement('p'); pickStatus.className = 'sr'; pickStatus.setAttribute('role', 'status'); document.body.append(pickStatus);
-    document.querySelectorAll('[data-service]').forEach(function (a) {
+    function bindPick(a) {
       a.addEventListener('click', function () {
         var v = a.getAttribute('data-service'), sel = rform.elements.service;
         if (v) { sel.value = v; clearError(sel); save(); showInfo(); pickStatus.textContent = 'Selected: ' + a.textContent.trim() + '. Check how urgent it is, then choose Next.'; }
         show(0, 'back', false);
         setTimeout(function () { (v ? rform.elements.urgency : sel).focus({ preventScroll: true }); }, 450);
       });
+    }
+    document.querySelectorAll('[data-service]').forEach(bindPick);
+
+    // A service added in the staff console (Services and prices) appears here without anyone editing the page:
+    // in the request form's list and at the end of the "Choose a service" list.
+    loadServices().then(function (map) {
+      var have = {}; [].forEach.call(rform.elements.service.options, function (o) { have[o.value] = 1; });
+      // Shown: services created in the console, and any starting service that now has a fixed price. The starting
+      // services that still say "we confirm the price" (ambulance, hospital admission and so on) stay off the page.
+      var extra = Object.keys(map).filter(function (k) { return !have[k] && (map[k].custom || map[k].billing === 'fixed'); }).map(function (k) { return map[k]; });
+      if (!extra.length) return;
+      var grp = document.createElement('optgroup'); grp.label = 'More services';
+      extra.forEach(function (x) { var o = document.createElement('option'); o.value = x.value; o.textContent = x.label; grp.append(o); });
+      rform.elements.service.append(grp);
+      var wrap = document.querySelector('#fees .wrap');
+      if (wrap) {
+        var h = document.createElement('h3'); h.className = 'price-group'; h.textContent = 'More services';
+        var tw = document.createElement('div'); tw.className = 'table-wrap';
+        var t = document.createElement('table'); t.className = 'fee-table';
+        var cap = document.createElement('caption'); cap.className = 'sr'; cap.textContent = 'More services'; t.append(cap);
+        var tb = document.createElement('tbody');
+        extra.forEach(function (x) {
+          var tr = document.createElement('tr'), th = document.createElement('th'), td = document.createElement('td'), a = document.createElement('a'), sr = document.createElement('span');
+          th.scope = 'row'; th.textContent = x.label; td.className = 'act';
+          a.href = '#request'; a.setAttribute('data-service', x.value); a.append('Request'); sr.className = 'sr'; sr.textContent = ' ' + x.label; a.append(sr);
+          td.append(a); tr.append(th, td); tb.append(tr); bindPick(a);
+        });
+        t.append(tb); tw.append(t); wrap.append(h, tw);
+      }
     });
   }
 

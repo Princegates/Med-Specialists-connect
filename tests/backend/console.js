@@ -614,7 +614,7 @@ const yr = new Date().getUTCFullYear();
   const couples = svc('Couples fertility assessment');
   ok('the couples fertility package adds the semen analysis and the couple consultation to the women\'s package', couples.details.tests.length === 8 && couples.details.tests.some((t) => /Semen analysis/.test(t.name)) && couples.details.also.includes('Couple-focused consultation') && couples.details.also.includes('Fertility-focused doctor consultation'), couples.details.also);
   ok('services without a description simply have none, and quoted ones have no price', svc('GP consult (home)').details === null && typeof svc('GP consult (home)').price === 'number' && svc('Specialist appointment').price === null);
-  ok('the public list exposes only value, label, billing, price, details and visit (no ids, price lines or settings)', r.j.services.every((x) => Object.keys(x).sort().join() === 'billing,details,label,price,value,visit') && Object.keys(r.j).sort().join() === 'ok,services');
+  ok('the public list exposes only value, label, billing, price, details, visit and whether it was added in the console (no ids, price lines or settings)', r.j.services.every((x) => Object.keys(x).sort().join() === 'billing,custom,details,label,price,value,visit') && Object.keys(r.j).sort().join() === 'ok,services');
   r = await req('/api/request', { method: 'POST', body: mk({ phone: '0201112299', name: 'Lab Client', service: "On-call men's essential check-up" }) });
   ok('a lab package is invoiced at its listed price', r.status === 200 && r.j.invoice && r.j.invoice.total === 201600, r.j);
   const labInv = r.j.invoice;

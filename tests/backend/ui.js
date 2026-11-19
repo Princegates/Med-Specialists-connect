@@ -195,6 +195,14 @@ const COOKIE = '__Host-msc_session';
   await p.hover('.dir li:nth-child(3)'); await p.waitForTimeout(300);
   ok('pointing at a service shows its photo beside the list', await p.evaluate(() => document.querySelectorAll('.desk-view img')[2].classList.contains('on') && document.querySelectorAll('.desk-view img.on').length === 1));
   ok('the request form shows its three steps', await p.evaluate(() => document.querySelectorAll('.wiz-stops li').length === 3 && document.querySelector('#request-form').getAttribute('data-at') === '0'));
+  {
+    const made = await A(OWNER, 'services', { value: 'Test added service', label: 'Test added service', billing: 'fixed', lines: [{ description: 'Test added service', amountGhs: 80 }] });
+    await p.reload(); await p.waitForTimeout(1200);
+    ok('a service added in the console appears in the request form and in the service list without editing the site', made.status === 200 && await p.evaluate(() => [...document.querySelector('#r-service').options].some((o) => o.value === 'Test added service') && !!document.querySelector('#fees a[data-service="Test added service"]') && /More services/.test(document.querySelector('#fees').innerText)), made.status);
+    await p.click('#fees a[data-service="Test added service"]'); await p.waitForTimeout(700);
+    ok('and choosing it from the list picks it in the form', (await p.inputValue('#r-service')) === 'Test added service');
+    await A(OWNER, 'services/Test%20added%20service/update', { billing: 'fixed', lines: [{ description: 'Test added service', amountGhs: 80 }], active: false });
+  }
   ok('the services list has an expandable "about our private and home-based services" section', await p.evaluate(() => { const d = document.getElementById('home-services'); return !!d && !d.open && /registered healthcare professionals/.test(d.innerText + d.textContent) && /charged separately/.test(d.textContent) && !/GH.?\d/.test(d.textContent); }));
   await p.selectOption('#r-service', 'Nephrologist service (private or home)'); await p.waitForTimeout(600);
   ok('choosing a private or home service in the form shows the same explanation', await p.evaluate(() => { const i = document.getElementById('svc-info'); return !i.hidden && !!i.querySelector('details.home-about') && !i.querySelector('[id=home-services]'); }));
@@ -247,7 +255,7 @@ const COOKIE = '__Host-msc_session';
   await vInv.waitForSelector('#invoice:not([hidden])');
   ok('and the invoice says what they chose', /Psychiatrist consult \(home\)/.test(await vInv.innerText('#lines')), await vInv.innerText('#lines'));
   await vInv.close();
-  ok('the service list has only the listed services (no other services group)', !/Other services|Ambulance|Home nursing|Insurance|Second medical|Hospital admission/.test(await p.innerText('#fees')));
+  ok('the service list does not show starting services that have no price yet (ambulance, hospital admission and so on)', !/Other services|Ambulance|Insurance|Second medical|Hospital admission/.test(await p.innerText('#fees')));
 
   console.log('Choosing a lab check-up shows what it includes');
   await p.goto(B + '/index.html'); await p.evaluate(() => sessionStorage.clear()); await p.reload(); await p.waitForTimeout(800);

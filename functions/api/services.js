@@ -1,5 +1,6 @@
 import { getServices } from '../_lib/services.js';
 import { detailsFor, visitMode } from '../_lib/packages.js';
+import { SERVICES } from '../_lib/catalogue.js';
 import { json, fail } from '../_lib/http.js';
 
 // GET /api/services: the services on offer, with their current price and, for the laboratory packages, what each one
@@ -14,7 +15,8 @@ export async function onRequestGet({ env }) {
         value: s.value, label: s.label, billing: s.billing,
         price: s.billing === 'fixed' ? s.lines.reduce((t, l) => t + l.amount, 0) : null,
         details: detailsFor(s.value),
-        visit: visitMode(s.value)
+        visit: visitMode(s.value),
+        custom: !Object.prototype.hasOwnProperty.call(SERVICES, s.value) // added in the staff console, not part of the starting list
       }))
     });
   } catch (e) { return fail(500, 'Not available.'); }
