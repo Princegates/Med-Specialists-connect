@@ -747,3 +747,12 @@ html[data-motion="reduced"] .ticker span:nth-child(n+9) { display: none; }
 .supply-jump { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 0; padding: 0; list-style: none; }
 .supply-jump a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1.5px solid var(--field); border-radius: var(--r); color: var(--ink); text-decoration: none; font-weight: 600; background: var(--surface); }
 .supply-jump a:hover { border-color: var(--accent-text); color: var(--accent-text); }
+
+/* The "about our private and home-based services" expander */
+.home-about { margin: 0 0 20px; max-width: 46rem; border: 1px solid var(--line); border-radius: var(--rf); background: var(--surface); }
+.home-about > summary { cursor: pointer; padding: 14px 18px; font-weight: 700; }
+.home-about[open] > summary { border-bottom: 1px solid var(--line); }
+.home-about-body { padding: 14px 18px 4px; }
+.home-about-body p, .home-about-body li { color: var(--ink); }
+.home-about-body ul { margin: 0 0 14px; padding-left: 22px; }
+.svc-info .home-about { margin: 8px 0 0; }

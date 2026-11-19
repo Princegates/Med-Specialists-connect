@@ -392,9 +392,11 @@
         info.replaceChildren();
         setVisit((s && s.visit === 'choose') || CHOOSE_VISIT.indexOf(rform.elements.service.value) > -1);
         // A priced service with no list of tests has nothing to explain, so nothing is shown.
-        if (!s || !window.PackageDetails || (!s.details && s.billing === 'fixed')) { info.hidden = true; return; }
+        var about = s && s.visit ? document.getElementById('home-services') : null; // private or home services carry the "about" text
+        if (!s || !window.PackageDetails || (!s.details && s.billing === 'fixed' && !about)) { info.hidden = true; return; }
         var h = document.createElement('h3'); h.textContent = s.label;
         info.append(h);
+        if (about) { var copy = about.cloneNode(true); copy.removeAttribute('id'); info.append(copy); info.hidden = false; return; }
         if (s.details) info.append(window.PackageDetails.render(s.details, { labelOf: labelOf }));
         else { var p = document.createElement('p'); p.className = 'svc-price'; p.textContent = s.billing === 'none' ? 'No charge.' : 'We confirm the price with you before you pay.'; info.append(p); }
         info.hidden = false;
