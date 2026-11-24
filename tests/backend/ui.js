@@ -433,7 +433,7 @@ const COOKIE = '__Host-msc_session';
   await mpg.goto(B + '/index.html'); await mpg.waitForTimeout(800);
   await mob.setOffline(true);
   await mpg.reload().catch(() => {}); await mpg.waitForTimeout(800);
-  ok('the home page no longer has the "not listed? Call us" line under the service buttons', (await mpg.evaluate(() => document.body.innerText)).indexOf('not listed') === -1);
+  ok('under the service buttons the home page says: Looking for a healthcare service not listed above? Contact us on 0243 560 080', await mpg.evaluate(() => { const e = document.querySelector('.pick-more'); return !!e && /Looking for a healthcare service not listed above\?/.test(e.innerText) && /Our team is here to help you access the care you need\. Contact us on 0243 560 080 for personalised assistance/.test(e.innerText) && !!e.querySelector('a[href="tel:+233243560080"]'); }));
   ok('offline, the home page still opens from the phone', /Healthcare made easier/.test(await mpg.innerText('h1')));
   ok('and says you are offline, with the phone number', await mpg.isVisible('#offline') && /0243 560 080/.test(await mpg.innerText('#offline')));
   await mpg.goto(B + '/privacy').catch(() => {}); await mpg.waitForTimeout(600);

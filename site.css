@@ -189,6 +189,8 @@ html[data-contrast="high"] :focus-visible { outline-width: 4px; }
 .pick .pic { display: inline-flex; color: #c8004a; }
 .pick .pic svg { width: 22px; height: 22px; }
 .pick-more { margin: 16px 0 0; color: rgba(255, 255, 255, .84); font-size: 1rem; }
+.pick-more p { margin: 0 0 4px; }
+.pick-more-title { color: #fff; font-weight: 700; }
 .pick-more a { color: #fff; }
 .reach { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 .hero .reach .btn-ghost { color: #fff; border-color: rgba(255, 255, 255, .7); }
