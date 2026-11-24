@@ -433,6 +433,7 @@ const COOKIE = '__Host-msc_session';
   await mpg.goto(B + '/index.html'); await mpg.waitForTimeout(800);
   await mob.setOffline(true);
   await mpg.reload().catch(() => {}); await mpg.waitForTimeout(800);
+  ok('the home page no longer has the "not listed? Call us" line under the service buttons', (await mpg.evaluate(() => document.body.innerText)).indexOf('not listed') === -1);
   ok('offline, the home page still opens from the phone', /Healthcare made easier/.test(await mpg.innerText('h1')));
   ok('and says you are offline, with the phone number', await mpg.isVisible('#offline') && /0243 560 080/.test(await mpg.innerText('#offline')));
   await mpg.goto(B + '/privacy').catch(() => {}); await mpg.waitForTimeout(600);
