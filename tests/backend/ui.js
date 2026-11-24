@@ -395,10 +395,15 @@ const COOKIE = '__Host-msc_session';
   await mp2.screenshot({ path: S + 'ui-site-founder-mobile.png' });
   ok('the founder section fits a phone without sideways scrolling', await mp2.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
   await axe(mp2, 'founder on a phone');
-  for (const page of ['/privacy', '/disclaimer']) {
+  for (const page of ['/privacy', '/disclaimer', '/terms']) {
     await p.goto(B + page); await p.waitForTimeout(400);
     await axe(p, 'legal page ' + page);
   }
+  ok('the footer links to a Privacy Policy and Terms of Service page that exist and are titled that way', await (async () => { await p.goto(B + '/index.html'); const links = await p.evaluate(() => [...document.querySelectorAll('footer a')].map((a) => a.textContent.trim() + '|' + a.getAttribute('href'))); const r1 = await req('/privacy'), r2 = await req('/terms'); return links.includes('Privacy Policy|privacy') && links.includes('Terms of Service|terms') && r1.status === 200 && r2.status === 200; })());
+  await p.goto(B + '/terms'); await p.waitForTimeout(300);
+  ok('the Terms of Service page has its own heading and covers fees, payment and refunds', await p.evaluate(() => /^Terms of Service$/.test(document.querySelector('h1').textContent) && /Paystack/.test(document.body.innerText) && /refund/i.test(document.body.innerText) && /laws of Ghana/.test(document.body.innerText)));
+  await p.goto(B + '/invoice?id=none'); await p.waitForTimeout(300);
+  ok('the invoice page links to the Terms of Service and Privacy Policy', await p.evaluate(() => !!document.querySelector('.inv-foot a[href="/terms"]') && !!document.querySelector('.inv-foot a[href="/privacy"]')));
   const mob = await b.newContext({ viewport: { width: 390, height: 844 } }); const mpg = track(await mob.newPage());
   await mpg.goto(B + '/index.html'); await mpg.waitForTimeout(700);
   ok('on a phone there is an app-style bottom bar: Home, Services, Request, Call, More', await mpg.isVisible('.actionbar') && (await mpg.locator('.actionbar > *').count()) === 5 && /Home[\s\S]*Services[\s\S]*Request[\s\S]*Call[\s\S]*More/.test(await mpg.innerText('.actionbar')));

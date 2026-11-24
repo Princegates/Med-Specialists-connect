@@ -8,3 +8,9 @@
 
 # The Medical accessories page is now Medical supplies.
 /accessories  /supplies  301
+
+# Names people and reviewers look for.
+/privacy-policy  /privacy  301
+/terms-of-service  /terms  301
+/terms-and-conditions  /terms  301
+/terms-of-use  /terms  301
